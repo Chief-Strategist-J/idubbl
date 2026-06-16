@@ -103,7 +103,7 @@ export default function PaiGowPoker({ onAnswer, answered }) {
         )}
 
         <div className="casino-hand-label" style={{ marginTop: phase === 'showdown' ? '0.75rem' : 0 }}>
-          5-Card High Hand {highHand.length > 0 && <span style={{ color: '#c084fc' }}>({evaluateHand(highHand.length === 5 ? highHand : [...highHand, ...Array(5 - highHand.length).fill(null)].filter(Boolean)).name})</span>}
+          5-Card High Hand {highHand.length === 5 && <span style={{ color: '#c084fc' }}>({evaluateHand(highHand).name})</span>}
         </div>
         <div className="casino-hand" style={{ minHeight: 66 }}>
           {highHand.map((c, i) => <GameCard key={i} card={c} small onClick={() => toggleCard(c, 'high')} />)}

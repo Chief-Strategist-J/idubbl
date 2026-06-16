@@ -67,7 +67,7 @@ export default function ThreeCardPoker({ onAnswer, answered }) {
         </div>
       )}
 
-      {result && <p className={`casino-result ${result.includes('win') || result.includes('pays') ? 'result-win' : 'result-lose'}`}>{result}</p>}
+      {result && <p className={`casino-result ${result.startsWith('You win') || result.includes('pays') ? 'result-win' : result.startsWith('Tie') ? 'result-push' : 'result-lose'}`}>{result}</p>}
     </div>
   );
 }

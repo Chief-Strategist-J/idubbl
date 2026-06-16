@@ -55,7 +55,10 @@ export default function BaccaratDuel({ onAnswer, answered }) {
     const winner = pTotal > bTotal ? 'Player' : bTotal > pTotal ? 'Banker' : 'Tie';
     const win = choice === winner;
     setCards({ pCards, bCards, pTotal, bTotal, winner });
-    setResult(win ? `You win! ${winner} wins with ${Math.max(pTotal, bTotal)}` : `${winner} wins — you bet ${choice}`);
+    const winMsg = winner === 'Tie'
+      ? `You win! Tie — both scored ${pTotal}`
+      : `You win! ${winner} wins ${pTotal} vs ${bTotal}`;
+    setResult(win ? winMsg : `${winner} wins — you bet ${choice}`);
     onAnswer(win, ['Player', 'Banker', 'Tie'].indexOf(choice));
   };
 

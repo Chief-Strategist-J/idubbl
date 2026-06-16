@@ -81,7 +81,7 @@ export default function CasinoWar({ onAnswer, answered }) {
             </>
           )}
 
-          {result && <p className={`casino-result ${result.includes('win') || result.includes('WON') ? 'result-win' : 'result-lose'}`}>{result}</p>}
+          {result && <p className={`casino-result ${result.startsWith('You win') || result.startsWith('WAR WON') ? 'result-win' : 'result-lose'}`}>{result}</p>}
         </div>
       )}
     </div>

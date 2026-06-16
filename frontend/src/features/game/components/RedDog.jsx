@@ -71,7 +71,7 @@ export default function RedDog({ onAnswer, answered }) {
         </div>
       )}
 
-      {result && <p className={`casino-result ${result.includes('WIN') || result.includes('push') ? 'result-win' : 'result-lose'}`}>{result}</p>}
+      {result && <p className={`casino-result ${result.includes('WIN') ? 'result-win' : result.toLowerCase().includes('push') ? 'result-push' : 'result-lose'}`}>{result}</p>}
     </div>
   );
 }
