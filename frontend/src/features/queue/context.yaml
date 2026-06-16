@@ -1,0 +1,57 @@
+feature: queue
+description: Waiting screen shown while the system searches for an opponent in the selected tier.
+
+business_logic:
+  - Shows real-time queue status: Searching → Matched → Starting.
+  - Displays animated pulse loader and elapsed wait time.
+  - Cancel button is available while status is 'searching'.
+  - Cancelling releases the locked entry fee back to available balance.
+  - If an opponent is found (simulated after delay), status changes to 'matched' then 'starting'.
+  - After 'starting' state, user is navigated to /game/:matchId.
+  - If wait exceeds 120 seconds, show a "low activity" message.
+
+dependencies:
+  features:
+    - game (navigate to after match found)
+    - lobby (navigate back if cancelled)
+  shared_components:
+    - Button
+    - Card
+    - Spinner
+    - Badge
+
+routes:
+  - path: /queue/:tierId
+    component: QueuePage
+    protected: true
+
+screens:
+  - name: QueuePage
+    description: Composes QueueStatus and QueueTimer.
+  - name: QueueStatus
+    description: Displays current status string with pulse animation and opponent info once matched.
+  - name: QueueTimer
+    description: Shows elapsed time since joining queue and cancel button.
+
+expected_output:
+  - User waits and sees live status updates.
+  - After simulated match found, auto-navigates to game screen.
+  - Cancelling returns user to lobby and releases locked balance.
+
+state:
+  store: matchStore, walletStore
+  reads:
+    - queueStatus
+    - currentTier
+  writes:
+    - leaveQueue()
+    - releaseReservation(amount)
+    - startNewMatch(tier)
+
+mock_api:
+  - method: GET
+    endpoint: /api/queue/status/:tierId
+    description: WebSocket or polling — returns current queue position and status.
+  - method: DELETE
+    endpoint: /api/queue/leave
+    description: Removes user from queue and releases reservation.

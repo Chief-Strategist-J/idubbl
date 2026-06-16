@@ -1,0 +1,60 @@
+feature: auth
+description: User registration, login, and password recovery screens.
+
+business_logic:
+  - On signup, a new user record and zero-balance wallet are created.
+  - Email/phone must be unique (validated against mock users).
+  - Password must meet minimum strength (8+ chars in mock).
+  - On login, credentials are checked; role determines redirect (admin → /admin, player → /dashboard).
+  - Forgot password shows a confirmation message (mock — no real email sent).
+
+dependencies:
+  features:
+    - dashboard (redirect target after login for players)
+    - admin (redirect target after login for admins)
+  shared_components:
+    - Button
+    - Input
+    - Card
+
+routes:
+  - path: /login
+    component: LoginPage
+    protected: false
+  - path: /signup
+    component: SignupPage
+    protected: false
+  - path: /forgot-password
+    component: ForgotPasswordPage
+    protected: false
+
+screens:
+  - name: LoginPage
+    description: Email + password form. Links to /signup and /forgot-password. Redirects on success.
+  - name: SignupPage
+    description: First name, last name, email, phone, password, confirm password, optional referral code.
+  - name: ForgotPasswordPage
+    description: Email field + submit. Shows success message after submission.
+
+expected_output:
+  - Authenticated session stored in authStore.
+  - Player redirected to /dashboard.
+  - Admin redirected to /admin.
+
+state:
+  store: authStore
+  reads: []
+  writes:
+    - login(email, password)
+    - signup(data)
+
+mock_api:
+  - method: POST
+    endpoint: /api/auth/login
+    description: Validates credentials and returns user + role.
+  - method: POST
+    endpoint: /api/auth/signup
+    description: Creates user account and initialises wallet.
+  - method: POST
+    endpoint: /api/auth/forgot-password
+    description: Sends password reset email (mock — shows confirmation).

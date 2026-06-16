@@ -1,0 +1,51 @@
+feature: result
+description: Match result screen showing round scores, winner, prize breakdown, and play-again CTA.
+
+business_logic:
+  - Shows win or loss state prominently with a visual indicator.
+  - Prize breakdown: pool = entryFee × 2, rake = pool × rakePercent/100, winner prize = pool - rake.
+  - Winner's balance is credited; loser's locked fee is consumed into the pool.
+  - Settlement timestamp and match reference ID are displayed.
+  - Play Again navigates to /lobby (same tier pre-selected if possible).
+  - "Choose different tier" also navigates to /lobby without pre-selection.
+
+dependencies:
+  features:
+    - lobby (play again CTA)
+    - wallet (balance update after result)
+  shared_components:
+    - Card
+    - Button
+    - Badge
+    - PageHeader
+
+routes:
+  - path: /result
+    component: ResultPage
+    protected: true
+
+screens:
+  - name: ResultPage
+    description: Composes RoundSummary, PrizeBreakdown, and play-again CTAs.
+  - name: RoundSummary
+    description: Table of all 3 rounds with scores and round winner.
+  - name: PrizeBreakdown
+    description: Shows pool total, rake deducted, net prize to winner.
+
+expected_output:
+  - User sees win/loss state immediately.
+  - Balance update reflected after credits are applied.
+  - User can navigate back to lobby in one click.
+
+state:
+  store: matchStore, walletStore
+  reads:
+    - matchResult
+  writes:
+    - creditWinnings(amount)
+    - clearMatch()
+
+mock_api:
+  - method: GET
+    endpoint: /api/match/:matchId/result
+    description: Returns final match result, round breakdown, and settlement details.

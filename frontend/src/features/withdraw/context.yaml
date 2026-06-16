@@ -1,0 +1,57 @@
+feature: withdraw
+description: Withdrawal request screen — user submits amount and destination wallet for admin review.
+
+business_logic:
+  - User can only withdraw from available balance (not locked balance).
+  - Minimum withdrawal is 5 USDT.
+  - Withdrawal amount cannot exceed available balance.
+  - Submission creates a WithdrawalRequest with status=pending; balance is not released until approved.
+  - Available balance is reduced immediately on submission (held pending).
+  - Admin must approve before payout — UI must clearly state this.
+  - User can have multiple pending withdrawal requests.
+  - Show pending withdrawal amount from wallet summary.
+
+dependencies:
+  features: []
+  shared_components:
+    - Card
+    - Input
+    - Select
+    - Button
+    - Badge
+    - Table
+    - PageHeader
+
+routes:
+  - path: /withdraw
+    component: WithdrawPage
+    protected: true
+
+screens:
+  - name: WithdrawPage
+    description: Composes WithdrawForm and PendingWithdrawals.
+  - name: WithdrawForm
+    description: Amount input, destination wallet address, network selector, note. Shows available balance.
+  - name: PendingWithdrawals
+    description: Table of all pending withdrawal requests with status, amount, date.
+
+expected_output:
+  - User submits withdrawal; request appears in pending list.
+  - Available balance is reduced by requested amount.
+  - Clear message that payout requires admin approval.
+
+state:
+  store: walletStore
+  reads:
+    - availableBalance
+    - withdrawals
+  writes:
+    - submitWithdrawal(data)
+
+mock_api:
+  - method: POST
+    endpoint: /api/withdraw/submit
+    description: Creates a withdrawal request and holds the amount.
+  - method: GET
+    endpoint: /api/withdraw/history
+    description: Returns all withdrawal requests for the authenticated user.

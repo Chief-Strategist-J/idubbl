@@ -1,0 +1,58 @@
+feature: deposit
+description: USDT deposit flow — shows platform wallet address, collects tx hash, lists deposit history.
+
+business_logic:
+  - Platform wallet address is displayed as a copyable string.
+  - User must enter: amount, network (TRC20 or ERC20), transaction hash.
+  - Submission creates a DepositRequest with status=pending.
+  - Crediting happens only after admin approval — UI must state this clearly.
+  - Minimum deposit is 10 USDT.
+  - A user can have multiple pending deposits simultaneously.
+  - Deposit history shows all past deposit requests with status badges.
+
+dependencies:
+  features: []
+  shared_components:
+    - Card
+    - Input
+    - Select
+    - Button
+    - Badge
+    - Table
+    - PageHeader
+
+routes:
+  - path: /deposit
+    component: DepositPage
+    protected: true
+
+screens:
+  - name: DepositPage
+    description: Composes DepositForm and DepositHistory.
+  - name: DepositForm
+    description: Shows platform address, copy button, network selector, amount and tx hash inputs, submit button.
+  - name: DepositHistory
+    description: Table of all user deposit requests with status, amount, date, refId.
+
+expected_output:
+  - User copies platform address, sends USDT, submits tx hash.
+  - New deposit appears in history with status=pending.
+  - User sees message that crediting is manual and pending review.
+
+state:
+  store: walletStore
+  reads:
+    - deposits
+  writes:
+    - submitDeposit(data)
+
+mock_api:
+  - method: GET
+    endpoint: /api/deposit/address
+    description: Returns platform USDT wallet address and supported networks.
+  - method: POST
+    endpoint: /api/deposit/submit
+    description: Creates a deposit request with tx hash and amount.
+  - method: GET
+    endpoint: /api/deposit/history
+    description: Returns all deposit requests for the authenticated user.

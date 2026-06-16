@@ -1,0 +1,55 @@
+feature: lobby
+description: Tier selection screen — shows available tiers as cards, lets user join a queue.
+
+business_logic:
+  - Each tier card shows: name, entry fee, estimated prize, rake %, waiting player count, estimated wait time.
+  - A user can only join a tier if availableBalance >= entryFee.
+  - Joining a tier immediately locks the entry fee (moves from available to locked).
+  - Only one tier queue at a time — if already in queue, joining another is blocked.
+  - After joining, user is navigated to /queue/:tierId.
+  - Tiers with waitingCount > 0 show estimated match time of < 60 seconds.
+
+dependencies:
+  features:
+    - queue (navigate to after joining)
+  shared_components:
+    - Card
+    - Button
+    - Badge
+    - PageHeader
+
+routes:
+  - path: /lobby
+    component: LobbyPage
+    protected: true
+
+screens:
+  - name: LobbyPage
+    description: Composes TierList with a PageHeader.
+  - name: TierList
+    description: Renders a TierCard for each active tier.
+  - name: TierCard
+    description: Shows tier name, entry fee, prize, rake, waiting count, join button. Disables join if balance insufficient.
+
+expected_output:
+  - User sees available tiers with clear entry cost and prize.
+  - Clicking join reserves the fee and navigates to queue.
+  - Disabled button shown if balance is too low, with helpful message.
+
+state:
+  store: walletStore, matchStore
+  reads:
+    - availableBalance
+    - tiers
+    - queueStatus
+  writes:
+    - reserveForMatch(amount)
+    - joinQueue(tierId)
+
+mock_api:
+  - method: GET
+    endpoint: /api/tiers
+    description: Returns all active tiers with waiting counts.
+  - method: POST
+    endpoint: /api/queue/join
+    description: Joins the queue for a tier and reserves the entry fee.

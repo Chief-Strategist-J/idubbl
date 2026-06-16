@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
 :root {
   --bg-darker: #0b0813;
@@ -593,6 +594,10 @@ body {
 }
 
 /* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes glow-pulse {
   0% {
     filter: drop-shadow(0 0 2px var(--secondary-glow));

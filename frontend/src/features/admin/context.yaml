@@ -1,0 +1,113 @@
+feature: admin
+description: Admin console — operational dashboard and management modules for deposits, withdrawals, matches, users, tiers, ledger, and audit log.
+
+business_logic:
+  - Accessible only to users with role=admin or role=superadmin.
+  - Admin dashboard home shows platform health summary: pending deposits, pending withdrawals, active matches, revenue today.
+  - Each sub-feature is a separate route and page under /admin/*.
+  - All admin actions (approve, reject, suspend) are written to the audit log with actor, timestamp, entity.
+  - Super admin only: tiers management and game settings.
+
+dependencies:
+  features:
+    - auth (role check — must be admin)
+  shared_components:
+    - Card
+    - Stat
+    - Button
+    - Badge
+    - Table
+    - SearchBar
+    - Modal
+    - Input
+    - Select
+    - PageHeader
+    - EmptyState
+
+routes:
+  - path: /admin
+    component: AdminDashboardHome
+    protected: true
+    role: admin
+  - path: /admin/deposits
+    component: AdminDepositsPage
+    protected: true
+    role: admin
+  - path: /admin/withdrawals
+    component: AdminWithdrawalsPage
+    protected: true
+    role: admin
+  - path: /admin/matches
+    component: AdminMatchesPage
+    protected: true
+    role: admin
+  - path: /admin/users
+    component: AdminUsersPage
+    protected: true
+    role: admin
+  - path: /admin/tiers
+    component: AdminTiersPage
+    protected: true
+    role: superadmin
+  - path: /admin/ledger
+    component: AdminLedgerPage
+    protected: true
+    role: admin
+  - path: /admin/audit
+    component: AdminAuditPage
+    protected: true
+    role: admin
+
+screens:
+  - name: AdminDashboardHome
+    description: Summary stats grid + alerts for pending items + queue depth by tier.
+  - name: AdminDepositsPage
+    description: Table of all deposits with approve/reject actions and tx hash view.
+  - name: AdminWithdrawalsPage
+    description: Table of all withdrawal requests with approve/reject and mark-paid actions.
+  - name: AdminMatchesPage
+    description: Live match list with round state, cancel and refund actions.
+  - name: AdminUsersPage
+    description: User search table with suspend, reset-password, view-wallet actions.
+  - name: AdminTiersPage
+    description: Tier list with create/edit form (entry fee, rake, wait threshold, status).
+  - name: AdminLedgerPage
+    description: Read-only system-wide ledger with search and export.
+  - name: AdminAuditPage
+    description: Read-only log of all admin actions with actor, action, entity, timestamp.
+
+expected_output:
+  - Admin can approve/reject deposits and withdrawals in one click.
+  - Admin sees live match counts and can cancel a match.
+  - All admin actions appear in the audit log.
+
+state:
+  store: walletStore, matchStore
+  reads:
+    - deposits
+    - withdrawals
+    - matches
+    - tiers
+    - transactions
+  writes:
+    - approveDeposit(id)
+    - rejectDeposit(id)
+    - approveWithdrawal(id)
+    - rejectWithdrawal(id)
+
+mock_api:
+  - method: GET
+    endpoint: /api/admin/stats
+    description: Returns platform health summary stats.
+  - method: POST
+    endpoint: /api/admin/deposits/:id/approve
+    description: Credits user and marks deposit approved.
+  - method: POST
+    endpoint: /api/admin/withdrawals/:id/approve
+    description: Marks withdrawal approved and triggers payout.
+  - method: POST
+    endpoint: /api/admin/users/:id/suspend
+    description: Suspends a user account.
+  - method: GET
+    endpoint: /api/admin/audit
+    description: Returns audit log entries.

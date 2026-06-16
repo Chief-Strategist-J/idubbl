@@ -1,0 +1,64 @@
+feature: dashboard
+description: Main player control room showing balances, queue status, recent matches, and quick actions.
+
+business_logic:
+  - Available balance = total credited - locked in matches - pending withdrawals.
+  - Locked balance = credits reserved in active/queued matches.
+  - If user is in queue, show live queue status widget with cancel option.
+  - Show last 5 matches with win/loss outcome.
+  - Quick Deposit and Quick Withdraw buttons link to /deposit and /withdraw.
+  - Join a Tier button links to /lobby.
+
+dependencies:
+  features:
+    - deposit (quick deposit CTA)
+    - withdraw (quick withdraw CTA)
+    - lobby (join tier CTA)
+    - transactions (view all link)
+  shared_components:
+    - Card
+    - Stat
+    - Badge
+    - Button
+    - PageHeader
+
+routes:
+  - path: /dashboard
+    component: DashboardPage
+    protected: true
+
+screens:
+  - name: DashboardPage
+    description: Composes BalanceWidget, QueueStatusWidget, RecentMatches, QuickActions.
+  - name: BalanceWidget
+    description: Shows available balance, locked balance, pending withdrawals.
+  - name: QueueStatusWidget
+    description: Shows current queue status if user is queued; hides if not.
+  - name: RecentMatches
+    description: Table of last 5 matches with tier, opponent, result, prize.
+  - name: QuickActions
+    description: Row of action buttons — Deposit, Withdraw, Play, History.
+
+expected_output:
+  - User sees all balances at a glance.
+  - User can navigate to any key action from one screen.
+
+state:
+  store: walletStore, matchStore
+  reads:
+    - availableBalance
+    - lockedBalance
+    - pendingWithdrawals
+    - queueStatus
+    - currentTier
+    - matches
+  writes:
+    - leaveQueue()
+
+mock_api:
+  - method: GET
+    endpoint: /api/wallet/balance
+    description: Returns available, locked, pendingWithdrawals.
+  - method: GET
+    endpoint: /api/matches/recent
+    description: Returns last 10 matches for current user.

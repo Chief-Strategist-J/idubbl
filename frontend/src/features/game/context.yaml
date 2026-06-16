@@ -1,0 +1,62 @@
+feature: game
+description: Word duel game screen — best-of-3 rounds, server-authoritative scoring via mock.
+
+business_logic:
+  - Game type is Word Duel: player is shown a word and must select the correct definition from 4 options.
+  - Each round lasts 30 seconds max.
+  - Score for a round = base 100 + time bonus (remaining seconds × 2). Wrong answer = 0.
+  - Opponent score is simulated with mild randomness to make it competitive.
+  - Match is best of 3 rounds — first to win 2 rounds wins the match.
+  - After round 3 or when a player has 2 wins, match ends and result is calculated.
+  - Round results are submitted to matchStore which determines winner.
+  - After match ends, user is auto-navigated to /result.
+
+dependencies:
+  features:
+    - result (navigate to after match ends)
+  shared_components:
+    - Card
+    - Button
+    - Spinner
+    - Badge
+
+routes:
+  - path: /game/:matchId
+    component: GamePage
+    protected: true
+
+screens:
+  - name: GamePage
+    description: Composes RoundHeader, ScoreBoard, WordDuel, RoundTransition.
+  - name: RoundHeader
+    description: Shows "Round N of 3", timer bar, and match score (player wins vs opponent wins).
+  - name: ScoreBoard
+    description: Shows both player names and current round scores.
+  - name: WordDuel
+    description: Shows the word, 4 definition options as buttons. Handles selection and submission.
+  - name: RoundTransition
+    description: Overlay shown between rounds displaying round winner and scores.
+
+expected_output:
+  - User sees word, picks definition, gets immediate score feedback.
+  - After each round, transition overlay shows who won.
+  - After 2 wins for either player, match ends and user navigates to /result.
+
+state:
+  store: matchStore
+  reads:
+    - currentMatch
+    - currentRound
+    - rounds
+    - matchResult
+  writes:
+    - submitRoundResult(playerScore, opponentScore)
+    - getRandomQuestion(index)
+
+mock_api:
+  - method: GET
+    endpoint: /api/game/:matchId/question
+    description: Returns the question for the current round (word + options).
+  - method: POST
+    endpoint: /api/game/:matchId/round
+    description: Submits player answer; server returns round result and scores.

@@ -1,0 +1,39 @@
+feature: landing
+description: Public marketing page that explains iDubbl and drives user registration.
+
+business_logic:
+  - No authentication required — fully public.
+  - Primary CTA navigates to /signup.
+  - Secondary CTA scrolls to the "How it works" section.
+  - Unauthenticated visitors who try to access protected routes should be sent here first.
+
+dependencies:
+  features: []
+  shared_components:
+    - Button
+
+routes:
+  - path: /
+    component: LandingPage
+    protected: false
+
+screens:
+  - name: LandingPage
+    description: Composes HeroSection, HowItWorks, TrustPoints into a full-page marketing layout.
+  - name: HeroSection
+    description: Headline, sub-copy, and two CTA buttons (Sign up / How it works).
+  - name: HowItWorks
+    description: Three-step explainer — Fund wallet → Join tier → Win pool.
+  - name: TrustPoints
+    description: Three trust indicators — instant matching, transparent prizes, fast payouts.
+
+expected_output:
+  - User reads value proposition and clicks "Sign up" to go to /signup.
+  - User clicks "How it works" and the page scrolls to the steps section.
+
+state:
+  store: none
+  reads: []
+  writes: []
+
+mock_api: []

@@ -1,0 +1,47 @@
+feature: transactions
+description: Full wallet transaction history — deposits, match reservations, winnings, withdrawals, refunds.
+
+business_logic:
+  - Immutable ledger — every wallet movement has a record.
+  - Transaction types: deposit, match_reserve, winnings, match_loss, withdrawal, refund, adjustment.
+  - Each row shows: type, description, amount (positive=credit, negative=debit), status, date, refId.
+  - User can filter by type and search by refId or description.
+  - Amounts displayed with sign (+/-) and colour (green=credit, red=debit).
+  - Pagination or scroll for large ledger.
+
+dependencies:
+  features: []
+  shared_components:
+    - Card
+    - Table
+    - Badge
+    - SearchBar
+    - Select
+    - PageHeader
+    - EmptyState
+
+routes:
+  - path: /transactions
+    component: TransactionsPage
+    protected: true
+
+screens:
+  - name: TransactionsPage
+    description: Composes TransactionFilters and the transaction Table.
+  - name: TransactionFilters
+    description: SearchBar + type filter Select.
+
+expected_output:
+  - User sees a filterable, searchable ledger of all wallet activity.
+  - Colour-coded amounts make debits/credits immediately clear.
+
+state:
+  store: walletStore
+  reads:
+    - transactions
+  writes: []
+
+mock_api:
+  - method: GET
+    endpoint: /api/ledger
+    description: Returns paginated ledger entries for the authenticated user.
