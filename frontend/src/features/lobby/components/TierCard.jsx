@@ -20,7 +20,11 @@ export default function TierCard({ tier }) {
     navigate(`/queue/${tier.id}`);
   };
 
-  const TIER_COLORS = { bronze: '#d97706', silver: '#9ca3af', gold: '#eab308' };
+  const TIER_COLORS = {
+    bronze: '#d97706', silver: '#9ca3af', gold: '#eab308', platinum: '#06b6d4', diamond: '#ec4899',
+    blackjack: '#22c55e', poker: '#ef4444', baccarat: '#a855f7', casinowar: '#f97316',
+    reddog: '#f43f5e', paigow: '#0ea5e9', threecard: '#8b5cf6', videopoker: '#3b82f6',
+  };
   const color = TIER_COLORS[tier.color] || 'var(--primary)';
 
   return (
@@ -29,6 +33,11 @@ export default function TierCard({ tier }) {
 
       <div style={{ marginTop: '0.5rem' }}>
         <p style={{ color, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.8rem', letterSpacing: 2, textTransform: 'uppercase' }}>{tier.name}</p>
+        {tier.gameLabel && (
+          <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.06)', fontSize: '0.7rem', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: 10, marginTop: '0.3rem' }}>
+            {tier.gameLabel}
+          </span>
+        )}
         <p style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{tier.entryFee} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>USDT</span></p>
         <p style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>Prize: {tier.prize} USDT</p>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Platform rake: {tier.rakePercent}%</p>

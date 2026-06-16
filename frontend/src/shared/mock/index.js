@@ -6,9 +6,19 @@ export const MOCK_USERS = [
 ];
 
 export const MOCK_TIERS = [
-  { id: 't1', name: 'Bronze', entryFee: 5, rakePercent: 10, prize: 9, minWaitSeconds: 30, active: true, waitingCount: 3, color: 'bronze' },
-  { id: 't2', name: 'Silver', entryFee: 10, rakePercent: 10, prize: 18, minWaitSeconds: 45, active: true, waitingCount: 1, color: 'silver' },
-  { id: 't3', name: 'Gold', entryFee: 25, rakePercent: 8, prize: 46, minWaitSeconds: 60, active: true, waitingCount: 0, color: 'gold' },
+  { id: 't1',  name: 'Bronze',        entryFee: 5,   rakePercent: 10, prize: 9,   minWaitSeconds: 30, active: true, waitingCount: 3, color: 'bronze',      gameType: 'word_duel',      gameLabel: 'Word Duel' },
+  { id: 't2',  name: 'Silver',        entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 45, active: true, waitingCount: 1, color: 'silver',      gameType: 'math_duel',      gameLabel: 'Math Duel' },
+  { id: 't3',  name: 'Gold',          entryFee: 25,  rakePercent: 8,  prize: 46,  minWaitSeconds: 60, active: true, waitingCount: 0, color: 'gold',        gameType: 'reaction_race',  gameLabel: 'Reaction Race' },
+  { id: 't4',  name: 'Platinum',      entryFee: 50,  rakePercent: 8,  prize: 92,  minWaitSeconds: 60, active: true, waitingCount: 2, color: 'platinum',    gameType: 'lucky_wheel',    gameLabel: 'Lucky Wheel' },
+  { id: 't5',  name: 'Diamond',       entryFee: 100, rakePercent: 8,  prize: 184, minWaitSeconds: 90, active: true, waitingCount: 1, color: 'diamond',     gameType: 'lucky_balls',    gameLabel: 'Lucky Balls' },
+  { id: 't6',  name: 'Blackjack',     entryFee: 15,  rakePercent: 10, prize: 27,  minWaitSeconds: 40, active: true, waitingCount: 4, color: 'blackjack',   gameType: 'blackjack',      gameLabel: 'Blackjack' },
+  { id: 't7',  name: 'Texas Hold\'em',entryFee: 30,  rakePercent: 8,  prize: 55,  minWaitSeconds: 60, active: true, waitingCount: 2, color: 'poker',       gameType: 'holdem_poker',   gameLabel: "Hold'em Poker" },
+  { id: 't8',  name: 'Baccarat',      entryFee: 20,  rakePercent: 10, prize: 36,  minWaitSeconds: 45, active: true, waitingCount: 3, color: 'baccarat',    gameType: 'baccarat',       gameLabel: 'Baccarat' },
+  { id: 't9',  name: 'Casino War',    entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 5, color: 'casinowar',   gameType: 'casino_war',     gameLabel: 'Casino War' },
+  { id: 't10', name: 'Red Dog',       entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 2, color: 'reddog',      gameType: 'red_dog',        gameLabel: 'Red Dog' },
+  { id: 't11', name: 'Pai Gow',       entryFee: 40,  rakePercent: 8,  prize: 74,  minWaitSeconds: 60, active: true, waitingCount: 1, color: 'paigow',      gameType: 'pai_gow',        gameLabel: 'Pai Gow Poker' },
+  { id: 't12', name: 'Three Card',    entryFee: 15,  rakePercent: 10, prize: 27,  minWaitSeconds: 40, active: true, waitingCount: 3, color: 'threecard',   gameType: 'three_card',     gameLabel: 'Three Card Poker' },
+  { id: 't13', name: 'Video Poker',   entryFee: 20,  rakePercent: 8,  prize: 37,  minWaitSeconds: 45, active: true, waitingCount: 2, color: 'videopoker',  gameType: 'video_poker',    gameLabel: 'Video Poker' },
 ];
 
 export const MOCK_MATCHES = [
@@ -51,6 +61,19 @@ export const WORD_DUEL_QUESTIONS = [
   { word: 'CANDID', options: ['Secretive', 'Truthful and straightforward', 'Very sweet', 'A camera type'], correct: 1 },
   { word: 'DILIGENT', options: ['Lazy and careless', 'Having or showing care in work', 'Very loud', 'A musical note'], correct: 1 },
   { word: 'ELOQUENT', options: ['Unable to speak', 'Fluent and persuasive in speaking', 'Very quiet', 'A type of poem'], correct: 1 },
+];
+
+export const MATH_DUEL_QUESTIONS = [
+  { expression: '7 × 8',    options: ['54', '56', '64', '58'],       correct: 1 },
+  { expression: '144 ÷ 12', options: ['10', '14', '12', '11'],       correct: 2 },
+  { expression: '23 + 49',  options: ['62', '72', '68', '71'],       correct: 1 },
+  { expression: '91 − 37',  options: ['54', '48', '64', '44'],       correct: 0 },
+  { expression: '9 × 9',    options: ['72', '81', '83', '79'],       correct: 1 },
+  { expression: '256 ÷ 8',  options: ['28', '34', '32', '30'],       correct: 2 },
+  { expression: '63 + 28',  options: ['81', '91', '93', '89'],       correct: 1 },
+  { expression: '15 × 7',   options: ['95', '105', '100', '115'],    correct: 1 },
+  { expression: '169 ÷ 13', options: ['11', '14', '13', '12'],       correct: 2 },
+  { expression: '47 + 58',  options: ['95', '105', '97', '101'],     correct: 1 },
 ];
 
 export const PLATFORM_WALLET = 'TDsqW9XXXXXXXXXXXXXXXXXXXXXXX';

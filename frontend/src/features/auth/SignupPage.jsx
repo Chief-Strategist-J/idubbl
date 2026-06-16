@@ -46,7 +46,7 @@ export default function SignupPage() {
           </p>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
+            <div className="signup-name-grid">
               <Input label="First name" name="firstName" value={form.firstName} onChange={handleChange} error={errors.firstName} required />
               <Input label="Last name" name="lastName" value={form.lastName} onChange={handleChange} error={errors.lastName} required />
             </div>

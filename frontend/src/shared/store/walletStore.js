@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { MOCK_TRANSACTIONS, MOCK_DEPOSITS, MOCK_WITHDRAWALS } from '../mock/index.js';
 
 const useWalletStore = create((set, get) => ({
-  availableBalance: 26,
+  availableBalance: 500,
   lockedBalance: 5,
   pendingWithdrawals: 18,
   transactions: MOCK_TRANSACTIONS,

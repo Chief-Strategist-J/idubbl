@@ -5,15 +5,28 @@ import { Card } from '../../shared/components/ui/index.js';
 import RoundHeader from './components/RoundHeader.jsx';
 import ScoreBoard from './components/ScoreBoard.jsx';
 import WordDuel from './components/WordDuel.jsx';
+import MathDuel from './components/MathDuel.jsx';
+import ReactionRace from './components/ReactionRace.jsx';
+import LuckyWheel from './components/LuckyWheel.jsx';
+import LuckyBalls from './components/LuckyBalls.jsx';
+import BlackjackDuel from './components/BlackjackDuel.jsx';
+import HeadsUpPoker from './components/HeadsUpPoker.jsx';
+import BaccaratDuel from './components/BaccaratDuel.jsx';
+import CasinoWar from './components/CasinoWar.jsx';
+import RedDog from './components/RedDog.jsx';
+import PaiGowPoker from './components/PaiGowPoker.jsx';
+import ThreeCardPoker from './components/ThreeCardPoker.jsx';
+import VideoPoker from './components/VideoPoker.jsx';
 import RoundTransition from './components/RoundTransition.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
+import { MATH_DUEL_QUESTIONS } from '../../shared/mock/index.js';
 
 const ROUND_TIME = 30;
 const TRANSITION_DURATION = 2500;
 
 export default function GamePage() {
   const navigate = useNavigate();
-  const { currentMatch, currentRound, rounds, matchResult, submitRoundResult, getRandomQuestion } = useMatchStore();
+  const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion } = useMatchStore();
 
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
@@ -22,7 +35,9 @@ export default function GamePage() {
   const [showTransition, setShowTransition] = useState(false);
   const [lastRound, setLastRound] = useState(null);
 
+  const gameType = currentTier?.gameType || 'word_duel';
   const question = getRandomQuestion((currentRound || 1) - 1);
+  const mathQuestion = MATH_DUEL_QUESTIONS[((currentRound || 1) - 1) % MATH_DUEL_QUESTIONS.length];
 
   const handleAnswer = useCallback((isCorrect, selectedIndex) => {
     if (answered) return;
@@ -112,7 +127,19 @@ export default function GamePage() {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               Play now. Highest score wins the round. Two round wins takes the match.
             </p>
-            <WordDuel question={question} onAnswer={handleAnswer} answered={answered} />
+            {gameType === 'word_duel'     && <WordDuel key={currentRound} question={question} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'math_duel'     && <MathDuel key={currentRound} question={mathQuestion} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'reaction_race' && <ReactionRace key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'lucky_wheel'   && <LuckyWheel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'lucky_balls'   && <LuckyBalls key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'blackjack'     && <BlackjackDuel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'holdem_poker'  && <HeadsUpPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'baccarat'      && <BaccaratDuel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'casino_war'    && <CasinoWar key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'red_dog'       && <RedDog key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'pai_gow'       && <PaiGowPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'three_card'    && <ThreeCardPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            {gameType === 'video_poker'   && <VideoPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
           </div>
         </Card>
       </div>

@@ -291,6 +291,14 @@ body {
   background: linear-gradient(90deg, #eab308, #facc15);
 }
 
+.tier-card.platinum::before {
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+}
+
+.tier-card.diamond::before {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+}
+
 .tier-title {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -832,9 +840,9 @@ body {
     padding: 0.2rem 0.6rem;
   }
 
-  /* Main content padding */
+  /* Main content padding — extra bottom room for bottom nav */
   .main-content {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 1rem 5.5rem;
   }
 
   /* Cards */
@@ -1361,5 +1369,412 @@ body {
 
   .match-card-opponent {
     max-width: 70px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   PAGE HEADER
+───────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header-text {}
+
+.page-header-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+.page-header-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.page-header-action {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-header-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .page-header-action button {
+    width: 100%;
+  }
+}
+
+/* ─────────────────────────────────────────
+   AUTH PAGES
+───────────────────────────────────────── */
+.signup-name-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+@media (max-width: 480px) {
+  .signup-name-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─────────────────────────────────────────
+   BALANCE PILL RESPONSIVE
+───────────────────────────────────────── */
+.balance-pill-unit {
+  /* Visible by default */
+}
+
+@media (max-width: 400px) {
+  .balance-pill-unit {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────
+   MOBILE OVERFLOW DROPDOWN
+───────────────────────────────────────── */
+.mobile-overflow-drawer {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  .mobile-overflow-drawer {
+    position: fixed;
+    top: 62px;
+    right: 0.75rem;
+    min-width: 180px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transform: translateY(-8px) scale(0.96);
+    transform-origin: top right;
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.15s ease, opacity 0.15s ease, visibility 0.15s;
+    pointer-events: none;
+  }
+
+  .mobile-overflow-drawer.drawer-open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+  }
+}
+
+.overflow-drawer-btn {
+  background: none;
+  border: none;
+  padding: 0.65rem 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  width: 100%;
+}
+
+.overflow-drawer-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.overflow-drawer-logout {
+  color: #f87171 !important;
+}
+
+/* ─────────────────────────────────────────
+   MOBILE BOTTOM NAV BAR
+───────────────────────────────────────── */
+.bottom-nav {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(12, 9, 30, 0.97);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 100;
+    /* Safe area for notched iPhones */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.2px;
+    min-width: 0;
+  }
+
+  .bottom-nav-item.active {
+    color: var(--primary);
+  }
+
+  .bottom-nav-item:active {
+    background: rgba(139, 92, 246, 0.07);
+    border-radius: 8px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   REACTION RACE GAME
+───────────────────────────────────────── */
+.reaction-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  max-width: 280px;
+  margin: 0 auto 2rem;
+}
+
+.reaction-cell {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reaction-cell:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.reaction-cell.cell-active {
+  background: radial-gradient(circle, var(--primary), #6d28d9);
+  border-color: var(--primary);
+  box-shadow: 0 0 28px var(--primary-glow), 0 0 8px var(--primary-glow);
+  animation: reaction-pulse 0.7s ease-in-out infinite alternate;
+}
+
+.reaction-cell.cell-correct {
+  background: radial-gradient(circle, #10b981, #059669);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 20px var(--accent-green-glow);
+}
+
+.reaction-cell.cell-wrong {
+  background: radial-gradient(circle, #ef4444, #dc2626);
+  border-color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes reaction-pulse {
+  0%   { transform: scale(0.92); box-shadow: 0 0 16px var(--primary-glow); }
+  100% { transform: scale(1.08); box-shadow: 0 0 36px var(--primary-glow), 0 0 60px rgba(139,92,246,0.3); }
+}
+
+@media (max-width: 480px) {
+  .reaction-grid {
+    max-width: 240px;
+    gap: 0.65rem;
+  }
+}
+
+/* ── Casino Card Game Shared Styles ─────────────────────────────── */
+.casino-game {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.casino-game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+.casino-hand-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.casino-hand {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+.casino-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.casino-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.casino-btn:active { transform: scale(0.97); }
+
+.casino-btn-primary {
+  background: linear-gradient(135deg, var(--primary), #6d28d9);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+}
+
+.casino-btn-primary:hover { box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55); }
+
+.casino-btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-secondary);
+}
+
+.casino-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+.casino-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.casino-result {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.result-win {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #4ade80;
+}
+
+.result-lose {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.result-push {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #fbbf24;
+}
+
+/* Red Dog specific */
+.red-dog-gap {
+  width: 58px;
+  height: 82px;
+  border-radius: 7px;
+  border: 2px dashed rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 4px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+/* Pai Gow slot placeholder */
+.pai-gow-slot {
+  width: 42px;
+  height: 60px;
+  border-radius: 7px;
+  border: 2px dashed rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+/* Tier card colors for new casino game tiers */
+.tier-card.blackjack::before { background: linear-gradient(90deg, #15803d, #22c55e); }
+.tier-card.poker::before     { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+.tier-card.baccarat::before  { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+.tier-card.casinowar::before { background: linear-gradient(90deg, #c2410c, #f97316); }
+.tier-card.reddog::before    { background: linear-gradient(90deg, #be123c, #f43f5e); }
+.tier-card.paigow::before    { background: linear-gradient(90deg, #0369a1, #0ea5e9); }
+.tier-card.threecard::before { background: linear-gradient(90deg, #6d28d9, #8b5cf6); }
+.tier-card.videopoker::before{ background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+
+@media (max-width: 480px) {
+  .casino-actions {
+    gap: 0.5rem;
+  }
+  .casino-btn {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.75rem;
   }
 }

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, Zap, PlusCircle, ArrowUpCircle, Clock } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
 import useWalletStore from '../../store/walletStore.js';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Play', path: '/lobby' },
-  { label: 'Deposit', path: '/deposit' },
-  { label: 'Withdraw', path: '/withdraw' },
-  { label: 'History', path: '/transactions' },
+  { label: 'Dashboard', short: 'Home', path: '/dashboard', icon: Home },
+  { label: 'Play', short: 'Play', path: '/lobby', icon: Zap },
+  { label: 'Deposit', short: 'Deposit', path: '/deposit', icon: PlusCircle },
+  { label: 'Withdraw', short: 'Withdraw', path: '/withdraw', icon: ArrowUpCircle },
+  { label: 'History', short: 'History', path: '/transactions', icon: Clock },
 ];
 
 export default function AppLayout({ children }) {
@@ -30,35 +31,42 @@ export default function AppLayout({ children }) {
           <span>i</span>Dubbl
         </div>
 
-        <nav className={`nav-links ${menuOpen ? 'nav-open' : ''}`}>
+        {/* Desktop-only navigation */}
+        <nav className="nav-links">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.path}
               className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
-              onClick={() => { navigate(item.path); setMenuOpen(false); }}
+              onClick={() => navigate(item.path)}
             >
               {item.label}
             </button>
           ))}
-          {/* Mobile-only logout inside nav drawer */}
-          <button className="nav-btn mobile-only-nav-item" onClick={handleLogout}>Logout</button>
         </nav>
 
         <div className="header-right">
           <div className="balance-pill">
             <span>💰</span>
-            <span>{availableBalance.toFixed(2)} USDT</span>
+            <span className="balance-pill-amount">{availableBalance.toFixed(2)}</span>
+            <span className="balance-pill-unit"> USDT</span>
           </div>
+
           {user?.role === 'admin' && (
-            <button className="nav-btn desktop-only" onClick={() => navigate('/admin')} style={{ color: 'var(--secondary)' }}>
+            <button
+              className="nav-btn desktop-only"
+              onClick={() => navigate('/admin')}
+              style={{ color: 'var(--secondary)' }}
+            >
               Admin
             </button>
           )}
           <button className="nav-btn desktop-only" onClick={handleLogout}>Logout</button>
+
+          {/* Mobile: hamburger opens overflow menu (logout + admin) */}
           <button
             className="hamburger-btn"
             onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Toggle menu"
+            aria-label="More options"
           >
             <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
             <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
@@ -67,10 +75,43 @@ export default function AppLayout({ children }) {
         </div>
       </header>
 
-      {/* Overlay when mobile menu is open */}
+      {/* Mobile overflow dropdown */}
+      <div className={`mobile-overflow-drawer ${menuOpen ? 'drawer-open' : ''}`}>
+        {user?.role === 'admin' && (
+          <button
+            className="overflow-drawer-btn"
+            onClick={() => { navigate('/admin'); setMenuOpen(false); }}
+          >
+            <span style={{ color: 'var(--secondary)' }}>Admin Panel</span>
+          </button>
+        )}
+        <button className="overflow-drawer-btn overflow-drawer-logout" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+
       {menuOpen && <div className="nav-overlay" onClick={() => setMenuOpen(false)} />}
 
       <main className="main-content">{children}</main>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="bottom-nav" aria-label="Main navigation">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          return (
+            <button
+              key={item.path}
+              className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => navigate(item.path)}
+              aria-label={item.label}
+            >
+              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} />
+              <span>{item.short}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
