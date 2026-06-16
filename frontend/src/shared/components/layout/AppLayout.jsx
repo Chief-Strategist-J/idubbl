@@ -30,7 +30,7 @@ export default function AppLayout({ children }) {
           <span>i</span>Dubbl
         </div>
 
-        <nav className="nav-links" style={{ display: window.innerWidth < 768 ? (menuOpen ? 'flex' : 'none') : 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', position: window.innerWidth < 768 ? 'absolute' : 'static', top: 70, left: 0, right: 0, background: window.innerWidth < 768 ? 'var(--bg-dark)' : 'transparent', padding: window.innerWidth < 768 ? '1rem' : 0, zIndex: 99, borderBottom: window.innerWidth < 768 ? '1px solid var(--border)' : 'none' }}>
+        <nav className={`nav-links ${menuOpen ? 'nav-open' : ''}`}>
           {NAV_ITEMS.map((item) => (
             <button
               key={item.path}
@@ -40,6 +40,8 @@ export default function AppLayout({ children }) {
               {item.label}
             </button>
           ))}
+          {/* Mobile-only logout inside nav drawer */}
+          <button className="nav-btn mobile-only-nav-item" onClick={handleLogout}>Logout</button>
         </nav>
 
         <div className="header-right">
@@ -48,13 +50,25 @@ export default function AppLayout({ children }) {
             <span>{availableBalance.toFixed(2)} USDT</span>
           </div>
           {user?.role === 'admin' && (
-            <button className="nav-btn" onClick={() => navigate('/admin')} style={{ color: 'var(--secondary)' }}>
+            <button className="nav-btn desktop-only" onClick={() => navigate('/admin')} style={{ color: 'var(--secondary)' }}>
               Admin
             </button>
           )}
-          <button className="nav-btn" onClick={handleLogout}>Logout</button>
+          <button className="nav-btn desktop-only" onClick={handleLogout}>Logout</button>
+          <button
+            className="hamburger-btn"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+          </button>
         </div>
       </header>
+
+      {/* Overlay when mobile menu is open */}
+      {menuOpen && <div className="nav-overlay" onClick={() => setMenuOpen(false)} />}
 
       <main className="main-content">{children}</main>
     </div>

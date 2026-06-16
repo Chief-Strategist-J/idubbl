@@ -606,3 +606,352 @@ body {
     filter: drop-shadow(0 0 10px var(--secondary-glow));
   }
 }
+
+/* ─────────────────────────────────────────
+   HAMBURGER BUTTON
+───────────────────────────────────────── */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* X animation */
+.hamburger-line.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-line.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-line.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ─────────────────────────────────────────
+   MOBILE NAV OVERLAY
+───────────────────────────────────────── */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 98;
+  backdrop-filter: blur(2px);
+}
+
+/* ─────────────────────────────────────────
+   ADMIN LAYOUT
+───────────────────────────────────────── */
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-darker);
+}
+
+.admin-mobile-bar {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-sidebar {
+  width: 240px;
+  background: var(--bg-dark);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.admin-sidebar-logo {
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.admin-nav-item:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.03);
+}
+
+.admin-nav-item.active {
+  color: var(--primary);
+  font-weight: 600;
+  border-left-color: var(--primary);
+  background: rgba(139,92,246,0.06);
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  max-height: 100vh;
+  min-width: 0;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE BREAKPOINTS
+───────────────────────────────────────── */
+
+/* Tablet and below */
+@media (max-width: 900px) {
+  .admin-main {
+    padding: 1.5rem 1rem;
+    max-height: none;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .matchmaking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  /* Header */
+  .header {
+    padding: 1rem 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Desktop nav hidden; hamburger shown */
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 75vw;
+    max-width: 300px;
+    height: 100vh;
+    background: var(--bg-dark);
+    border-left: 1px solid var(--border);
+    padding: 5rem 1.25rem 2rem;
+    z-index: 99;
+    gap: 0.25rem;
+    box-shadow: -4px 0 30px rgba(0,0,0,0.4);
+    overflow-y: auto;
+  }
+
+  .nav-links.nav-open {
+    display: flex;
+  }
+
+  .nav-links .nav-btn {
+    width: 100%;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  /* Show hamburger, hide desktop-only items */
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Show mobile-only nav item (logout inside drawer) */
+  .mobile-only-nav-item {
+    display: block !important;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem !important;
+    color: #f87171 !important;
+  }
+
+  /* Balance pill compact */
+  .balance-pill {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* Main content padding */
+  .main-content {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Cards */
+  .glass-card {
+    padding: 1.25rem;
+  }
+
+  /* Tables: horizontal scroll */
+  .custom-table {
+    font-size: 0.85rem;
+  }
+
+  .custom-table th,
+  .custom-table td {
+    padding: 0.65rem 0.75rem;
+  }
+
+  /* Admin mobile bar visible */
+  .admin-mobile-bar {
+    display: flex;
+  }
+
+  /* Sidebar slides in from left */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 99;
+    transform: translateX(-100%);
+    padding-top: 4.5rem;
+  }
+
+  .admin-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-logo {
+    display: none;
+  }
+
+  .admin-main {
+    max-height: none;
+    padding: 1.25rem 1rem;
+    overflow-y: visible;
+  }
+
+  /* Tier cards */
+  .tier-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .tier-fee {
+    font-size: 2rem;
+  }
+
+  /* Game board */
+  .game-board {
+    max-width: 340px;
+  }
+
+  /* Stats grid */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Tabs scroll */
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  /* Queue info */
+  .arena-versus {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  /* Matchmaking grid single column */
+  .matchmaking-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Extra small */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.4rem;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-board {
+    max-width: 280px;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .tier-fee {
+    font-size: 1.75rem;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Hide mobile-only items on desktop by default */
+.mobile-only-nav-item {
+  display: none;
+}
+
