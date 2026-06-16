@@ -10,13 +10,6 @@ export default function BlackjackDuel({ onAnswer, answered }) {
   const [done, setDone] = useState(false);
   const [result, setResult] = useState('');
 
-  useEffect(() => {
-    const d = createShuffledDeck();
-    setDeck(d.slice(4));
-    setPlayer([d[0], d[2]]);
-    setDealer([d[1], d[3]]);
-  }, []);
-
   const finish = (pCards, dCards, revealed) => {
     const pTotal = handTotal(pCards);
     const dTotal = handTotal(dCards);
@@ -34,6 +27,36 @@ export default function BlackjackDuel({ onAnswer, answered }) {
     onAnswer(win, 0);
   };
 
+  // Resolve dealer draw and finish given explicit card arrays (used before state settles)
+  const resolveStand = (pCards, dCards, dDeckArr) => {
+    let d = [...dCards];
+    let rem = [...dDeckArr];
+    while (handTotal(d) < 17) { d.push(rem[0]); rem = rem.slice(1); }
+    finish(pCards, d, true);
+  };
+
+  // Deal initial two cards each
+  useEffect(() => {
+    const d = createShuffledDeck();
+    const pCards = [d[0], d[2]];
+    const dCards = [d[1], d[3]];
+    const rem = d.slice(4);
+    setPlayer(pCards);
+    setDealer(dCards);
+    setDeck(rem);
+    // Natural 21: auto-resolve immediately with the local values (state not yet applied)
+    if (handTotal(pCards) === 21) {
+      resolveStand(pCards, dCards, rem);
+    }
+  }, []); // eslint-disable-line
+
+  // After a HIT lands exactly 21 (player.length > 2 means it's post-deal)
+  useEffect(() => {
+    if (player.length > 2 && handTotal(player) === 21 && !done && !answered) {
+      resolveStand(player, dealer, deck);
+    }
+  }, [player]); // eslint-disable-line
+
   const hit = () => {
     if (done || answered) return;
     const newCard = deck[0];
@@ -42,19 +65,14 @@ export default function BlackjackDuel({ onAnswer, answered }) {
     setDeck(newDeck);
     setPlayer(newPlayer);
     if (handTotal(newPlayer) > 21) {
-      finish(newPlayer, dealer, true); // reveal dealer on bust
+      finish(newPlayer, dealer, true);
     }
+    // If exactly 21, useEffect above will auto-stand
   };
 
-  const stand = () => {
+  const handleStand = () => {
     if (done || answered) return;
-    let dCards = [...dealer];
-    let dDeck = [...deck];
-    while (handTotal(dCards) < 17) {
-      dCards.push(dDeck[0]);
-      dDeck = dDeck.slice(1);
-    }
-    finish(player, dCards, true);
+    resolveStand(player, dealer, deck);
   };
 
   const pTotal = handTotal(player);
@@ -71,7 +89,9 @@ export default function BlackjackDuel({ onAnswer, answered }) {
 
         <div style={{ textAlign: 'center', margin: '1.25rem 0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>— table —</div>
 
-        <div className="casino-hand-label">You — Total: <span style={{ color: pTotal > 21 ? '#f87171' : pTotal >= 18 ? '#4ade80' : 'var(--text-primary)' }}>{pTotal}</span></div>
+        <div className="casino-hand-label">
+          You — Total: <span style={{ color: pTotal > 21 ? '#f87171' : pTotal >= 18 ? '#4ade80' : 'var(--text-primary)' }}>{pTotal}</span>
+        </div>
         <div className="casino-hand">
           {player.map((c, i) => <GameCard key={i} card={c} />)}
         </div>
@@ -84,7 +104,7 @@ export default function BlackjackDuel({ onAnswer, answered }) {
       {!done && !answered && player.length > 0 && (
         <div className="casino-actions">
           <button className="casino-btn casino-btn-secondary" onClick={hit}>HIT</button>
-          <button className="casino-btn casino-btn-primary" onClick={stand}>STAND</button>
+          <button className="casino-btn casino-btn-primary" onClick={handleStand}>STAND</button>
         </div>
       )}
     </div>
