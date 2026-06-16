@@ -1,15 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Badge, Table, Button, EmptyState } from '../../../shared/components/ui/index.js';
+import { Badge, Button, EmptyState } from '../../../shared/components/ui/index.js';
 import useMatchStore from '../../../shared/store/matchStore.js';
-
-const COLUMNS = [
-  { key: 'refId', label: 'Match ID' },
-  { key: 'tier', label: 'Tier' },
-  { key: 'opponent', label: 'Opponent' },
-  { key: 'result', label: 'Result', render: (_, row) => <Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} /> },
-  { key: 'prize', label: 'Prize', render: (v, row) => row.winnerId === 'u1' ? <span style={{ color: 'var(--accent-green)' }}>+{v} USDT</span> : <span style={{ color: '#f87171' }}>-{row.entryFee} USDT</span> },
-];
 
 export default function RecentMatches() {
   const navigate = useNavigate();
@@ -28,11 +20,64 @@ export default function RecentMatches() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>Recent Matches</h3>
+      <div className="recent-matches-header">
+        <h3 className="recent-matches-title">Recent Matches</h3>
         <Button variant="ghost" onClick={() => navigate('/transactions')}>View all</Button>
       </div>
-      <Table columns={COLUMNS} rows={rows} />
+
+      {/* Mobile card list */}
+      <div className="match-card-list">
+        {rows.map((row, i) => (
+          <div key={row.id || i} className="match-card">
+            <div className="match-card-left">
+              <span className="match-card-id">#{row.refId || `M${i + 1}`}</span>
+              <span className="match-card-tier">{row.tier}</span>
+            </div>
+            <div className="match-card-center">
+              <span className="match-card-vs">vs</span>
+              <span className="match-card-opponent">{row.opponent}</span>
+            </div>
+            <div className="match-card-right">
+              <Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} />
+              {row.winnerId === 'u1'
+                ? <span className="match-prize win">+{row.prize} USDT</span>
+                : <span className="match-prize loss">-{row.entryFee} USDT</span>
+              }
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table (hidden on mobile, shown via CSS) */}
+      <div className="match-table-wrap">
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th>Match ID</th>
+              <th>Tier</th>
+              <th>Opponent</th>
+              <th>Result</th>
+              <th>Prize</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={row.id || i}>
+                <td>#{row.refId || `M${i + 1}`}</td>
+                <td>{row.tier}</td>
+                <td>{row.opponent}</td>
+                <td><Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} /></td>
+                <td>
+                  {row.winnerId === 'u1'
+                    ? <span style={{ color: 'var(--accent-green)' }}>+{row.prize} USDT</span>
+                    : <span style={{ color: '#f87171' }}>-{row.entryFee} USDT</span>
+                  }
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

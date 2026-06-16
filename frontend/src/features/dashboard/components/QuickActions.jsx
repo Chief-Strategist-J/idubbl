@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../shared/components/ui/index.js';
 
 const ACTIONS = [
   { label: '🎯  Play Now', path: '/lobby', variant: 'primary' },
@@ -13,11 +12,15 @@ export default function QuickActions() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+    <div className="quick-actions-grid">
       {ACTIONS.map((a) => (
-        <Button key={a.path} variant={a.variant} onClick={() => navigate(a.path)}>
+        <button
+          key={a.path}
+          className={`quick-action-btn ${a.variant === 'primary' ? 'quick-action-primary' : 'quick-action-secondary'}`}
+          onClick={() => navigate(a.path)}
+        >
           {a.label}
-        </Button>
+        </button>
       ))}
     </div>
   );
