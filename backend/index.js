@@ -5,6 +5,7 @@ import cors from 'cors';
 
 import authRouter from './routes/auth.js';
 import paymentRouter from './routes/payment.js';
+import walletRouter from './routes/wallet.js';
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRouter);
 app.use('/api/payment', paymentRouter);
+app.use('/api/wallet', walletRouter);
 
 const server = createServer(app);
 const io = new Server(server, {

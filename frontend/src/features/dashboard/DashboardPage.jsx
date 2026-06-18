@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card, Badge } from '../../shared/components/ui/index.js';
@@ -7,11 +7,19 @@ import RecentMatches from './components/RecentMatches.jsx';
 import QuickActions from './components/QuickActions.jsx';
 import useAuthStore from '../../shared/store/authStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
+import useWalletStore from '../../shared/store/walletStore.js';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { queueStatus, currentTier, leaveQueue } = useMatchStore();
+  const { fetchWalletData } = useWalletStore();
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchWalletData(user.id);
+    }
+  }, [user?.id, fetchWalletData]);
 
   return (
     <AppLayout>

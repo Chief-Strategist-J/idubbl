@@ -1,13 +1,50 @@
 import { create } from 'zustand';
-import { MOCK_TRANSACTIONS, MOCK_DEPOSITS, MOCK_WITHDRAWALS } from '../mock/index.js';
+
+const BASE_URL = 'http://localhost:5000/api/wallet';
 
 const useWalletStore = create((set, get) => ({
-  availableBalance: 500,
-  lockedBalance: 5,
-  pendingWithdrawals: 18,
-  transactions: MOCK_TRANSACTIONS,
-  deposits: MOCK_DEPOSITS,
-  withdrawals: MOCK_WITHDRAWALS,
+  availableBalance: 0,
+  lockedBalance: 0,
+  pendingWithdrawals: 0,
+  transactions: [],
+  deposits: [],
+  withdrawals: [],
+  loading: false,
+
+  // Fetch balance and transactions from the backend API
+  fetchWalletData: async (userId = 'u1') => {
+    set({ loading: true });
+    try {
+      // Fetch Balance
+      const balRes = await fetch(`${BASE_URL}/balance`, {
+        headers: { 'x-user-id': userId }
+      });
+      const balance = await balRes.json();
+
+      // Fetch Transactions
+      const txRes = await fetch(`${BASE_URL}/transactions`, {
+        headers: { 'x-user-id': userId }
+      });
+      const transactions = await txRes.json();
+
+      // Separate deposits and withdrawals for compatibility with mock structure
+      const deposits = transactions.filter(t => t.type === 'deposit');
+      const withdrawals = transactions.filter(t => t.type === 'withdrawal');
+
+      set({
+        availableBalance: balance.availableBalance,
+        lockedBalance: balance.lockedBalance,
+        pendingWithdrawals: balance.pendingWithdrawals,
+        transactions,
+        deposits,
+        withdrawals,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Failed to load wallet data:', error);
+      set({ loading: false });
+    }
+  },
 
   reserveForMatch: (amount) => {
     const { availableBalance, lockedBalance } = get();
@@ -26,86 +63,106 @@ const useWalletStore = create((set, get) => ({
     set({ availableBalance: availableBalance + amount, lockedBalance: Math.max(0, lockedBalance - (amount / 2)) });
   },
 
-  submitDeposit: (data) => {
-    const newDeposit = {
-      id: `d${Date.now()}`,
-      userId: 'u1',
-      user: 'Alex Storm',
-      ...data,
-      status: 'pending',
-      reviewedBy: null,
-      createdAt: new Date().toISOString(),
-    };
-    set((state) => ({ deposits: [newDeposit, ...state.deposits] }));
-    return { success: true };
+  submitDeposit: async (data, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/deposit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+        return { success: true };
+      }
+      const errData = await response.json();
+      return { success: false, error: errData.error };
+    } catch (error) {
+      console.error('Deposit submission error:', error);
+      return { success: false, error: 'Network error submitting deposit' };
+    }
   },
 
-  submitWithdrawal: (data) => {
-    const { availableBalance } = get();
-    if (availableBalance < data.amount) return { success: false, error: 'Insufficient balance' };
-    const newWithdrawal = {
-      id: `w${Date.now()}`,
-      userId: 'u1',
-      user: 'Alex Storm',
-      ...data,
-      status: 'pending',
-      reviewedBy: null,
-      createdAt: new Date().toISOString(),
-    };
-    set((state) => ({
-      availableBalance: availableBalance - data.amount,
-      pendingWithdrawals: state.pendingWithdrawals + data.amount,
-      withdrawals: [newWithdrawal, ...state.withdrawals],
-    }));
-    return { success: true };
+  submitWithdrawal: async (data, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId
+        },
+        body: JSON.stringify({
+          amount: data.amount,
+          address: data.address,
+          network: data.network,
+        }),
+      });
+
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+        return { success: true };
+      }
+      const errData = await response.json();
+      return { success: false, error: errData.error };
+    } catch (error) {
+      console.error('Withdrawal submission error:', error);
+      return { success: false, error: 'Network error submitting withdrawal' };
+    }
   },
 
-  approveDeposit: (depositId) => {
-    set((state) => {
-      const deposit = state.deposits.find((d) => d.id === depositId);
-      if (!deposit) return {};
-      return {
-        availableBalance: state.availableBalance + deposit.amount,
-        deposits: state.deposits.map((d) =>
-          d.id === depositId ? { ...d, status: 'approved', reviewedBy: 'admin1' } : d
-        ),
-      };
-    });
+  approveDeposit: async (depositId, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/approve`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+      }
+    } catch (error) {
+      console.error('Error approving deposit:', error);
+    }
   },
 
-  rejectDeposit: (depositId) => {
-    set((state) => ({
-      deposits: state.deposits.map((d) =>
-        d.id === depositId ? { ...d, status: 'rejected', reviewedBy: 'admin1' } : d
-      ),
-    }));
+  rejectDeposit: async (depositId, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/reject`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+      }
+    } catch (error) {
+      console.error('Error rejecting deposit:', error);
+    }
   },
 
-  approveWithdrawal: (withdrawalId) => {
-    set((state) => {
-      const withdrawal = state.withdrawals.find((w) => w.id === withdrawalId);
-      if (!withdrawal) return {};
-      return {
-        pendingWithdrawals: Math.max(0, state.pendingWithdrawals - withdrawal.amount),
-        withdrawals: state.withdrawals.map((w) =>
-          w.id === withdrawalId ? { ...w, status: 'approved', reviewedBy: 'admin1', paidAt: new Date().toISOString() } : w
-        ),
-      };
-    });
+  approveWithdrawal: async (withdrawalId, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/approve`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+      }
+    } catch (error) {
+      console.error('Error approving withdrawal:', error);
+    }
   },
 
-  rejectWithdrawal: (withdrawalId) => {
-    set((state) => {
-      const withdrawal = state.withdrawals.find((w) => w.id === withdrawalId);
-      if (!withdrawal) return {};
-      return {
-        availableBalance: state.availableBalance + withdrawal.amount,
-        pendingWithdrawals: Math.max(0, state.pendingWithdrawals - withdrawal.amount),
-        withdrawals: state.withdrawals.map((w) =>
-          w.id === withdrawalId ? { ...w, status: 'rejected', reviewedBy: 'admin1' } : w
-        ),
-      };
-    });
+  rejectWithdrawal: async (withdrawalId, userId = 'u1') => {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/reject`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        await get().fetchWalletData(userId);
+      }
+    } catch (error) {
+      console.error('Error rejecting withdrawal:', error);
+    }
   },
 }));
 
