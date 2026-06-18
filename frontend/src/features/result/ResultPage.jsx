@@ -33,7 +33,7 @@ export default function ResultPage() {
       <div style={{ maxWidth: 600, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{matchResult.isWinner ? '🏆' : '😤'}</div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: matchResult.isWinner ? 'var(--accent-green)' : '#f87171', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: matchResult.isWinner ? 'var(--accent-green)' : '#dc2626', marginBottom: '0.5rem' }}>
             {matchResult.isWinner ? 'You Won!' : 'You Lost'}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
@@ -52,7 +52,7 @@ export default function ResultPage() {
             <PrizeBreakdown entryFee={matchResult.entryFee} rake={matchResult.rake} prize={matchResult.prize} isWinner={matchResult.isWinner} />
           </Card>
 
-          <Card style={{ background: 'rgba(255,255,255,0.02)' }}>
+          <Card style={{ background: 'rgba(0,0,0,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Match ID</p>

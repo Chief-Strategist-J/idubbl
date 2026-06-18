@@ -27,8 +27,8 @@ export default function AdminDashboardHome() {
       </div>
 
       {(pendingDeposits > 0 || pendingWithdrawals > 0) && (
-        <Card style={{ marginBottom: '1.5rem', borderColor: 'rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.04)' }}>
-          <p style={{ color: '#fbbf24', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
+        <Card style={{ marginBottom: '1.5rem', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.05)' }}>
+          <p style={{ color: '#b45309', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {pendingDeposits > 0 && `${pendingDeposits} deposit request(s) awaiting review. `}
             {pendingWithdrawals > 0 && `${pendingWithdrawals} withdrawal request(s) awaiting approval.`}
@@ -60,7 +60,7 @@ export default function AdminDashboardHome() {
               { label: 'Match M-001 completed', time: '25m ago', type: 'match' },
               { label: 'Withdrawal request from Alex Storm', time: '1h ago', type: 'withdrawal' },
             ].map((e, i) => (
-              <div key={i} style={{ padding: '0.6rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between' }}>
+              <div key={i} style={{ padding: '0.6rem 0', borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{e.label}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{e.time}</span>
               </div>

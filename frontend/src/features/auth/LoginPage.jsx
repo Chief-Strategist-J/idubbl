@@ -39,7 +39,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <Input label="Email" type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required />
             <Input label="Password" type="password" name="password" value={form.password} onChange={handleChange} placeholder="••••••••" required />
-            {error && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
             <Button type="submit" loading={loading} fullWidth>Log in</Button>
           </form>
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
             <Link to="/signup" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Create account</Link>
           </div>
 
-          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(139,92,246,0.06)', borderRadius: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--primary-glow)', borderRadius: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             <strong style={{ color: 'var(--text-secondary)' }}>Demo accounts:</strong><br />
             Player: alex@demo.com · Admin: admin@idubbl.com<br />
             (any password works)

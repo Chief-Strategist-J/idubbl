@@ -63,14 +63,14 @@ export default function RecentMatches() {
           <tbody>
             {rows.map((row, i) => (
               <tr key={row.id || i}>
-                <td>#{row.refId || `M${i + 1}`}</td>
-                <td>{row.tier}</td>
+                <td><code style={{ fontSize: '0.85rem', fontWeight: 500 }}>#{row.refId || `M${i + 1}`}</code></td>
+                <td style={{ textTransform: 'capitalize', fontWeight: 500 }}>{row.tier}</td>
                 <td>{row.opponent}</td>
                 <td><Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} /></td>
-                <td>
+                <td style={{ fontWeight: 600 }}>
                   {row.winnerId === 'u1'
                     ? <span style={{ color: 'var(--accent-green)' }}>+{row.prize} USDT</span>
-                    : <span style={{ color: '#f87171' }}>-{row.entryFee} USDT</span>
+                    : <span style={{ color: '#dc2626' }}>-{row.entryFee} USDT</span>
                   }
                 </td>
               </tr>

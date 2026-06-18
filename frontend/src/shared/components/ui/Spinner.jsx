@@ -10,7 +10,7 @@ export default function Spinner({ size = 'md', color = 'var(--primary)' }) {
         display: 'inline-block',
         width: px,
         height: px,
-        border: `2px solid rgba(255,255,255,0.15)`,
+        border: `2px solid rgba(0,0,0,0.08)`,
         borderTopColor: color,
         borderRadius: '50%',
         animation: 'spin 0.7s linear infinite',

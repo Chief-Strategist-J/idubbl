@@ -58,7 +58,7 @@ export default function DashboardPage() {
             <QuickActions />
           </Card>
 
-          <Card style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.06), rgba(16,185,129,0.06))' }}>
+          <Card style={{ background: 'linear-gradient(135deg, rgba(8, 145, 178, 0.06), rgba(5, 150, 105, 0.06))' }}>
             <h3 className="dash-section-title">Win / Loss Summary</h3>
             <div className="win-loss-row">
               <div className="win-loss-stat">
@@ -67,7 +67,7 @@ export default function DashboardPage() {
               </div>
               <div className="win-loss-divider" />
               <div className="win-loss-stat">
-                <p className="win-loss-number" style={{ color: '#f87171' }}>1</p>
+                <p className="win-loss-number" style={{ color: '#dc2626' }}>1</p>
                 <p className="win-loss-label">Losses</p>
               </div>
               <div className="win-loss-divider" />

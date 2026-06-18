@@ -79,9 +79,9 @@ export default function LuckyWheel({ onAnswer, answered }) {
           width: 0, height: 0,
           borderLeft: '10px solid transparent',
           borderRight: '10px solid transparent',
-          borderTop: '22px solid white',
+          borderTop: '22px solid var(--text-primary)',
           zIndex: 3,
-          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
         }} />
 
         {/* Spinning disc */}
@@ -91,8 +91,8 @@ export default function LuckyWheel({ onAnswer, answered }) {
           background: `conic-gradient(${conicGrad})`,
           transform: `rotate(${rotation}deg)`,
           transition: spinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.08, 1)' : 'none',
-          border: '5px solid rgba(255,255,255,0.15)',
-          boxShadow: '0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.3)',
+          border: '5px solid var(--border)',
+          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.1), inset 0 0 10px rgba(0,0,0,0.05)',
           position: 'relative',
         }}>
           {/* Segment divider lines */}
@@ -138,9 +138,9 @@ export default function LuckyWheel({ onAnswer, answered }) {
             transform: 'translate(-50%, -50%)',
             width: 28, height: 28, borderRadius: '50%',
             background: 'var(--bg-darker)',
-            border: '3px solid rgba(255,255,255,0.25)',
+            border: '3px solid var(--border)',
             zIndex: 2,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.6)',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
           }} />
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function LuckyWheel({ onAnswer, answered }) {
             <span style={{ fontWeight: 700, color: result.color, fontSize: '0.9rem' }}>{result.label}</span>
           </div>
           <p style={{
-            color: resultIndex === targetIndex ? 'var(--accent-green)' : '#f87171',
+            color: resultIndex === targetIndex ? 'var(--accent-green)' : '#dc2626',
             fontWeight: 600, fontSize: '0.9rem',
           }}>
             {resultIndex === targetIndex ? '✓ Landed on target!' : `✗ Missed — landed on ${result.label}`}

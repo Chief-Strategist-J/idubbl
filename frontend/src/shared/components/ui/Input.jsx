@@ -42,7 +42,7 @@ export default function Input({
           }}
         />
       </div>
-      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: 4 }}>{error}</p>}
+      {error && <p style={{ color: '#dc2626', fontSize: '0.8rem', marginTop: 4 }}>{error}</p>}
       {hint && !error && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>{hint}</p>}
     </div>
   );
