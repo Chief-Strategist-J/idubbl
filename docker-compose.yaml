@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: idubbl-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - idubbl-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: idubbl-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - BETTER_AUTH_SECRET=SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME
+    depends_on:
+      - mongodb
+    networks:
+      - idubbl-network
+
+volumes:
+  mongo-data:
+
+networks:
+  idubbl-network:
+    driver: bridge

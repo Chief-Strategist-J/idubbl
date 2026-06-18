@@ -1,0 +1,30 @@
+app:
+  port: 5000
+  url: "http://localhost:5000"
+
+auth:
+  active: "better-auth"
+  providers:
+    better-auth:
+      secret: "SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME"
+      database:
+        provider: "mongodb"
+        url: "mongodb://mongodb:27017/idubbl"
+      options:
+        emailAndPassword:
+          enabled: true
+
+payments:
+  active: "flutterwave"
+  gateways:
+    flutterwave:
+      secretKey: "FLWSECK-your-test-secret-key"
+      publicKey: "FLWPUBK-your-test-public-key"
+      encryptionKey: "your-encryption-key"
+      baseUrl: "https://api.flutterwave.com/v3"
+      redirectUrl: "http://localhost:5000/api/payment/callback/flutterwave"
+    juspay:
+      apiKey: "your-juspay-api-key"
+      merchantId: "your-juspay-merchant-id"
+      baseUrl: "https://sandbox.juspay.in"
+      returnUrl: "http://localhost:5000/api/payment/callback/juspay"

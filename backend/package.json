@@ -12,8 +12,14 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@better-auth/mongo-adapter": "^1.6.19",
+    "better-auth": "^1.6.19",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "js-yaml": "^4.2.0",
+    "mongodb": "^7.3.0",
+    "node-fetch": "^3.3.2",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
