@@ -9,7 +9,7 @@ async function getOrCreateWallet(db, userId) {
   if (!wallet) {
     wallet = {
       userId,
-      availableBalance: 500, // Default signup balance
+      availableBalance: 1000, // Default signup balance
       lockedBalance: 5,
       pendingWithdrawals: 18,
       createdAt: new Date(),
