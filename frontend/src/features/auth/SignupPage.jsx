@@ -22,16 +22,23 @@ export default function SignupPage() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
-    setTimeout(() => {
-      signup(form);
+    try {
+      const result = await signup(form);
       setLoading(false);
-      navigate('/dashboard');
-    }, 700);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: result.error });
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrors({ submit: 'An error occurred during signup.' });
+    }
   };
 
   return (
@@ -56,6 +63,7 @@ export default function SignupPage() {
             <Input label="Confirm password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
             <Input label="Referral code (optional)" name="referral" value={form.referral} onChange={handleChange} placeholder="FRIEND123" />
 
+            {errors.submit && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{errors.submit}</p>}
             <Button type="submit" loading={loading} fullWidth>Create account</Button>
           </form>
 

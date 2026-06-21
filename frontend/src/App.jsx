@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './shared/store/authStore.js';
 
@@ -36,6 +36,12 @@ function AdminRoute({ children }) {
 }
 
 export default function App() {
+  const { checkSession } = useAuthStore();
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
   return (
     <BrowserRouter>
       <Routes>

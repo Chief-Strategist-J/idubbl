@@ -12,19 +12,22 @@ export default function LoginPage() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const result = login(form.email, form.password);
+    try {
+      const result = await login(form.email, form.password);
       setLoading(false);
       if (result.success) {
         navigate(result.role === 'admin' ? '/admin' : '/dashboard');
       } else {
         setError(result.error);
       }
-    }, 600);
+    } catch (err) {
+      setLoading(false);
+      setError('An error occurred. Please try again.');
+    }
   };
 
   return (
