@@ -16,6 +16,8 @@ services:
         generateValue: true
       - key: MONGODB_URI
         sync: false # User will input their MongoDB Atlas URI in the Render dashboard
+      - key: RESEND_API_KEY
+        sync: false # User will input their Resend API key in the Render dashboard
 
   # Frontend Service (Static Site)
   - type: web
