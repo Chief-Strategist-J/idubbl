@@ -24,6 +24,10 @@ if (process.env.BETTER_AUTH_SECRET && config.auth?.providers?.['better-auth']) {
   config.auth.providers['better-auth'].secret = process.env.BETTER_AUTH_SECRET;
 }
 
+if (process.env.MONGODB_URI && config.auth?.providers?.['better-auth']?.database) {
+  config.auth.providers['better-auth'].database.url = process.env.MONGODB_URI;
+}
+
 if (process.env.FLW_SECRET_KEY && config.payments?.gateways?.flutterwave) {
   config.payments.gateways.flutterwave.secretKey = process.env.FLW_SECRET_KEY;
 }

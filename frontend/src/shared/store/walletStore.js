@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-const BASE_URL = 'http://localhost:5000/api/wallet';
+const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wallet`;
 
 const useWalletStore = create((set, get) => ({
   availableBalance: 0,
