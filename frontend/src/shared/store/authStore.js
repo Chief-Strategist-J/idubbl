@@ -81,6 +81,46 @@ const useAuthStore = create((set) => ({
     }
   },
 
+  forgotPassword: async (email, redirectTo) => {
+    try {
+      const res = await fetch(`${AUTH_API}/forget-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, redirectTo })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true };
+      }
+      return { success: false, error: data.message || 'Failed to request password reset' };
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      return { success: false, error: 'Network error requesting password reset' };
+    }
+  },
+
+  resetPassword: async (newPassword, token) => {
+    try {
+      const res = await fetch(`${AUTH_API}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newPassword, token })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true };
+      }
+      return { success: false, error: data.message || 'Failed to reset password' };
+    } catch (err) {
+      console.error('Reset password error:', err);
+      return { success: false, error: 'Network error resetting password' };
+    }
+  },
+
   logout: async () => {
     try {
       await fetch(`${AUTH_API}/sign-out`, {

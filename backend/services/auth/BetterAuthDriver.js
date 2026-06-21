@@ -28,6 +28,13 @@ export class BetterAuthDriver extends AuthDriver {
         }),
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
+          sendResetPassword: async ({ user, url, token }) => {
+            console.log('--------------------------------------------------');
+            console.log(`[PASSWORD RESET] For user: ${user.email}`);
+            console.log(`[PASSWORD RESET] Token: ${token}`);
+            console.log(`[PASSWORD RESET] Link: ${url}`);
+            console.log('--------------------------------------------------');
+          }
         },
       };
 

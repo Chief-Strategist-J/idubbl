@@ -1,16 +1,32 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
+import useAuthStore from '../../shared/store/authStore.js';
 
 export default function ForgotPasswordPage() {
+  const { forgotPassword } = useAuthStore();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setSent(true); setLoading(false); }, 700);
+    setError('');
+    try {
+      const redirectTo = `${window.location.origin}/reset-password`;
+      const res = await forgotPassword(email, redirectTo);
+      setLoading(false);
+      if (res.success) {
+        setSent(true);
+      } else {
+        setError(res.error);
+      }
+    } catch (err) {
+      setLoading(false);
+      setError('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -34,6 +50,7 @@ export default function ForgotPasswordPage() {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>Enter your email and we will send a reset link.</p>
               <form onSubmit={handleSubmit}>
                 <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                {error && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
                 <Button type="submit" loading={loading} fullWidth>Send reset link</Button>
               </form>
               <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>

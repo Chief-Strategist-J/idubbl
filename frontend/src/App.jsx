@@ -6,6 +6,7 @@ import LandingPage from './features/landing/LandingPage.jsx';
 import LoginPage from './features/auth/LoginPage.jsx';
 import SignupPage from './features/auth/SignupPage.jsx';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './features/auth/ResetPasswordPage.jsx';
 import DashboardPage from './features/dashboard/DashboardPage.jsx';
 import DepositPage from './features/deposit/DepositPage.jsx';
 import LobbyPage from './features/lobby/LobbyPage.jsx';
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/deposit" element={<ProtectedRoute><DepositPage /></ProtectedRoute>} />
