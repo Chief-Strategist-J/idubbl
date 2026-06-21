@@ -14,6 +14,8 @@ services:
         value: production
       - key: BETTER_AUTH_URL
         value: https://idubbl-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://idubbl-frontend.onrender.com
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: MONGODB_URI

@@ -1,5 +1,6 @@
 import express from 'express';
 import { paymentService } from '../services/index.js';
+import { getDb } from '../services/db.js';
 
 const router = express.Router();
 
@@ -58,15 +59,51 @@ router.get('/callback/flutterwave', async (req, res) => {
   const { transaction_id, status, tx_ref } = req.query;
   console.log(`Flutterwave callback: ID=${transaction_id}, Status=${status}, Ref=${tx_ref}`);
   
+  const frontendUrl = process.env.FRONTEND_URL || 'https://idubbl-frontend.onrender.com';
+
   if (status === 'successful' || status === 'completed') {
     try {
       const verification = await paymentService.verifyPayment(transaction_id);
-      return res.send(`Payment Success! Reference: ${verification.orderId}`);
+      
+      const db = await getDb();
+      // Find the user by their email
+      const userEmail = verification.rawResponse?.data?.customer?.email;
+      if (userEmail) {
+        const user = await db.collection('user').findOne({ email: userEmail });
+        if (user) {
+          const userId = user.id || user._id.toString();
+          
+          // Credit the wallet
+          await db.collection('wallets').updateOne(
+            { userId: userId },
+            { 
+              $inc: { availableBalance: Number(verification.amount) },
+              $setOnInsert: { lockedBalance: 0, pendingWithdrawals: 0, createdAt: new Date() }
+            },
+            { upsert: true }
+          );
+
+          // Log the transaction
+          await db.collection('transactions').insertOne({
+            userId: userId,
+            amount: Number(verification.amount),
+            status: 'approved',
+            type: 'deposit',
+            method: 'flutterwave',
+            txHash: transaction_id,
+            note: `Flutterwave Deposit Ref: ${verification.orderId}`,
+            createdAt: new Date(),
+          });
+        }
+      }
+
+      return res.redirect(`${frontendUrl}/transactions?payment=success&ref=${verification.orderId}`);
     } catch (err) {
-      return res.status(500).send(`Payment verified failed: ${err.message}`);
+      console.error('Callback processing failed:', err);
+      return res.redirect(`${frontendUrl}/transactions?payment=failed&error=${encodeURIComponent(err.message)}`);
     }
   }
-  res.send(`Payment incomplete. Status: ${status}`);
+  return res.redirect(`${frontendUrl}/transactions?payment=failed&status=${status}`);
 });
 
 // Callback redirect route for Juspay
