@@ -18,11 +18,13 @@ services:
         sync: false # User will input their MongoDB Atlas URI in the Render dashboard
 
   # Frontend Service (Static Site)
-  - type: static
+  - type: web
     name: idubbl-frontend
+    runtime: static
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         fromService:
