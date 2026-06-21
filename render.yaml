@@ -2,26 +2,24 @@ services:
   # Backend Service
   - type: web
     name: idubbl-backend
-    runtime: node
+    env: node
     plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: PORT
-        value: 5000
+        value: "5000"
       - key: NODE_ENV
         value: production
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: MONGODB_URI
-        sync: false # User needs to input their MongoDB Atlas Connection URI in the Render dashboard
+        sync: false # User will input their MongoDB Atlas URI in the Render dashboard
 
   # Frontend Service (Static Site)
-  - type: web
+  - type: static
     name: idubbl-frontend
-    runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     publishDir: dist
