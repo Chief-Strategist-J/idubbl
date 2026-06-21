@@ -9,11 +9,7 @@ router.use(async (req, res, next) => {
     await authService.handleRequest(req, res);
   } catch (error) {
     console.error('Error handling auth request:', error);
-    res.status(500).json({ 
-      error: 'Authentication service error',
-      message: error.message,
-      stack: error.stack
-    });
+    res.status(500).json({ error: 'Authentication service error' });
   }
 });
 
