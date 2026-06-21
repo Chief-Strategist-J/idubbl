@@ -49,11 +49,6 @@ export default function LoginPage() {
             <Link to="/signup" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Create account</Link>
           </div>
 
-          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(139,92,246,0.06)', borderRadius: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <strong style={{ color: 'var(--text-secondary)' }}>Demo accounts:</strong><br />
-            Player: alex@demo.com · Admin: admin@idubbl.com<br />
-            (any password works)
-          </div>
         </Card>
       </div>
     </div>
