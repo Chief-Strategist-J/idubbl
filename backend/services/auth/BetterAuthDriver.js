@@ -26,6 +26,12 @@ export class BetterAuthDriver extends AuthDriver {
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+        trustedOrigins: [
+          'https://idubbl-frontend.onrender.com',
+          'http://localhost:5173',
+          'http://localhost:3000'
+        ],
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
           sendResetPassword: async ({ user, url, token }) => {
