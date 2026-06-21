@@ -28,7 +28,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: idubbl-backend
-          property: host
+        sync: false # User will copy the backend's public URL from Render (e.g. https://idubbl-backend.onrender.com) and paste it here
