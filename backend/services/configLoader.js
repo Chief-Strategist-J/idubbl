@@ -34,6 +34,9 @@ if (process.env.FLW_SECRET_KEY && config.payments?.gateways?.flutterwave) {
 if (process.env.FLW_PUBLIC_KEY && config.payments?.gateways?.flutterwave) {
   config.payments.gateways.flutterwave.publicKey = process.env.FLW_PUBLIC_KEY;
 }
+if (process.env.FLW_ENCRYPTION_KEY && config.payments?.gateways?.flutterwave) {
+  config.payments.gateways.flutterwave.encryptionKey = process.env.FLW_ENCRYPTION_KEY;
+}
 
 if (process.env.JUSPAY_API_KEY && config.payments?.gateways?.juspay) {
   config.payments.gateways.juspay.apiKey = process.env.JUSPAY_API_KEY;
