@@ -28,7 +28,10 @@ export default function FiatDepositForm() {
     setLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      let apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+        apiBase = `https://${apiBase}`;
+      }
       const response = await fetch(`${apiBase}/api/payment/create`, {
         method: 'POST',
         headers: {
