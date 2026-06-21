@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import useAuthStore from './authStore.js';
 
 let apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
@@ -16,18 +17,20 @@ const useWalletStore = create((set, get) => ({
   loading: false,
 
   // Fetch balance and transactions from the backend API
-  fetchWalletData: async (userId = 'u1') => {
+  fetchWalletData: async (userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
+    if (!currentUserId) return;
     set({ loading: true });
     try {
       // Fetch Balance
       const balRes = await fetch(`${BASE_URL}/balance`, {
-        headers: { 'x-user-id': userId }
+        headers: { 'x-user-id': currentUserId }
       });
       const balance = await balRes.json();
 
       // Fetch Transactions
       const txRes = await fetch(`${BASE_URL}/transactions`, {
-        headers: { 'x-user-id': userId }
+        headers: { 'x-user-id': currentUserId }
       });
       const transactions = await txRes.json();
 
@@ -67,19 +70,21 @@ const useWalletStore = create((set, get) => ({
     set({ availableBalance: availableBalance + amount, lockedBalance: Math.max(0, lockedBalance - (amount / 2)) });
   },
 
-  submitDeposit: async (data, userId = 'u1') => {
+  submitDeposit: async (data, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
+    if (!currentUserId) return { success: false, error: 'User session not found' };
     try {
       const response = await fetch(`${BASE_URL}/deposit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId
+          'x-user-id': currentUserId
         },
         body: JSON.stringify(data),
       });
       
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
         return { success: true };
       }
       const errData = await response.json();
@@ -90,13 +95,15 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  submitWithdrawal: async (data, userId = 'u1') => {
+  submitWithdrawal: async (data, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
+    if (!currentUserId) return { success: false, error: 'User session not found' };
     try {
       const response = await fetch(`${BASE_URL}/withdraw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId
+          'x-user-id': currentUserId
         },
         body: JSON.stringify({
           amount: data.amount,
@@ -106,7 +113,7 @@ const useWalletStore = create((set, get) => ({
       });
 
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
         return { success: true };
       }
       const errData = await response.json();
@@ -117,52 +124,56 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  approveDeposit: async (depositId, userId = 'u1') => {
+  approveDeposit: async (depositId, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/approve`, {
         method: 'POST'
       });
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
       }
     } catch (error) {
       console.error('Error approving deposit:', error);
     }
   },
 
-  rejectDeposit: async (depositId, userId = 'u1') => {
+  rejectDeposit: async (depositId, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/reject`, {
         method: 'POST'
       });
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
       }
     } catch (error) {
       console.error('Error rejecting deposit:', error);
     }
   },
 
-  approveWithdrawal: async (withdrawalId, userId = 'u1') => {
+  approveWithdrawal: async (withdrawalId, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/approve`, {
         method: 'POST'
       });
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
       }
     } catch (error) {
       console.error('Error approving withdrawal:', error);
     }
   },
 
-  rejectWithdrawal: async (withdrawalId, userId = 'u1') => {
+  rejectWithdrawal: async (withdrawalId, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/reject`, {
         method: 'POST'
       });
       if (response.ok) {
-        await get().fetchWalletData(userId);
+        await get().fetchWalletData(currentUserId);
       }
     } catch (error) {
       console.error('Error rejecting withdrawal:', error);
