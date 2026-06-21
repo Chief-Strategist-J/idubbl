@@ -212,4 +212,40 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
   }
 });
 
+// 8. Admin Reject Withdrawal
+router.post('/admin/withdraw/:id/reject', async (req, res) => {
+  const { id } = req.params;
+  const { ObjectId } = await import('mongodb');
+
+  try {
+    const db = await getDb();
+    const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
+    if (!tx || tx.status !== 'pending') {
+      return res.status(404).json({ error: 'Pending withdrawal not found' });
+    }
+
+    // Mark transaction as rejected
+    await db.collection('transactions').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'rejected', reviewedBy: 'admin1', rejectedAt: new Date() } }
+    );
+
+    // Return funds: deduct pending, credit available balance
+    await db.collection('wallets').updateOne(
+      { userId: tx.userId },
+      { 
+        $inc: { 
+          pendingWithdrawals: -tx.amount,
+          availableBalance: tx.amount 
+        } 
+      }
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error rejecting withdrawal:', error);
+    res.status(500).json({ error: 'Database error rejecting withdrawal' });
+  }
+});
+
 export default router;
