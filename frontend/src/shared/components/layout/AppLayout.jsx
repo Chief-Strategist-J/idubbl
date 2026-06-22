@@ -27,8 +27,9 @@ export default function AppLayout({ children }) {
   return (
     <div className="app-container">
       <header className="header">
-        <div className="logo" onClick={() => navigate('/dashboard')}>
-          <span>i</span>Dubbl
+        <div className="logo" onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
+          iDubbl
         </div>
 
         {/* Desktop-only navigation */}
