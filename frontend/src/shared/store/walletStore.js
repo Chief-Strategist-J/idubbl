@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import useAuthStore from './authStore.js';
 
-let apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
   apiBase = `https://${apiBase}`;
 }
