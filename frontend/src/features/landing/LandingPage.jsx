@@ -10,9 +10,8 @@ export default function LandingPage() {
   return (
     <div className="app-container">
       <header className="header">
-        <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
-          iDubbl
+        <div className="logo">
+          <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
         </div>
         <div className="header-actions">
           <button className="nav-btn" onClick={() => navigate('/login')}>Log in</button>

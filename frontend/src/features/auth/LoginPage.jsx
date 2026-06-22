@@ -33,9 +33,8 @@ export default function LoginPage() {
   return (
     <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
       <div style={{ width: '100%', maxWidth: 420, padding: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '80px', height: '80px', borderRadius: '16px', marginBottom: '0.75rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
-          <div className="logo" style={{ fontSize: '1.8rem' }}>iDubbl</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '120px', height: '120px', borderRadius: '24px', boxShadow: '0 6px 20px rgba(0,0,0,0.4)' }} />
         </div>
 
         <Card>

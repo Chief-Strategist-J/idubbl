@@ -28,9 +28,9 @@ export default function AdminLayout({ children }) {
     <div className="admin-shell">
       {/* Mobile top bar */}
       <header className="admin-mobile-bar">
-        <div className="logo" style={{ fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => goTo('/admin')}>
-          <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
-          iDubbl <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>Admin</span>
+        <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => goTo('/admin')}>
+          <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '36px', borderRadius: '6px' }} />
+          <span style={{ fontSize: '0.65rem', background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-sans)' }}>Admin</span>
         </div>
         <button
           className="hamburger-btn"
@@ -50,9 +50,8 @@ export default function AdminLayout({ children }) {
         {/* Sidebar */}
         <aside className={`admin-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className="logo admin-sidebar-logo" onClick={() => goTo('/admin')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <img src="/black-logo.jpeg" alt="iDubbl" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
-            iDubbl{' '}
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>Admin</span>
+            <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
+            <span style={{ fontSize: '0.7rem', background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-sans)' }}>Admin</span>
           </div>
 
           <nav style={{ flex: 1 }}>
