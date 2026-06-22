@@ -11,13 +11,13 @@ export default function LandingPage() {
     <div className="app-container">
       <header className="header">
         <div className="logo">iDubbl</div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="header-actions">
           <button className="nav-btn" onClick={() => navigate('/login')}>Log in</button>
           <button className="btn-primary" onClick={() => navigate('/signup')} style={{ padding: '0.5rem 1.25rem' }}>Sign up</button>
         </div>
       </header>
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+      <main className="landing-main">
         <HeroSection />
         <HowItWorks />
         <TrustPoints />

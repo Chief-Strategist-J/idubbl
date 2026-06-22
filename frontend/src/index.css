@@ -1922,3 +1922,186 @@ body {
     padding: 0.6rem 0.75rem;
   }
 }
+
+/* Landing Page Styles */
+.landing-main {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .landing-main {
+    padding: 0 1rem;
+  }
+}
+
+/* Header actions responsive */
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    gap: 0.5rem;
+  }
+  .header-actions .btn-primary {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.875rem !important;
+  }
+  .header-actions .nav-btn {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Hero Section responsive */
+.hero-section {
+  text-align: center;
+  padding: 5rem 1rem 3rem;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 0.5rem 2rem;
+  }
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 0.25rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+
+.hero-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  max-width: 520px;
+  margin: 0 auto 0.75rem;
+  line-height: 1.5;
+}
+
+.hero-desc {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 480px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  .hero-desc {
+    font-size: 0.875rem;
+    margin-bottom: 1.75rem;
+  }
+}
+
+.hero-actions-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .hero-actions-container {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  .hero-actions-container button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* How It Works Section responsive */
+.how-it-works-section {
+  padding: 4rem 1rem;
+}
+
+@media (max-width: 768px) {
+  .how-it-works-section {
+    padding: 2.5rem 0;
+  }
+}
+
+.how-it-works-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+@media (max-width: 768px) {
+  .how-it-works-title {
+    margin-bottom: 1.75rem;
+    font-size: 1.6rem;
+  }
+}
+
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .how-it-works-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Trust Points Section responsive */
+.trust-points-section {
+  padding: 2rem 1rem 5rem;
+}
+
+@media (max-width: 768px) {
+  .trust-points-section {
+    padding: 1rem 0 3rem;
+  }
+}
+
+.trust-points-container {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.trust-point-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1 1 220px;
+}
+
+@media (max-width: 600px) {
+  .trust-points-container {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .trust-point-card {
+    flex: 1 1 100%;
+  }
+}
+

@@ -8,12 +8,12 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" style={{ padding: '4rem 1rem' }}>
-      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, textAlign: 'center', marginBottom: '3rem' }}>
+    <section id="how-it-works" className="how-it-works-section">
+      <h2 className="how-it-works-title">
         How iDubbl Works
       </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', maxWidth: 900, margin: '0 auto' }}>
+      <div className="how-it-works-grid">
         {STEPS.map((s) => (
           <div key={s.step} className="glass-card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{s.icon}</div>
