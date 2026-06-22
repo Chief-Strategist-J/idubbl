@@ -987,78 +987,223 @@ body {
 }
 
 /* ── Balance Widget ── */
-.balance-widget {
-  background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(236,72,153,0.08)) !important;
-}
-
-.balance-widget-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.balance-main {}
-
-.balance-label {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin-bottom: 0.4rem;
-}
-
-.balance-amount {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--accent-cyan);
-  line-height: 1.1;
-}
-
-.balance-unit {
-  font-size: 1rem;
-  color: var(--text-muted);
-}
-
-.balance-sub {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  margin-top: 4px;
-}
-
-.balance-stats {
+/* ── Premium Holographic Balance Card ── */
+.balance-card-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 160px;
-}
-
-.balance-stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1rem;
+  width: 100%;
 }
 
-.balance-stat-label {
+.balance-hologram-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(20, 15, 41, 0.9) 0%, rgba(30, 20, 60, 0.8) 100%);
+  border: 1.5px solid rgba(139, 92, 246, 0.25);
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.balance-hologram-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(236, 72, 153, 0.4);
+  box-shadow: 0 15px 35px rgba(139, 92, 246, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.card-mesh {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 10% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.card-chip {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.75rem;
+  opacity: 0.85;
+}
+
+.chip-icon {
+  color: var(--accent-cyan);
+  filter: drop-shadow(0 0 8px var(--accent-cyan-glow));
+}
+
+.card-brand {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   color: var(--text-muted);
+}
+
+.card-balance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-balance-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.balance-stat-val {
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green-glow);
+  display: inline-block;
+}
+
+.card-balance-amount {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.currency-symbol {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin-right: 0.25rem;
+  font-weight: 500;
+}
+
+.currency-unit {
+  font-size: 1.125rem;
+  color: var(--accent-cyan);
+  margin-left: 0.5rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  letter-spacing: 0.5px;
 }
 
-.balance-stat-val.locked { color: #fbbf24; }
-.balance-stat-val.pending { color: #f87171; }
+.card-balance-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
 
-.balance-actions {
+.card-footer-details {
+  display: flex;
+  gap: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.25rem;
+}
+
+.card-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  flex: 1;
+}
+
+.stat-pill-icon {
+  flex-shrink: 0;
+}
+
+.locked-color {
+  color: #fbbf24;
+}
+
+.pending-color {
+  color: #f87171;
+}
+
+.rotating {
+  animation: card-spin 8s linear infinite;
+}
+
+@keyframes card-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.stat-pill-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.card-quick-actions {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
+  width: 100%;
 }
+
+.card-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+.card-action-btn.primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+  color: white;
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.card-action-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+.card-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.card-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-secondary);
+}
+
 
 /* ── Quick Actions ── */
 .quick-actions-grid {
@@ -1068,6 +1213,10 @@ body {
 }
 
 .quick-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.85rem 0.75rem;
   border-radius: 10px;
   font-family: var(--font-sans);
@@ -1078,6 +1227,16 @@ body {
   border: none;
   text-align: center;
 }
+
+.quick-action-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.quick-action-btn:hover .quick-action-icon {
+  transform: scale(1.1);
+}
+
 
 .quick-action-primary {
   background: linear-gradient(135deg, var(--primary), #7c3aed);
@@ -1285,39 +1444,24 @@ body {
     gap: 1rem;
   }
 
-  /* Balance widget stacks amount + stats vertically */
-  .balance-widget-top {
-    flex-direction: column;
+  /* Balance card updates for mobile */
+  .card-balance-amount {
+    font-size: 2.25rem;
   }
 
-  .balance-amount {
-    font-size: 2rem;
-  }
-
-  .balance-stats {
-    width: 100%;
+  .card-footer-details {
     flex-direction: row;
-    flex-wrap: wrap;
     gap: 0.75rem;
-    min-width: unset;
   }
 
-  .balance-stat-row {
-    flex: 1 1 140px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+  .card-stat-pill {
+    padding: 0.4rem 0.6rem;
   }
 
-  .balance-actions {
-    flex-direction: row;
+  .stat-value {
+    font-size: 0.75rem;
   }
 
-  .balance-actions > * {
-    flex: 1;
-    text-align: center;
-    justify-content: center;
-  }
 
   /* Quick actions full width grid */
   .quick-actions-grid {

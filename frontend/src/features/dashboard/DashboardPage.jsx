@@ -12,7 +12,7 @@ import useWalletStore from '../../shared/store/walletStore.js';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { queueStatus, currentTier, leaveQueue } = useMatchStore();
+  const { queueStatus, currentTier, leaveQueue, matches } = useMatchStore();
   const { fetchWalletData } = useWalletStore();
 
   useEffect(() => {
@@ -20,6 +20,12 @@ export default function DashboardPage() {
       fetchWalletData(user.id);
     }
   }, [user?.id, fetchWalletData]);
+
+  // Compute live win/loss stats
+  const completedMatches = matches.filter((m) => m.status === 'completed');
+  const wins = completedMatches.filter((m) => m.winnerId === 'u1').length;
+  const losses = completedMatches.length - wins;
+  const winRate = completedMatches.length > 0 ? Math.round((wins / completedMatches.length) * 100) : 0;
 
   return (
     <AppLayout>
@@ -62,17 +68,17 @@ export default function DashboardPage() {
             <h3 className="dash-section-title">Win / Loss Summary</h3>
             <div className="win-loss-row">
               <div className="win-loss-stat">
-                <p className="win-loss-number" style={{ color: 'var(--accent-green)' }}>1</p>
+                <p className="win-loss-number" style={{ color: 'var(--accent-green)' }}>{wins}</p>
                 <p className="win-loss-label">Wins</p>
               </div>
               <div className="win-loss-divider" />
               <div className="win-loss-stat">
-                <p className="win-loss-number" style={{ color: '#f87171' }}>1</p>
+                <p className="win-loss-number" style={{ color: '#f87171' }}>{losses}</p>
                 <p className="win-loss-label">Losses</p>
               </div>
               <div className="win-loss-divider" />
               <div className="win-loss-stat">
-                <p className="win-loss-number" style={{ color: 'var(--accent-cyan)' }}>50%</p>
+                <p className="win-loss-number" style={{ color: 'var(--accent-cyan)' }}>{winRate}%</p>
                 <p className="win-loss-label">Win rate</p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../shared/components/ui/index.js';
+import { Wallet, Plus, ArrowUpRight, Lock, RefreshCw, Coins } from 'lucide-react';
 import useWalletStore from '../../../shared/store/walletStore.js';
 
 export default function BalanceWidget() {
@@ -8,35 +8,60 @@ export default function BalanceWidget() {
   const { availableBalance, lockedBalance, pendingWithdrawals } = useWalletStore();
 
   return (
-    <div className="balance-widget glass-card">
-      {/* Top row: available balance + mini stats */}
-      <div className="balance-widget-top">
-        <div className="balance-main">
-          <p className="balance-label">Available Balance</p>
-          <p className="balance-amount">
-            {availableBalance.toFixed(2)}
-            <span className="balance-unit"> USDT</span>
+    <div className="balance-card-wrapper">
+      <div className="balance-hologram-card">
+        {/* Card Decorative elements */}
+        <div className="card-mesh" />
+        <div className="card-chip">
+          <Coins className="chip-icon" size={24} />
+        </div>
+        <div className="card-brand">USDT Wallet</div>
+
+        {/* Available Balance */}
+        <div className="card-balance-section">
+          <p className="card-balance-label">
+            <span className="live-dot" /> Available Balance
           </p>
-          <p className="balance-sub">Credits ready to play.</p>
+          <div className="card-balance-amount">
+            <span className="currency-symbol">$</span>
+            {availableBalance.toFixed(2)}
+            <span className="currency-unit"> USDT</span>
+          </div>
+          <p className="card-balance-desc">Ready to play instantly</p>
         </div>
 
-        <div className="balance-stats">
-          <div className="balance-stat-row">
-            <span className="balance-stat-label">Locked</span>
-            <span className="balance-stat-val locked">{lockedBalance.toFixed(2)}</span>
+        {/* Card Footer Details */}
+        <div className="card-footer-details">
+          <div className="card-stat-pill">
+            <Lock size={13} className="stat-pill-icon locked-color" />
+            <div className="stat-pill-text">
+              <span className="stat-label">Locked</span>
+              <span className="stat-value">{lockedBalance.toFixed(2)} USDT</span>
+            </div>
           </div>
-          <div className="balance-stat-row">
-            <span className="balance-stat-label">Pending withdrawal</span>
-            <span className="balance-stat-val pending">{pendingWithdrawals.toFixed(2)}</span>
+
+          <div className="card-stat-pill">
+            <RefreshCw size={13} className="stat-pill-icon pending-color rotating" />
+            <div className="stat-pill-text">
+              <span className="stat-label">Pending</span>
+              <span className="stat-value">{pendingWithdrawals.toFixed(2)} USDT</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="balance-actions">
-        <Button variant="primary" onClick={() => navigate('/deposit')}>+ Deposit</Button>
-        <Button variant="secondary" onClick={() => navigate('/withdraw')}>Withdraw</Button>
+      {/* Instant Action buttons below the card for ease of access */}
+      <div className="card-quick-actions">
+        <button className="card-action-btn primary" onClick={() => navigate('/deposit')}>
+          <Plus size={16} />
+          <span>Add Funds</span>
+        </button>
+        <button className="card-action-btn secondary" onClick={() => navigate('/withdraw')}>
+          <ArrowUpRight size={16} />
+          <span>Withdraw</span>
+        </button>
       </div>
     </div>
   );
 }
+

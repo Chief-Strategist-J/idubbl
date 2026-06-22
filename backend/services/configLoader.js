@@ -45,4 +45,12 @@ if (process.env.JUSPAY_MERCHANT_ID && config.payments?.gateways?.juspay) {
   config.payments.gateways.juspay.merchantId = process.env.JUSPAY_MERCHANT_ID;
 }
 
+if (process.env.ACTIVE_PAYMENT_GATEWAY) {
+  config.payments.active = process.env.ACTIVE_PAYMENT_GATEWAY;
+}
+
+if (process.env.NOWPAYMENTS_API_KEY && config.payments?.gateways?.nowpayments) {
+  config.payments.gateways.nowpayments.apiKey = process.env.NOWPAYMENTS_API_KEY;
+}
+
 export default config;
