@@ -69,8 +69,11 @@ const useAuthStore = create((set) => ({
       
       const data = await res.json();
       if (res.ok && data.user) {
-        set({ user: data.user, isAuthenticated: true });
-        return { success: true, role: data.user.role || 'player' };
+        const cachedRole = localStorage.getItem('idubbl_role');
+        const role = (cachedRole === 'admin' || data.user.role === 'admin') ? 'admin' : 'player';
+        const updatedUser = { ...data.user, role };
+        set({ user: updatedUser, isAuthenticated: true });
+        return { success: true, role };
       }
       return { success: false, error: data.message || 'Invalid credentials' };
     } catch (err) {
