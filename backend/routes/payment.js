@@ -66,10 +66,12 @@ router.get('/callback/flutterwave', async (req, res) => {
       const verification = await paymentService.verifyPayment(transaction_id);
       
       const db = await getDb();
-      // Find the user by their email
+      // Find the user by their email (case-insensitive)
       const userEmail = verification.rawResponse?.data?.customer?.email;
       if (userEmail) {
-        const user = await db.collection('user').findOne({ email: userEmail });
+        const user = await db.collection('user').findOne({ 
+          email: { $regex: new RegExp(`^${userEmail.trim()}$`, 'i') } 
+        });
         if (user) {
           const userId = user.id || user._id.toString();
           
@@ -94,6 +96,8 @@ router.get('/callback/flutterwave', async (req, res) => {
             note: `Flutterwave Deposit Ref: ${verification.orderId}`,
             createdAt: new Date(),
           });
+        } else {
+          console.warn(`User with email "${userEmail}" not found in database for callback.`);
         }
       }
 
