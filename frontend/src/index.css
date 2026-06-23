@@ -2,10 +2,10 @@
 @import "tailwindcss";
 
 .logo-img {
-  content: url('/black-logo.jpeg');
+  content: url('/white-logo.jpeg');
 }
 .light .logo-img {
-  content: url('/white-logo.jpeg');
+  content: url('/black-logo.jpeg');
 }
 
 /* Premium Slide Theme Toggle Switch */
