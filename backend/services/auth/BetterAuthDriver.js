@@ -27,6 +27,23 @@ export class BetterAuthDriver extends AuthDriver {
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        plugins: [
+          // Enable role capabilities in Better Auth to natively fetch and populate user.role from the database user table
+          {
+            id: 'admin-roles',
+            schema: {
+              user: {
+                fields: {
+                  role: {
+                    type: 'string',
+                    required: false,
+                    defaultValue: 'player'
+                  }
+                }
+              }
+            }
+          }
+        ],
         baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
         trustedOrigins: [
           'https://idubbl-frontend.onrender.com',
