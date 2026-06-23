@@ -38,11 +38,20 @@ if (process.env.FLW_ENCRYPTION_KEY && config.payments?.gateways?.flutterwave) {
   config.payments.gateways.flutterwave.encryptionKey = process.env.FLW_ENCRYPTION_KEY;
 }
 
+// Dynamically construct payment callback URLs
+const paymentBackendUrl = process.env.BACKEND_URL || process.env.BETTER_AUTH_URL || 'http://localhost:5000';
+if (config.payments?.gateways?.flutterwave) {
+  config.payments.gateways.flutterwave.redirectUrl = `${paymentBackendUrl}/api/payment/callback/flutterwave`;
+}
+
 if (process.env.JUSPAY_API_KEY && config.payments?.gateways?.juspay) {
   config.payments.gateways.juspay.apiKey = process.env.JUSPAY_API_KEY;
 }
 if (process.env.JUSPAY_MERCHANT_ID && config.payments?.gateways?.juspay) {
   config.payments.gateways.juspay.merchantId = process.env.JUSPAY_MERCHANT_ID;
+}
+if (config.payments?.gateways?.juspay) {
+  config.payments.gateways.juspay.returnUrl = `${paymentBackendUrl}/api/payment/callback/juspay`;
 }
 
 if (process.env.ACTIVE_PAYMENT_GATEWAY) {
