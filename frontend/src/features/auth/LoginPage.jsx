@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <Card>
           {/* Role selector tabs */}
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.07)', borderRadius: '10px', padding: '0.35rem', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', background: 'var(--glass-bg)', borderRadius: '10px', padding: '0.35rem', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
             <button 
               type="button"
               onClick={() => { setRoleMode('player'); setError(''); }}
@@ -77,13 +77,13 @@ export default function LoginPage() {
                 padding: '0.65rem',
                 border: 'none',
                 borderRadius: '8px',
-                background: roleMode === 'player' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)',
-                color: roleMode === 'player' ? '#04130d' : '#f8fafc',
+                background: roleMode === 'player' ? 'var(--primary)' : 'var(--glass-bg)',
+                color: roleMode === 'player' ? '#04130d' : 'var(--text-primary)',
                 fontWeight: 700,
                 fontSize: '0.875rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: roleMode === 'player' ? '0 4px 12px rgba(20,241,149,0.2)' : 'none',
+                boxShadow: roleMode === 'player' ? '0 4px 12px var(--primary-glow)' : 'none',
                 marginRight: '0.25rem'
               }}
             >
@@ -97,13 +97,13 @@ export default function LoginPage() {
                 padding: '0.65rem',
                 border: 'none',
                 borderRadius: '8px',
-                background: roleMode === 'admin' ? 'var(--secondary)' : 'rgba(255, 255, 255, 0.05)',
-                color: roleMode === 'admin' ? '#04130d' : '#f8fafc',
+                background: roleMode === 'admin' ? 'var(--secondary)' : 'var(--glass-bg)',
+                color: roleMode === 'admin' ? '#04130d' : 'var(--text-primary)',
                 fontWeight: 700,
                 fontSize: '0.875rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: roleMode === 'admin' ? '0 4px 12px rgba(6,182,212,0.2)' : 'none',
+                boxShadow: roleMode === 'admin' ? '0 4px 12px var(--secondary-glow)' : 'none',
                 marginLeft: '0.25rem'
               }}
             >
@@ -111,7 +111,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
             {roleMode === 'admin' ? 'Admin Portal Access' : 'Welcome back'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2.5rem' }}>
