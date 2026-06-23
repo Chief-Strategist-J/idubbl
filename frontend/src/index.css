@@ -1826,8 +1826,9 @@ body {
     left: 0;
     right: 0;
     height: 60px;
-    background: rgba(12, 9, 30, 0.97);
-    border-top: 1px solid var(--border);
+    background: var(--bg-header);
+    border-top: 1px solid rgba(0, 245, 160, 0.25);
+    box-shadow: 0 -10px 30px rgba(0, 245, 160, 0.08);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 100;
@@ -1858,6 +1859,8 @@ body {
 
   .bottom-nav-item.active {
     color: var(--primary);
+    background: rgba(0, 245, 160, 0.08);
+    text-shadow: 0 0 10px var(--primary-glow);
   }
 
   .bottom-nav-item:active {
