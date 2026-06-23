@@ -50,11 +50,15 @@ export default function FiatDepositForm() {
 
       const data = await response.json();
 
-      if (response.ok && data.paymentUrl) {
+      // Support standardized { success, data } envelope as well as legacy flat object
+      const paymentUrl = data.success && data.data ? data.data.paymentUrl : data.paymentUrl;
+      const errorMessage = data.message || data.error || 'Failed to initiate checkout link';
+
+      if (response.ok && paymentUrl) {
         // Redirect user to payment checkout (Flutterwave / Juspay)
-        window.location.href = data.paymentUrl;
+        window.location.href = paymentUrl;
       } else {
-        throw new Error(data.error || 'Failed to initiate checkout link');
+        throw new Error(errorMessage);
       }
     } catch (err) {
       console.error(err);
