@@ -38,6 +38,14 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.08);
   --bg-card-glass: rgba(28, 22, 53, 0.6);
   --bg-glass-card-hover: rgba(38, 31, 71, 0.8);
+
+  --hologram-card-bg: linear-gradient(135deg, rgba(20, 15, 41, 0.9) 0%, rgba(30, 20, 60, 0.8) 100%);
+  --hologram-card-border: rgba(139, 92, 246, 0.25);
+  --hologram-card-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --hologram-card-text: #ffffff;
+  --hologram-card-footer-border: rgba(255, 255, 255, 0.05);
+  --hologram-card-pill-bg: rgba(255, 255, 255, 0.03);
+  --hologram-card-pill-border: rgba(255, 255, 255, 0.04);
 }
 
 .light {
@@ -74,6 +82,14 @@
   --glass-bg-hover: rgba(0, 0, 0, 0.06);
   --bg-card-glass: rgba(255, 255, 255, 0.7);
   --bg-glass-card-hover: rgba(237, 233, 254, 0.9);
+
+  --hologram-card-bg: linear-gradient(135deg, rgba(243, 239, 255, 0.9) 0%, rgba(225, 215, 250, 0.85) 100%);
+  --hologram-card-border: rgba(124, 58, 237, 0.2);
+  --hologram-card-shadow: 0 12px 30px rgba(124, 58, 237, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  --hologram-card-text: var(--text-primary);
+  --hologram-card-footer-border: rgba(0, 0, 0, 0.06);
+  --hologram-card-pill-bg: rgba(0, 0, 0, 0.02);
+  --hologram-card-pill-border: rgba(0, 0, 0, 0.04);
 }
 
 * {
@@ -1045,11 +1061,11 @@ body {
 
 .balance-hologram-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(20, 15, 41, 0.9) 0%, rgba(30, 20, 60, 0.8) 100%);
-  border: 1.5px solid rgba(139, 92, 246, 0.25);
+  background: var(--hologram-card-bg);
+  border: 1.5px solid var(--hologram-card-border);
   border-radius: 20px;
   padding: 1.75rem;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow: var(--hologram-card-shadow);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1123,7 +1139,7 @@ body {
   font-family: var(--font-display);
   font-size: 2.75rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--hologram-card-text);
   line-height: 1;
   display: flex;
   align-items: baseline;
@@ -1153,7 +1169,7 @@ body {
 .card-footer-details {
   display: flex;
   gap: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--hologram-card-footer-border);
   padding-top: 1.25rem;
 }
 
@@ -1161,10 +1177,10 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--hologram-card-pill-bg);
   padding: 0.5rem 0.85rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--hologram-card-pill-border);
   flex: 1;
 }
 
@@ -1204,7 +1220,7 @@ body {
 .stat-value {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--hologram-card-text);
   white-space: nowrap;
 }
 
