@@ -53,12 +53,12 @@ export default function DepositForm() {
         </div>
       </div>
 
-      <div style={{ background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.2)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#fbbf24' }}>
+      <div style={{ background: 'var(--accent-warning-glow)', border: '1px solid var(--accent-warning-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--accent-warning)' }}>
         ⚠️ Minimum deposit: {MIN_DEPOSIT} USDT · Supported networks: TRC20, ERC20 only
       </div>
 
       {success && (
-        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#34d399', fontSize: '0.9rem' }}>
+        <div style={{ background: 'var(--accent-green-glow)', border: '1px solid var(--accent-green-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-green)', fontSize: '0.9rem' }}>
           ✓ Deposit request submitted. Pending admin review.
         </div>
       )}

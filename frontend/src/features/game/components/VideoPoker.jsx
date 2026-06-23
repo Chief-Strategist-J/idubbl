@@ -42,7 +42,7 @@ export default function VideoPoker({ onAnswer, answered }) {
         {hand.map((c, i) => (
           <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
             <GameCard card={c} selected={held[i]} onClick={() => toggleHold(i)} />
-            <span style={{ fontSize: '0.6rem', color: held[i] ? '#a855f7' : 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, transition: 'color 0.2s' }}>
+            <span style={{ fontSize: '0.6rem', color: held[i] ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, transition: 'color 0.2s' }}>
               {held[i] ? 'HELD' : 'tap'}
             </span>
           </div>
@@ -50,7 +50,7 @@ export default function VideoPoker({ onAnswer, answered }) {
       </div>
 
       {!drawn && (
-        <p style={{ textAlign: 'center', color: '#c084fc', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+        <p style={{ textAlign: 'center', color: 'var(--primary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
           {currentEval.name}
         </p>
       )}

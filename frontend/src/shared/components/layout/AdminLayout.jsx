@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore.js';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext.jsx';
 
 const ADMIN_NAV = [
   { label: 'Dashboard', path: '/admin', icon: '📊' },
@@ -17,6 +19,7 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const goTo = (path) => {
@@ -32,15 +35,37 @@ export default function AdminLayout({ children }) {
           <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '36px', borderRadius: '6px' }} />
           <span style={{ fontSize: '0.65rem', background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-sans)' }}>Admin</span>
         </div>
-        <button
-          className="hamburger-btn"
-          onClick={() => setSidebarOpen((o) => !o)}
-          aria-label="Toggle sidebar"
-        >
-          <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
-          <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
-          <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            className="nav-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.5rem',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              minWidth: '36px',
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)'
+            }}
+          >
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+          <button
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label="Toggle sidebar"
+          >
+            <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
+            <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
+            <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
+          </button>
+        </div>
       </header>
 
       {/* Overlay */}
@@ -80,6 +105,20 @@ export default function AdminLayout({ children }) {
               </button>
               <button className="nav-btn" style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} onClick={() => { logout(); navigate('/'); }}>
                 Logout
+              </button>
+              <button
+                className="nav-btn"
+                style={{
+                  fontSize: '0.8rem',
+                  padding: '0.25rem 0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}
+                onClick={toggleTheme}
+              >
+                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+                Theme
               </button>
             </div>
           </div>

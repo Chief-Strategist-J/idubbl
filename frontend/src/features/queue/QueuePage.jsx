@@ -52,7 +52,7 @@ export default function QueuePage() {
             </p>
 
             {elapsed > 90 && statusIndex === 0 && (
-              <p style={{ color: '#fbbf24', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', marginBottom: '1rem' }}>
                 Low activity in this tier. Consider trying another tier.
               </p>
             )}

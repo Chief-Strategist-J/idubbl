@@ -43,18 +43,18 @@ export default function WithdrawForm() {
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ padding: '1rem', background: 'rgba(6,182,212,0.06)', borderRadius: 10, border: '1px solid rgba(6,182,212,0.15)' }}>
+        <div style={{ padding: '1rem', background: 'var(--accent-cyan-glow)', borderRadius: 10, border: '1px solid var(--accent-cyan-glow)' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Available to withdraw</p>
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.3rem', color: 'var(--accent-cyan)' }}>{availableBalance.toFixed(2)} USDT</p>
         </div>
-        <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.06)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.15)' }}>
+        <div style={{ padding: '1rem', background: 'var(--accent-red-glow)', borderRadius: 10, border: '1px solid var(--accent-red-glow)' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Pending withdrawal</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.3rem', color: '#f87171' }}>{pendingWithdrawals.toFixed(2)} USDT</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.3rem', color: 'var(--accent-red)' }}>{pendingWithdrawals.toFixed(2)} USDT</p>
         </div>
       </div>
 
       {success && (
-        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#34d399', fontSize: '0.9rem' }}>
+        <div style={{ background: 'var(--accent-green-glow)', border: '1px solid var(--accent-green-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-green)', fontSize: '0.9rem' }}>
           ✓ Withdrawal request submitted. Pending admin approval.
         </div>
       )}

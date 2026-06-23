@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>Enter and confirm your new password below.</p>
               
               {!token && (
-                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#f87171', fontSize: '0.85rem' }}>
+                <div style={{ background: 'var(--accent-red-glow)', border: '1px solid var(--accent-red-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-red)', fontSize: '0.85rem' }}>
                   ⚠️ Reset token is missing from the URL. Please request a new password reset link.
                 </div>
               )}
@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleSubmit}>
                 <Input label="New Password" type="password" name="password" value={form.password} onChange={handleChange} placeholder="••••••••" hint="Minimum 8 characters" required disabled={!token} />
                 <Input label="Confirm New Password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" required disabled={!token} />
-                {error && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
+                {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
                 <Button type="submit" loading={loading} fullWidth disabled={!token}>Reset password</Button>
               </form>
               <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>

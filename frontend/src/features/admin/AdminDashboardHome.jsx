@@ -27,8 +27,8 @@ export default function AdminDashboardHome() {
       </div>
 
       {(pendingDeposits > 0 || pendingWithdrawals > 0) && (
-        <Card style={{ marginBottom: '1.5rem', borderColor: 'rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.04)' }}>
-          <p style={{ color: '#fbbf24', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
+        <Card style={{ marginBottom: '1.5rem', borderColor: 'var(--accent-warning-glow)', background: 'var(--accent-warning-glow)' }}>
+          <p style={{ color: 'var(--accent-warning)', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {pendingDeposits > 0 && `${pendingDeposits} deposit request(s) awaiting review. `}
             {pendingWithdrawals > 0 && `${pendingWithdrawals} withdrawal request(s) awaiting approval.`}

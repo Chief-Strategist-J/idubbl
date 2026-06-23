@@ -73,7 +73,7 @@ export default function DashboardPage() {
               </div>
               <div className="win-loss-divider" />
               <div className="win-loss-stat">
-                <p className="win-loss-number" style={{ color: '#f87171' }}>{losses}</p>
+                <p className="win-loss-number" style={{ color: 'var(--accent-red)' }}>{losses}</p>
                 <p className="win-loss-label">Losses</p>
               </div>
               <div className="win-loss-divider" />

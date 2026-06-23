@@ -45,7 +45,7 @@ export default function ReactionRace({ onAnswer, answered }) {
       </div>
 
       {selected !== null && (
-        <p style={{ textAlign: 'center', marginTop: '0.5rem', color: selected === activeIndex ? 'var(--accent-green)' : '#f87171', fontWeight: 600 }}>
+        <p style={{ textAlign: 'center', marginTop: '0.5rem', color: selected === activeIndex ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
           {selected === activeIndex ? '✓ Correct target!' : '✗ Wrong target'}
         </p>
       )}

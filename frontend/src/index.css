@@ -16,6 +16,10 @@
   --accent-cyan-glow: rgba(6, 182, 212, 0.4);
   --accent-green: #10b981;
   --accent-green-glow: rgba(16, 185, 129, 0.4);
+  --accent-red: #f87171;
+  --accent-red-glow: rgba(239, 68, 68, 0.15);
+  --accent-warning: #fbbf24;
+  --accent-warning-glow: rgba(245, 158, 11, 0.15);
   
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
@@ -26,6 +30,50 @@
   
   --font-display: 'Space Grotesk', sans-serif;
   --font-sans: 'Outfit', sans-serif;
+
+  --bg-header: rgba(18, 14, 37, 0.7);
+  --bg-drawer: rgba(28, 22, 53, 0.95);
+  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-card-glass: rgba(28, 22, 53, 0.6);
+  --bg-glass-card-hover: rgba(38, 31, 71, 0.8);
+}
+
+.light {
+  --bg-darker: #f5f3ff;
+  --bg-dark: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ede9fe;
+  
+  --primary: #7c3aed;
+  --primary-glow: rgba(124, 58, 237, 0.2);
+  --secondary: #db2777;
+  --secondary-glow: rgba(219, 39, 119, 0.2);
+  
+  --accent-cyan: #0891b2;
+  --accent-cyan-glow: rgba(8, 145, 178, 0.2);
+  --accent-green: #059669;
+  --accent-green-glow: rgba(5, 150, 105, 0.2);
+  --accent-red: #dc2626;
+  --accent-red-glow: rgba(220, 38, 38, 0.1);
+  --accent-warning: #b45309;
+  --accent-warning-glow: rgba(180, 83, 9, 0.1);
+  
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  
+  --border: rgba(0, 0, 0, 0.08);
+  --border-focus: rgba(124, 58, 237, 0.4);
+
+  --bg-header: rgba(255, 255, 255, 0.8);
+  --bg-drawer: rgba(255, 255, 255, 0.95);
+  --shadow-card: 0 8px 32px 0 rgba(124, 58, 237, 0.08);
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-bg-hover: rgba(0, 0, 0, 0.06);
+  --bg-card-glass: rgba(255, 255, 255, 0.7);
+  --bg-glass-card-hover: rgba(237, 233, 254, 0.9);
 }
 
 * {
@@ -73,7 +121,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 2rem;
-  background: rgba(18, 14, 37, 0.7);
+  background: var(--bg-header);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -119,7 +167,7 @@ body {
 
 .nav-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg-hover);
 }
 
 .nav-btn.active {
@@ -135,7 +183,7 @@ body {
 }
 
 .user-badge {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.5rem 1rem;
@@ -167,12 +215,12 @@ body {
 
 /* Card layout */
 .glass-card {
-  background: rgba(28, 22, 53, 0.6);
+  background: var(--bg-card-glass);
   border: 1px solid var(--border);
   backdrop-filter: blur(8px);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card);
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -209,7 +257,7 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   color: var(--text-primary);
   border: 1px solid var(--border);
   padding: 0.75rem 1.5rem;
@@ -225,7 +273,7 @@ body {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg-hover);
   border-color: var(--text-secondary);
 }
 
@@ -509,21 +557,21 @@ body {
 }
 
 .badge.pending {
-  background: rgba(234, 179, 8, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(234, 179, 8, 0.3);
+  background: var(--accent-warning-glow);
+  color: var(--accent-warning);
+  border: 1px solid var(--accent-warning-glow);
 }
 
 .badge.approved {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--accent-green-glow);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green-glow);
 }
 
 .badge.rejected {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--accent-red-glow);
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red-glow);
 }
 
 /* Admin panel grid */
@@ -831,7 +879,7 @@ body {
     margin-top: 1rem;
     border-top: 1px solid var(--border);
     padding-top: 1rem !important;
-    color: #f87171 !important;
+    color: var(--accent-red) !important;
   }
 
   /* Balance pill compact */
@@ -1125,11 +1173,11 @@ body {
 }
 
 .locked-color {
-  color: #fbbf24;
+  color: var(--accent-warning);
 }
 
 .pending-color {
-  color: #f87171;
+  color: var(--accent-red);
 }
 
 .rotating {
@@ -1431,7 +1479,7 @@ body {
 }
 
 .match-prize.win { color: var(--accent-green); }
-.match-prize.loss { color: #f87171; }
+.match-prize.loss { color: var(--accent-red); }
 
 /* ─────────────────────────────────────────
    DASHBOARD RESPONSIVE
@@ -1648,7 +1696,7 @@ body {
 }
 
 .overflow-drawer-logout {
-  color: #f87171 !important;
+  color: var(--accent-red) !important;
 }
 
 /* ─────────────────────────────────────────
@@ -1855,21 +1903,21 @@ body {
 }
 
 .result-win {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #4ade80;
+  background: var(--accent-green-glow);
+  border: 1px solid var(--accent-green-glow);
+  color: var(--accent-green);
 }
 
 .result-lose {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  background: var(--accent-red-glow);
+  border: 1px solid var(--accent-red-glow);
+  color: var(--accent-red);
 }
 
 .result-push {
-  background: rgba(234, 179, 8, 0.12);
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  color: #fbbf24;
+  background: var(--accent-warning-glow);
+  border: 1px solid var(--accent-warning-glow);
+  color: var(--accent-warning);
 }
 
 /* Red Dog specific */

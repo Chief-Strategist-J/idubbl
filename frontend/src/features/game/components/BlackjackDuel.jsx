@@ -90,7 +90,7 @@ export default function BlackjackDuel({ onAnswer, answered }) {
         <div style={{ textAlign: 'center', margin: '1.25rem 0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>— table —</div>
 
         <div className="casino-hand-label">
-          You — Total: <span style={{ color: pTotal > 21 ? '#f87171' : pTotal >= 18 ? '#4ade80' : 'var(--text-primary)' }}>{pTotal}</span>
+          You — Total: <span style={{ color: pTotal > 21 ? 'var(--accent-red)' : pTotal >= 18 ? 'var(--accent-green)' : 'var(--text-primary)' }}>{pTotal}</span>
         </div>
         <div className="casino-hand">
           {player.map((c, i) => <GameCard key={i} card={c} />)}

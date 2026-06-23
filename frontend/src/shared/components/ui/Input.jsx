@@ -37,12 +37,12 @@ export default function Input({
           className="form-input"
           style={{
             paddingLeft: icon ? 40 : undefined,
-            borderColor: error ? 'rgba(239,68,68,0.6)' : undefined,
+            borderColor: error ? 'var(--accent-red)' : undefined,
             opacity: disabled ? 0.6 : 1,
           }}
         />
       </div>
-      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: 4 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', marginTop: 4 }}>{error}</p>}
       {hint && !error && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>{hint}</p>}
     </div>
   );

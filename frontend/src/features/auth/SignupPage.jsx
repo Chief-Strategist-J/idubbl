@@ -65,7 +65,7 @@ export default function SignupPage() {
             <Input label="Confirm password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
             <Input label="Referral code (optional)" name="referral" value={form.referral} onChange={handleChange} placeholder="FRIEND123" />
 
-            {errors.submit && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{errors.submit}</p>}
+            {errors.submit && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{errors.submit}</p>}
             <Button type="submit" loading={loading} fullWidth>Create account</Button>
           </form>
 

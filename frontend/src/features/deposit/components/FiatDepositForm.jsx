@@ -72,7 +72,7 @@ export default function FiatDepositForm() {
       </p>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#f87171', fontSize: '0.9rem' }}>
+        <div style={{ background: 'var(--accent-red-glow)', border: '1px solid var(--accent-red-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-red)', fontSize: '0.9rem' }}>
           ⚠️ {error}
         </div>
       )}

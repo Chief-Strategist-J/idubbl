@@ -13,7 +13,7 @@ export default function RoundTransition({ round, playerWins, opponentWins }) {
     }}>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: 2 }}>ROUND {round.roundNo} RESULT</p>
 
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 800, color: isPlayerWin ? 'var(--accent-green)' : '#f87171' }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 800, color: isPlayerWin ? 'var(--accent-green)' : 'var(--accent-red)' }}>
         {isPlayerWin ? 'You won the round!' : 'Opponent won the round'}
       </div>
 

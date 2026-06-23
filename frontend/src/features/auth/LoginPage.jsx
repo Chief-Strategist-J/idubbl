@@ -44,7 +44,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <Input label="Email" type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required />
             <Input label="Password" type="password" name="password" value={form.password} onChange={handleChange} placeholder="••••••••" required />
-            {error && <p style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
             <Button type="submit" loading={loading} fullWidth>Log in</Button>
           </form>
 
