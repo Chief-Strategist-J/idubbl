@@ -1,6 +1,7 @@
 import express from 'express';
 import { paymentService } from '../services/index.js';
 import { getDb } from '../services/db.js';
+import { errorRegistry } from '../services/errorRegistry.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.post('/create', async (req, res) => {
   const orderId = `ord_${Date.now()}`;
 
   if (!amount || !customer || !customer.email) {
-    return res.status(400).json({ error: 'Missing required parameters: amount, customer.email' });
+    return errorRegistry.send(res, 'INVALID_AMOUNT', 'Amount and customer email are required to create a payment session.');
   }
 
   try {
@@ -21,10 +22,10 @@ router.post('/create', async (req, res) => {
       customer,
       description,
     });
-    res.json(result);
+    res.json({ success: true, data: result });
   } catch (error) {
     console.error('Payment creation failed:', error);
-    res.status(500).json({ error: error.message || 'Payment initiation failed' });
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Payment initiation failed.');
   }
 });
 
@@ -34,10 +35,10 @@ router.get('/verify/:transactionId', async (req, res) => {
 
   try {
     const result = await paymentService.verifyPayment(transactionId);
-    res.json(result);
+    res.json({ success: true, data: result });
   } catch (error) {
     console.error('Payment verification failed:', error);
-    res.status(500).json({ error: error.message || 'Payment verification failed' });
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Payment verification failed.');
   }
 });
 
@@ -46,11 +47,10 @@ router.post('/webhook', async (req, res) => {
   try {
     const event = await paymentService.handleWebhook(req);
     console.log('Webhook Event Processed:', event);
-    // Add logic here to update order status in DB
-    res.status(200).json({ received: true, event });
+    res.status(200).json({ success: true, received: true, event });
   } catch (error) {
     console.error('Webhook error:', error);
-    res.status(400).send(`Webhook Error: ${error.message}`);
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Webhook processing failed.');
   }
 });
 

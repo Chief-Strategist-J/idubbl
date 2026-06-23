@@ -26,13 +26,15 @@ const useWalletStore = create((set, get) => ({
       const balRes = await fetch(`${BASE_URL}/balance`, {
         headers: { 'x-user-id': currentUserId }
       });
-      const balance = await balRes.json();
+      const balJson = await balRes.json();
+      const balance = balJson.success ? balJson.data : balJson;
 
       // Fetch Transactions
       const txRes = await fetch(`${BASE_URL}/transactions`, {
         headers: { 'x-user-id': currentUserId }
       });
-      const transactions = await txRes.json();
+      const txJson = await txRes.json();
+      const transactions = txJson.success ? (txJson.data || []) : (txJson || []);
 
       // Separate deposits and withdrawals for compatibility with mock structure
       const deposits = transactions.filter(t => t.type === 'deposit');
@@ -88,7 +90,7 @@ const useWalletStore = create((set, get) => ({
         return { success: true };
       }
       const errData = await response.json();
-      return { success: false, error: errData.error };
+      return { success: false, error: errData.message || errData.error };
     } catch (error) {
       console.error('Deposit submission error:', error);
       return { success: false, error: 'Network error submitting deposit' };
@@ -117,7 +119,7 @@ const useWalletStore = create((set, get) => ({
         return { success: true };
       }
       const errData = await response.json();
-      return { success: false, error: errData.error };
+      return { success: false, error: errData.message || errData.error };
     } catch (error) {
       console.error('Withdrawal submission error:', error);
       return { success: false, error: 'Network error submitting withdrawal' };

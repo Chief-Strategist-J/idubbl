@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDb } from '../services/db.js';
+import { errorRegistry } from '../services/errorRegistry.js';
 
 const router = express.Router();
 
@@ -27,13 +28,16 @@ router.get('/balance', async (req, res) => {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
     res.json({
-      availableBalance: wallet.availableBalance,
-      lockedBalance: wallet.lockedBalance,
-      pendingWithdrawals: wallet.pendingWithdrawals,
+      success: true,
+      data: {
+        availableBalance: wallet.availableBalance,
+        lockedBalance: wallet.lockedBalance,
+        pendingWithdrawals: wallet.pendingWithdrawals,
+      }
     });
   } catch (error) {
     console.error('Error fetching balance:', error);
-    res.status(500).json({ error: 'Database error fetching balance' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching balance.');
   }
 });
 
@@ -47,10 +51,10 @@ router.get('/transactions', async (req, res) => {
       .find({ userId })
       .sort({ createdAt: -1 })
       .toArray();
-    res.json(transactions);
+    res.json({ success: true, data: transactions });
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    res.status(500).json({ error: 'Database error fetching transactions' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching transactions.');
   }
 });
 
@@ -59,8 +63,11 @@ router.post('/deposit', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
   const { amount, network, txHash, note } = req.body;
 
-  if (!amount || !txHash) {
-    return res.status(400).json({ error: 'Amount and transaction hash are required' });
+  if (!amount) {
+    return errorRegistry.send(res, 'INVALID_AMOUNT', 'Amount is required to submit a deposit.');
+  }
+  if (!txHash) {
+    return errorRegistry.send(res, 'MISSING_TX_HASH', 'Transaction hash is required.');
   }
 
   try {
@@ -76,10 +83,10 @@ router.post('/deposit', async (req, res) => {
       createdAt: new Date(),
     };
     await db.collection('transactions').insertOne(newDeposit);
-    res.json({ success: true, deposit: newDeposit });
+    res.json({ success: true, data: newDeposit });
   } catch (error) {
     console.error('Error submitting deposit:', error);
-    res.status(500).json({ error: 'Database error submitting deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting deposit.');
   }
 });
 
@@ -88,8 +95,8 @@ router.post('/withdraw', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
   const { amount, address, network } = req.body;
 
-  if (!amount || !address) {
-    return res.status(400).json({ error: 'Amount and address are required' });
+  if (!amount || !address || !network) {
+    return errorRegistry.send(res, 'MISSING_WITHDRAW_DETAILS', 'Amount, target address, and network are required to submit withdrawal.');
   }
 
   try {
@@ -97,7 +104,7 @@ router.post('/withdraw', async (req, res) => {
     const wallet = await getOrCreateWallet(db, userId);
 
     if (wallet.availableBalance < Number(amount)) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+      return errorRegistry.send(res, 'INSUFFICIENT_FUNDS', 'Insufficient balance to complete the requested withdrawal.');
     }
 
     // Deduct available, increase pending
@@ -121,10 +128,10 @@ router.post('/withdraw', async (req, res) => {
       createdAt: new Date(),
     };
     await db.collection('transactions').insertOne(newWithdrawal);
-    res.json({ success: true, withdrawal: newWithdrawal });
+    res.json({ success: true, data: newWithdrawal });
   } catch (error) {
     console.error('Error submitting withdrawal:', error);
-    res.status(500).json({ error: 'Database error submitting withdrawal' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting withdrawal.');
   }
 });
 
@@ -137,7 +144,7 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
-      return res.status(404).json({ error: 'Pending deposit transaction not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending deposit transaction not found.');
     }
 
     // Mark approved
@@ -155,7 +162,7 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error approving deposit:', error);
-    res.status(500).json({ error: 'Database error approving deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving deposit.');
   }
 });
 
@@ -172,12 +179,12 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
     );
 
     if (result.matchedCount === 0) {
-      return res.status(404).json({ error: 'Pending deposit not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending deposit not found.');
     }
     res.json({ success: true });
   } catch (error) {
     console.error('Error rejecting deposit:', error);
-    res.status(500).json({ error: 'Database error rejecting deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error rejecting deposit.');
   }
 });
 
@@ -190,7 +197,7 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
-      return res.status(404).json({ error: 'Pending withdrawal not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
     }
 
     // Approve transaction
@@ -208,7 +215,7 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error approving withdrawal:', error);
-    res.status(500).json({ error: 'Database error approving withdrawal' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving withdrawal.');
   }
 });
 
@@ -221,7 +228,7 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
-      return res.status(404).json({ error: 'Pending withdrawal not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
     }
 
     // Mark transaction as rejected
@@ -244,7 +251,7 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error rejecting withdrawal:', error);
-    res.status(500).json({ error: 'Database error rejecting withdrawal' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error rejecting withdrawal.');
   }
 });
 
