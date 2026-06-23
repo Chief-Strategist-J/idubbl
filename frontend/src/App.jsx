@@ -32,8 +32,9 @@ function ProtectedRoute({ children }) {
 function AdminRoute({ children }) {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
-  return children;
+  // Check role explicitly
+  if (user?.role === 'admin') return children;
+  return <Navigate to="/dashboard" replace />;
 }
 
 export default function App() {

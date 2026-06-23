@@ -79,8 +79,8 @@ router.get('/callback/flutterwave', async (req, res) => {
           await db.collection('wallets').updateOne(
             { userId: userId },
             { 
-              $inc: { availableBalance: Number(verification.amount) },
-              $setOnInsert: { lockedBalance: 0, pendingWithdrawals: 0, createdAt: new Date() }
+              $inc: { depositBalance: Number(verification.amount) },
+              $setOnInsert: { winningsBalance: 0, lockedBalance: 0, pendingWithdrawals: 0, createdAt: new Date() }
             },
             { upsert: true }
           );

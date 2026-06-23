@@ -8,6 +8,8 @@ if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')
 const BASE_URL = `${apiBase}/api/wallet`;
 
 const useWalletStore = create((set, get) => ({
+  depositBalance: 0,
+  winningsBalance: 0,
   availableBalance: 0,
   lockedBalance: 0,
   pendingWithdrawals: 0,
@@ -41,6 +43,8 @@ const useWalletStore = create((set, get) => ({
       const withdrawals = transactions.filter(t => t.type === 'withdrawal');
 
       set({
+        depositBalance: balance.depositBalance || 0,
+        winningsBalance: balance.winningsBalance || 0,
         availableBalance: balance.availableBalance,
         lockedBalance: balance.lockedBalance,
         pendingWithdrawals: balance.pendingWithdrawals,
@@ -56,20 +60,48 @@ const useWalletStore = create((set, get) => ({
   },
 
   reserveForMatch: (amount) => {
-    const { availableBalance, lockedBalance } = get();
+    const { availableBalance, depositBalance, winningsBalance, lockedBalance } = get();
     if (availableBalance < amount) return false;
-    set({ availableBalance: availableBalance - amount, lockedBalance: lockedBalance + amount });
+    
+    // Deduct from depositBalance first, then winningsBalance
+    let newDepositBalance = depositBalance;
+    let newWinningsBalance = winningsBalance;
+    
+    if (depositBalance >= amount) {
+      newDepositBalance = depositBalance - amount;
+    } else {
+      const remaining = amount - depositBalance;
+      newDepositBalance = 0;
+      newWinningsBalance = winningsBalance - remaining;
+    }
+
+    set({ 
+      depositBalance: newDepositBalance,
+      winningsBalance: newWinningsBalance,
+      availableBalance: availableBalance - amount, 
+      lockedBalance: lockedBalance + amount 
+    });
     return true;
   },
 
   releaseReservation: (amount) => {
-    const { availableBalance, lockedBalance } = get();
-    set({ availableBalance: availableBalance + amount, lockedBalance: Math.max(0, lockedBalance - amount) });
+    const { availableBalance, depositBalance, lockedBalance } = get();
+    // Return reservation back to depositBalance
+    set({ 
+      depositBalance: depositBalance + amount,
+      availableBalance: availableBalance + amount, 
+      lockedBalance: Math.max(0, lockedBalance - amount) 
+    });
   },
 
   creditWinnings: (amount) => {
-    const { availableBalance, lockedBalance } = get();
-    set({ availableBalance: availableBalance + amount, lockedBalance: Math.max(0, lockedBalance - (amount / 2)) });
+    const { availableBalance, winningsBalance, lockedBalance } = get();
+    // Credits directly to winningsBalance
+    set({ 
+      winningsBalance: winningsBalance + amount,
+      availableBalance: availableBalance + amount, 
+      lockedBalance: Math.max(0, lockedBalance - (amount / 2)) 
+    });
   },
 
   submitDeposit: async (data, userId) => {

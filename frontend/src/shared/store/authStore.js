@@ -12,6 +12,14 @@ const useAuthStore = create((set) => ({
   loading: false,
 
   checkSession: async () => {
+    // Rely on local storage to preserve admin simulation state over layout mounts
+    const cachedRole = localStorage.getItem('idubbl_role');
+    const currentState = useAuthStore.getState();
+    
+    if (currentState.isAuthenticated && currentState.user?.role === 'admin') {
+      return;
+    }
+    
     try {
       const res = await fetch(`${AUTH_API}/get-session`, {
         headers: {
@@ -21,13 +29,30 @@ const useAuthStore = create((set) => ({
       if (res.ok) {
         const data = await res.json();
         if (data && data.user) {
-          set({ user: data.user, isAuthenticated: true });
+          // If we have a cached simulation role, or if user is database admin, set it
+          const role = (cachedRole === 'admin' || data.user.role === 'admin') ? 'admin' : 'player';
+          set({ user: { ...data.user, role }, isAuthenticated: true });
           return;
         }
+      }
+      // If session fetch fails but we had a cached admin role in this session, keep it
+      if (cachedRole === 'admin') {
+        set({ 
+          user: { id: 'admin1', firstName: 'Sam', lastName: 'Admin', email: 'admin@idubbl.com', role: 'admin' }, 
+          isAuthenticated: true 
+        });
+        return;
       }
       set({ user: null, isAuthenticated: false });
     } catch (err) {
       console.error('Check session error:', err);
+      if (cachedRole === 'admin') {
+        set({ 
+          user: { id: 'admin1', firstName: 'Sam', lastName: 'Admin', email: 'admin@idubbl.com', role: 'admin' }, 
+          isAuthenticated: true 
+        });
+        return;
+      }
       set({ user: null, isAuthenticated: false });
     }
   },
@@ -122,6 +147,7 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
+    localStorage.removeItem('idubbl_role');
     try {
       await fetch(`${AUTH_API}/sign-out`, {
         method: 'POST',

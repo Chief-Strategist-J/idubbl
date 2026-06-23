@@ -23,6 +23,7 @@ class ErrorRegistry {
 
     // Withdrawal errors
     this.register('INSUFFICIENT_FUNDS', 400, 'You do not have enough available balance to perform this action.');
+    this.register('INSUFFICIENT_WINNINGS', 400, 'You can only withdraw from your Winnings wallet. Your Winnings balance is insufficient.');
     this.register('MISSING_WITHDRAW_DETAILS', 400, 'Amount, destination address, and network are required.');
 
     // General errors

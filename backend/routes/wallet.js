@@ -10,12 +10,29 @@ async function getOrCreateWallet(db, userId) {
   if (!wallet) {
     wallet = {
       userId,
-      availableBalance: 1000, // Default signup balance
+      depositBalance: 1000,   // Default signup/demo deposit balance
+      winningsBalance: 0,     // Default signup winnings balance
       lockedBalance: 5,
       pendingWithdrawals: 18,
       createdAt: new Date(),
     };
     await db.collection('wallets').insertOne(wallet);
+  } else {
+    // Migrate existing wallets if they don't have the new split fields
+    let updated = false;
+    const updateQuery = { $set: {} };
+    if (wallet.depositBalance === undefined) {
+      updateQuery.$set.depositBalance = wallet.availableBalance !== undefined ? wallet.availableBalance : 0;
+      updated = true;
+    }
+    if (wallet.winningsBalance === undefined) {
+      updateQuery.$set.winningsBalance = 0;
+      updated = true;
+    }
+    if (updated) {
+      await db.collection('wallets').updateOne({ userId }, updateQuery);
+      wallet = { ...wallet, ...updateQuery.$set };
+    }
   }
   return wallet;
 }
@@ -30,7 +47,9 @@ router.get('/balance', async (req, res) => {
     res.json({
       success: true,
       data: {
-        availableBalance: wallet.availableBalance,
+        depositBalance: wallet.depositBalance,
+        winningsBalance: wallet.winningsBalance,
+        availableBalance: wallet.depositBalance + wallet.winningsBalance,
         lockedBalance: wallet.lockedBalance,
         pendingWithdrawals: wallet.pendingWithdrawals,
       }
@@ -103,16 +122,16 @@ router.post('/withdraw', async (req, res) => {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
 
-    if (wallet.availableBalance < Number(amount)) {
-      return errorRegistry.send(res, 'INSUFFICIENT_FUNDS', 'Insufficient balance to complete the requested withdrawal.');
+    if (wallet.winningsBalance < Number(amount)) {
+      return errorRegistry.send(res, 'INSUFFICIENT_WINNINGS', 'Insufficient balance in winnings wallet to complete the requested withdrawal. Deposits cannot be withdrawn.');
     }
 
-    // Deduct available, increase pending
+    // Deduct winningsBalance, increase pendingWithdrawals
     await db.collection('wallets').updateOne(
       { userId },
       { 
         $inc: { 
-          availableBalance: -Number(amount), 
+          winningsBalance: -Number(amount), 
           pendingWithdrawals: Number(amount) 
         } 
       }
@@ -153,10 +172,10 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
       { $set: { status: 'approved', reviewedBy: 'admin1', approvedAt: new Date() } }
     );
 
-    // Update wallet balance
+    // Update wallet balance (credit to depositBalance)
     await db.collection('wallets').updateOne(
       { userId: tx.userId },
-      { $inc: { availableBalance: tx.amount } }
+      { $inc: { depositBalance: tx.amount } }
     );
 
     res.json({ success: true });
@@ -237,13 +256,13 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
       { $set: { status: 'rejected', reviewedBy: 'admin1', rejectedAt: new Date() } }
     );
 
-    // Return funds: deduct pending, credit available balance
+    // Return funds: deduct pending, credit winningsBalance (since withdrawal is only from winnings)
     await db.collection('wallets').updateOne(
       { userId: tx.userId },
       { 
         $inc: { 
           pendingWithdrawals: -tx.amount,
-          availableBalance: tx.amount 
+          winningsBalance: tx.amount 
         } 
       }
     );
