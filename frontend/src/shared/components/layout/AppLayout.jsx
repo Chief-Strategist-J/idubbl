@@ -28,53 +28,55 @@ export default function AppLayout({ children }) {
   return (
     <div className="app-container">
       <header className="header">
-        <div className="logo" onClick={() => navigate('/dashboard')}>
-          <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
-        </div>
-
-        {/* Desktop-only navigation */}
-        <nav className="nav-links">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.path}
-              className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
-              onClick={() => navigate(item.path)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="header-right">
-          <div className="balance-pill">
-            <span>💰</span>
-            <span className="balance-pill-amount">{availableBalance.toFixed(2)}</span>
-            <span className="balance-pill-unit"> USDT</span>
+        <div className="header-container">
+          <div className="logo" onClick={() => navigate('/dashboard')}>
+            <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
           </div>
 
-          <ThemeToggle className="desktop-only" />
+          {/* Desktop-only navigation */}
+          <nav className="nav-links">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.path}
+                className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
 
-          {user?.role === 'admin' && (
+          <div className="header-right">
+            <div className="balance-pill">
+              <span>💰</span>
+              <span className="balance-pill-amount">{availableBalance.toFixed(2)}</span>
+              <span className="balance-pill-unit"> USDT</span>
+            </div>
+
+            <ThemeToggle className="desktop-only" />
+
+            {user?.role === 'admin' && (
+              <button
+                className="nav-btn desktop-only"
+                onClick={() => navigate('/admin')}
+                style={{ color: 'var(--secondary)' }}
+              >
+                Admin
+              </button>
+            )}
+            <button className="nav-btn desktop-only" onClick={handleLogout}>Logout</button>
+
+            {/* Mobile: hamburger opens overflow menu (logout + admin) */}
             <button
-              className="nav-btn desktop-only"
-              onClick={() => navigate('/admin')}
-              style={{ color: 'var(--secondary)' }}
+              className="hamburger-btn"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="More options"
             >
-              Admin
+              <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+              <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+              <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
             </button>
-          )}
-          <button className="nav-btn desktop-only" onClick={handleLogout}>Logout</button>
-
-          {/* Mobile: hamburger opens overflow menu (logout + admin) */}
-          <button
-            className="hamburger-btn"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label="More options"
-          >
-            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
-            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
-            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
-          </button>
+          </div>
         </div>
       </header>
 
