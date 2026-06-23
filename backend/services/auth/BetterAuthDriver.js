@@ -52,7 +52,7 @@ export class BetterAuthDriver extends AuthDriver {
                   <h2 style="color: #1a1a1a; font-family: sans-serif;">Reset your Password</h2>
                   <p style="color: #666; line-height: 1.5; font-family: sans-serif;">We received a request to reset your password for your iDubbl account. Click the button below to reset it:</p>
                   <div style="margin: 25px 0;">
-                    <a href="${url}" style="background-color: #8b5cf6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-family: sans-serif;">Reset Password</a>
+                    <a href="${url}" style="background-color: #00f5a0; color: #04130d; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-family: sans-serif;">Reset Password</a>
                   </div>
                   <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">If you did not request a password reset, you can safely ignore this email.</p>
                 </div>

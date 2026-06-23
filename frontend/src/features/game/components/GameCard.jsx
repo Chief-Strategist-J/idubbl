@@ -15,7 +15,7 @@ export default function GameCard({ card, faceDown = false, small = false, select
 
   if (faceDown) {
     return (
-      <div style={{ ...base, background: 'linear-gradient(135deg, #312e81, #1e1b4b)', border: '1.5px solid rgba(139,92,246,0.35)', alignItems: 'center', justifyContent: 'center' }} onClick={onClick}>
+      <div style={{ ...base, background: 'linear-gradient(135deg, #064e3b, #052e23)', border: '1.5px solid rgba(0,245,160,0.35)', alignItems: 'center', justifyContent: 'center' }} onClick={onClick}>
         <div style={{ fontSize: small ? '1.1rem' : '1.4rem', lineHeight: 1 }}>🂠</div>
       </div>
     );
@@ -26,7 +26,7 @@ export default function GameCard({ card, faceDown = false, small = false, select
 
   return (
     <div
-      style={{ ...base, background: '#fff', border: selected ? '2px solid #a855f7' : '1.5px solid rgba(0,0,0,0.12)', boxShadow: selected ? '0 0 12px rgba(168,85,247,0.5)' : '0 2px 6px rgba(0,0,0,0.25)', color }}
+      style={{ ...base, background: '#fff', border: selected ? '2px solid #00f5a0' : '1.5px solid rgba(0,0,0,0.12)', boxShadow: selected ? '0 0 12px rgba(0,245,160,0.5)' : '0 2px 6px rgba(0,0,0,0.25)', color }}
       onClick={onClick}
     >
       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: fs, lineHeight: 1.15 }}>{card.rank}<br />{card.suit}</div>
