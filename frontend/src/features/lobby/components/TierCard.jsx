@@ -43,14 +43,14 @@ export default function TierCard({ tier }) {
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Platform rake: {tier.rakePercent}%</p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', margin: '1.25rem 0', padding: '0.65rem 0.85rem', background: 'var(--glass-bg)', borderRadius: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Waiting</span>
-          <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{tier.waitingCount} players</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', margin: '1.25rem 0', padding: '0.65rem 0.85rem', background: 'var(--glass-bg)', borderRadius: 8, textAlign: 'left', fontSize: '0.8rem' }}>
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Waiting: </span>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tier.waitingCount} players</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Est. wait</span>
-          <span style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : 'var(--accent-warning)', fontSize: '0.85rem' }}>{waitLabel}</span>
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Est. wait: </span>
+          <span style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : 'var(--accent-warning)' }}>{waitLabel}</span>
         </div>
       </div>
 
