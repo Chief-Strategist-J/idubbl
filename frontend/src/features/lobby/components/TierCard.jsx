@@ -43,14 +43,14 @@ export default function TierCard({ tier }) {
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Platform rake: {tier.rakePercent}%</p>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1.25rem 0', padding: '0.6rem 0.75rem', background: 'var(--glass-bg)', borderRadius: 8, fontSize: '0.85rem' }}>
-        <div style={{ textAlign: 'left' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Waiting</p>
-          <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{tier.waitingCount} players</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', margin: '1.25rem 0', padding: '0.65rem 0.85rem', background: 'var(--glass-bg)', borderRadius: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Waiting</span>
+          <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{tier.waitingCount} players</span>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Est. wait</p>
-          <p style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : 'var(--accent-warning)', fontSize: '0.9rem' }}>{waitLabel}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Est. wait</span>
+          <span style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : 'var(--accent-warning)', fontSize: '0.85rem' }}>{waitLabel}</span>
         </div>
       </div>
 
