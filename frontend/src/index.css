@@ -218,7 +218,7 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1440px;
+  max-width: 96%;
   margin: 0 auto;
 }
 
@@ -300,7 +300,7 @@ body {
 
 .main-content {
   flex: 1;
-  max-width: 1440px;
+  max-width: 96%;
   width: 100%;
   margin: 0 auto;
   padding: 2rem;
