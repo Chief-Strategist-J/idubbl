@@ -43,7 +43,7 @@ export default function DepositForm() {
         <strong style={{ color: 'var(--text-primary)' }}>Deposits are credited after confirmation.</strong>
       </p>
 
-      <div style={{ background: 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ background: 'var(--accent-cyan-glow)', border: '1px solid var(--accent-cyan-glow)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem' }}>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Platform USDT Wallet Address</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <code style={{ flex: 1, color: 'var(--accent-cyan)', fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all' }}>{PLATFORM_WALLET}</code>
