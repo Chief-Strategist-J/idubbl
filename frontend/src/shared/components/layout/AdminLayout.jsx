@@ -32,7 +32,7 @@ export default function AdminLayout({ children }) {
       {/* Mobile top bar */}
       <header className="admin-mobile-bar">
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => goTo('/admin')}>
-          <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '36px', borderRadius: '6px' }} />
+          <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '36px', borderRadius: '6px' }} />
           <span style={{ fontSize: '0.65rem', background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-sans)' }}>Admin</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -75,7 +75,7 @@ export default function AdminLayout({ children }) {
         {/* Sidebar */}
         <aside className={`admin-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className="logo admin-sidebar-logo" onClick={() => goTo('/admin')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
+            <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
             <span style={{ fontSize: '0.7rem', background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-sans)' }}>Admin</span>
           </div>
 

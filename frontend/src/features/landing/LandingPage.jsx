@@ -15,7 +15,7 @@ export default function LandingPage() {
     <div className="app-container">
       <header className="header">
         <div className="logo">
-          <img src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
+          <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
         </div>
         <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <button
