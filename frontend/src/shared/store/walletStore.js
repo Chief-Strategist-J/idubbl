@@ -6,6 +6,7 @@ if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')
   apiBase = `https://${apiBase}`;
 }
 const BASE_URL = `${apiBase}/api/wallet`;
+const ADMIN_BASE_URL = `${apiBase}/api/admin`;
 
 const useWalletStore = create((set, get) => ({
   depositBalance: 0,
@@ -16,9 +17,12 @@ const useWalletStore = create((set, get) => ({
   transactions: [],
   deposits: [],
   withdrawals: [],
+  adminUsers: [],
+  platformRevenue: 0,
+  totalFees: 0,
   loading: false,
 
-  // Fetch balance and transactions from the backend API
+  // Fetch balance and transactions from the backend API (for normal player)
   fetchWalletData: async (userId) => {
     const currentUserId = userId || useAuthStore.getState().user?.id;
     if (!currentUserId) return;
@@ -26,14 +30,16 @@ const useWalletStore = create((set, get) => ({
     try {
       // Fetch Balance
       const balRes = await fetch(`${BASE_URL}/balance`, {
-        headers: { 'x-user-id': currentUserId }
+        headers: { 'x-user-id': currentUserId },
+        credentials: 'include'
       });
       const balJson = await balRes.json();
       const balance = balJson.success ? balJson.data : balJson;
 
       // Fetch Transactions
       const txRes = await fetch(`${BASE_URL}/transactions`, {
-        headers: { 'x-user-id': currentUserId }
+        headers: { 'x-user-id': currentUserId },
+        credentials: 'include'
       });
       const txJson = await txRes.json();
       const transactions = txJson.success ? (txJson.data || []) : (txJson || []);
@@ -59,11 +65,92 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
+  // Admin: Fetch all deposits
+  fetchAdminDeposits: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/deposits`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({ deposits: json.data || [], loading: false });
+      } else {
+        set({ loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching admin deposits:', error);
+      set({ loading: false });
+    }
+  },
+
+  // Admin: Fetch all withdrawals
+  fetchAdminWithdrawals: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/withdrawals`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({ withdrawals: json.data || [], loading: false });
+      } else {
+        set({ loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching admin withdrawals:', error);
+      set({ loading: false });
+    }
+  },
+
+  // Admin: Fetch ledger
+  fetchAdminLedger: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/ledger`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        const data = json.data || {};
+        set({
+          transactions: data.logs || [],
+          platformRevenue: data.platformRevenue || 0,
+          totalFees: data.totalFees || 0,
+          loading: false
+        });
+      } else {
+        set({ loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching admin ledger:', error);
+      set({ loading: false });
+    }
+  },
+
+  // Admin: Fetch all users
+  fetchAdminUsers: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/users`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({ adminUsers: json.data || [], loading: false });
+      } else {
+        set({ loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      set({ loading: false });
+    }
+  },
+
   reserveForMatch: (amount) => {
     const { availableBalance, depositBalance, winningsBalance, lockedBalance } = get();
     if (availableBalance < amount) return false;
     
-    // Deduct from depositBalance first, then winningsBalance
     let newDepositBalance = depositBalance;
     let newWinningsBalance = winningsBalance;
     
@@ -86,7 +173,6 @@ const useWalletStore = create((set, get) => ({
 
   releaseReservation: (amount) => {
     const { availableBalance, depositBalance, lockedBalance } = get();
-    // Return reservation back to depositBalance
     set({ 
       depositBalance: depositBalance + amount,
       availableBalance: availableBalance + amount, 
@@ -96,7 +182,6 @@ const useWalletStore = create((set, get) => ({
 
   creditWinnings: (amount) => {
     const { availableBalance, winningsBalance, lockedBalance } = get();
-    // Credits directly to winningsBalance
     set({ 
       winningsBalance: winningsBalance + amount,
       availableBalance: availableBalance + amount, 
@@ -114,6 +199,7 @@ const useWalletStore = create((set, get) => ({
           'Content-Type': 'application/json',
           'x-user-id': currentUserId
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       
@@ -139,6 +225,7 @@ const useWalletStore = create((set, get) => ({
           'Content-Type': 'application/json',
           'x-user-id': currentUserId
         },
+        credentials: 'include',
         body: JSON.stringify({
           amount: data.amount,
           address: data.address,
@@ -162,10 +249,15 @@ const useWalletStore = create((set, get) => ({
     const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/approve`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
       if (response.ok) {
-        await get().fetchWalletData(currentUserId);
+        if (useAuthStore.getState().user?.role === 'admin') {
+          await get().fetchAdminDeposits();
+        } else {
+          await get().fetchWalletData(currentUserId);
+        }
       }
     } catch (error) {
       console.error('Error approving deposit:', error);
@@ -176,10 +268,15 @@ const useWalletStore = create((set, get) => ({
     const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/reject`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
       if (response.ok) {
-        await get().fetchWalletData(currentUserId);
+        if (useAuthStore.getState().user?.role === 'admin') {
+          await get().fetchAdminDeposits();
+        } else {
+          await get().fetchWalletData(currentUserId);
+        }
       }
     } catch (error) {
       console.error('Error rejecting deposit:', error);
@@ -190,10 +287,15 @@ const useWalletStore = create((set, get) => ({
     const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/approve`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
       if (response.ok) {
-        await get().fetchWalletData(currentUserId);
+        if (useAuthStore.getState().user?.role === 'admin') {
+          await get().fetchAdminWithdrawals();
+        } else {
+          await get().fetchWalletData(currentUserId);
+        }
       }
     } catch (error) {
       console.error('Error approving withdrawal:', error);
@@ -204,10 +306,15 @@ const useWalletStore = create((set, get) => ({
     const currentUserId = userId || useAuthStore.getState().user?.id;
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/reject`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
       if (response.ok) {
-        await get().fetchWalletData(currentUserId);
+        if (useAuthStore.getState().user?.role === 'admin') {
+          await get().fetchAdminWithdrawals();
+        } else {
+          await get().fetchWalletData(currentUserId);
+        }
       }
     } catch (error) {
       console.error('Error rejecting withdrawal:', error);

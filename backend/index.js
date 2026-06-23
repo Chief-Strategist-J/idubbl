@@ -6,14 +6,19 @@ import cors from 'cors';
 import authRouter from './routes/auth.js';
 import paymentRouter from './routes/payment.js';
 import walletRouter from './routes/wallet.js';
+import adminRouter from './routes/admin.js';
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
 app.use('/api/payment', paymentRouter);
 app.use('/api/wallet', walletRouter);
+app.use('/api/admin', adminRouter);
 
 const server = createServer(app);
 const io = new Server(server, {

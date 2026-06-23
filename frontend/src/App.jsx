@@ -25,14 +25,29 @@ import AdminLedgerPage from './features/admin/features/ledger/AdminLedgerPage.js
 import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, sessionChecked } = useAuthStore();
+  if (!sessionChecked) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border)', borderTop: '4px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span>Loading session...</span>
+      </div>
+    );
+  }
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function AdminRoute({ children }) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, sessionChecked } = useAuthStore();
+  if (!sessionChecked) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border)', borderTop: '4px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span>Verifying admin authorization...</span>
+      </div>
+    );
+  }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  // Check role explicitly
   if (user?.role === 'admin') return children;
   return <Navigate to="/dashboard" replace />;
 }

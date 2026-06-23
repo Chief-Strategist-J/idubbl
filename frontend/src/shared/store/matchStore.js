@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { MOCK_MATCHES, MOCK_TIERS, WORD_DUEL_QUESTIONS } from '../mock/index.js';
 
+let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+  apiBase = `https://${apiBase}`;
+}
+const ADMIN_BASE_URL = `${apiBase}/api/admin`;
+
 const useMatchStore = create((set, get) => ({
   matches: MOCK_MATCHES,
   tiers: MOCK_TIERS,
@@ -11,6 +17,25 @@ const useMatchStore = create((set, get) => ({
   rounds: [],
   matchResult: null,
   questions: WORD_DUEL_QUESTIONS,
+  loading: false,
+
+  fetchAdminMatches: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/matches`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({ matches: json.data || [], loading: false });
+      } else {
+        set({ loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching admin matches:', error);
+      set({ loading: false });
+    }
+  },
 
   joinQueue: (tierId) => {
     const tier = get().tiers.find((t) => t.id === tierId);

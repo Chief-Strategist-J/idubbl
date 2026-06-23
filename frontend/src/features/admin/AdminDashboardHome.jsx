@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AdminLayout from '../../shared/components/layout/AdminLayout.jsx';
 import { Stat, Card, PageHeader, Badge } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
 
 export default function AdminDashboardHome() {
-  const { deposits, withdrawals } = useWalletStore();
-  const { matches, tiers } = useMatchStore();
+  const { deposits, withdrawals, fetchAdminDeposits, fetchAdminWithdrawals, loading: walletLoading } = useWalletStore();
+  const { matches, tiers, fetchAdminMatches, loading: matchLoading } = useMatchStore();
+
+  useEffect(() => {
+    fetchAdminDeposits();
+    fetchAdminWithdrawals();
+    fetchAdminMatches();
+  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches]);
+
+  const loading = walletLoading || matchLoading;
 
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
   const pendingWithdrawals = withdrawals.filter((w) => w.status === 'pending').length;

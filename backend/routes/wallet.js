@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../services/db.js';
 import { errorRegistry } from '../services/errorRegistry.js';
+import { authService } from '../services/index.js';
 
 const router = express.Router();
 
@@ -160,6 +161,11 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
@@ -191,6 +197,11 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const result = await db.collection('transactions').updateOne(
       { _id: new ObjectId(id), status: 'pending' },
@@ -213,6 +224,11 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
@@ -244,6 +260,11 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {

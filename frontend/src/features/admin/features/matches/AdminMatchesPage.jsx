@@ -15,7 +15,11 @@ const COLUMNS = [
 ];
 
 export default function AdminMatchesPage() {
-  const { matches, tiers } = useMatchStore();
+  const { matches, tiers, fetchAdminMatches, loading } = useMatchStore();
+
+  React.useEffect(() => {
+    fetchAdminMatches();
+  }, [fetchAdminMatches]);
 
   const active = matches.filter((m) => m.status === 'active');
   const completed = matches.filter((m) => m.status === 'completed');
@@ -24,21 +28,30 @@ export default function AdminMatchesPage() {
     <AdminLayout>
       <PageHeader title="Live Matches" subtitle="View active matches, queue depths, and completed game history." />
 
-      <div className="admin-stats-grid" style={{ marginBottom: '2rem' }}>
-        <Stat label="Active Matches" value={active.length} highlight />
-        <Stat label="Completed Today" value={completed.length} />
-        {tiers.map((t) => <Stat key={t.id} label={`${t.name} Queue`} value={`${t.waitingCount} waiting`} />)}
-      </div>
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+          <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTop: '3px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <span>Loading live matches...</span>
+        </div>
+      ) : (
+        <>
+          <div className="admin-stats-grid" style={{ marginBottom: '2rem' }}>
+            <Stat label="Active Matches" value={active.length} highlight />
+            <Stat label="Completed Today" value={completed.length} />
+            {tiers.map((t) => <Stat key={t.id} label={`${t.name} Queue`} value={`${t.waitingCount} waiting`} />)}
+          </div>
 
-      <Card style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Active Matches</h3>
-        <Table columns={COLUMNS} rows={active} emptyMessage="No active matches right now." />
-      </Card>
+          <Card style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Active Matches</h3>
+            <Table columns={COLUMNS} rows={active} emptyMessage="No active matches right now." />
+          </Card>
 
-      <Card>
-        <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Completed Matches</h3>
-        <Table columns={COLUMNS} rows={completed} emptyMessage="No completed matches." />
-      </Card>
+          <Card>
+            <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Completed Matches</h3>
+            <Table columns={COLUMNS} rows={completed} emptyMessage="No completed matches." />
+          </Card>
+        </>
+      )}
     </AdminLayout>
   );
 }
