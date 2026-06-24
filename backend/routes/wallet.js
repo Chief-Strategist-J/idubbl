@@ -1,5 +1,7 @@
 import express from 'express';
 import { getDb } from '../services/db.js';
+import { errorRegistry } from '../services/errorRegistry.js';
+import { authService } from '../services/index.js';
 
 const router = express.Router();
 
@@ -9,12 +11,29 @@ async function getOrCreateWallet(db, userId) {
   if (!wallet) {
     wallet = {
       userId,
-      availableBalance: 500, // Default signup balance
+      depositBalance: 1000,   // Default signup/demo deposit balance
+      winningsBalance: 0,     // Default signup winnings balance
       lockedBalance: 5,
       pendingWithdrawals: 18,
       createdAt: new Date(),
     };
     await db.collection('wallets').insertOne(wallet);
+  } else {
+    // Migrate existing wallets if they don't have the new split fields
+    let updated = false;
+    const updateQuery = { $set: {} };
+    if (wallet.depositBalance === undefined) {
+      updateQuery.$set.depositBalance = wallet.availableBalance !== undefined ? wallet.availableBalance : 0;
+      updated = true;
+    }
+    if (wallet.winningsBalance === undefined) {
+      updateQuery.$set.winningsBalance = 0;
+      updated = true;
+    }
+    if (updated) {
+      await db.collection('wallets').updateOne({ userId }, updateQuery);
+      wallet = { ...wallet, ...updateQuery.$set };
+    }
   }
   return wallet;
 }
@@ -27,13 +46,18 @@ router.get('/balance', async (req, res) => {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
     res.json({
-      availableBalance: wallet.availableBalance,
-      lockedBalance: wallet.lockedBalance,
-      pendingWithdrawals: wallet.pendingWithdrawals,
+      success: true,
+      data: {
+        depositBalance: wallet.depositBalance,
+        winningsBalance: wallet.winningsBalance,
+        availableBalance: wallet.depositBalance + wallet.winningsBalance,
+        lockedBalance: wallet.lockedBalance,
+        pendingWithdrawals: wallet.pendingWithdrawals,
+      }
     });
   } catch (error) {
     console.error('Error fetching balance:', error);
-    res.status(500).json({ error: 'Database error fetching balance' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching balance.');
   }
 });
 
@@ -47,10 +71,10 @@ router.get('/transactions', async (req, res) => {
       .find({ userId })
       .sort({ createdAt: -1 })
       .toArray();
-    res.json(transactions);
+    res.json({ success: true, data: transactions });
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    res.status(500).json({ error: 'Database error fetching transactions' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching transactions.');
   }
 });
 
@@ -59,8 +83,11 @@ router.post('/deposit', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
   const { amount, network, txHash, note } = req.body;
 
-  if (!amount || !txHash) {
-    return res.status(400).json({ error: 'Amount and transaction hash are required' });
+  if (!amount) {
+    return errorRegistry.send(res, 'INVALID_AMOUNT', 'Amount is required to submit a deposit.');
+  }
+  if (!txHash) {
+    return errorRegistry.send(res, 'MISSING_TX_HASH', 'Transaction hash is required.');
   }
 
   try {
@@ -76,10 +103,10 @@ router.post('/deposit', async (req, res) => {
       createdAt: new Date(),
     };
     await db.collection('transactions').insertOne(newDeposit);
-    res.json({ success: true, deposit: newDeposit });
+    res.json({ success: true, data: newDeposit });
   } catch (error) {
     console.error('Error submitting deposit:', error);
-    res.status(500).json({ error: 'Database error submitting deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting deposit.');
   }
 });
 
@@ -88,24 +115,24 @@ router.post('/withdraw', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
   const { amount, address, network } = req.body;
 
-  if (!amount || !address) {
-    return res.status(400).json({ error: 'Amount and address are required' });
+  if (!amount || !address || !network) {
+    return errorRegistry.send(res, 'MISSING_WITHDRAW_DETAILS', 'Amount, target address, and network are required to submit withdrawal.');
   }
 
   try {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
 
-    if (wallet.availableBalance < Number(amount)) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+    if (wallet.winningsBalance < Number(amount)) {
+      return errorRegistry.send(res, 'INSUFFICIENT_WINNINGS', 'Insufficient balance in winnings wallet to complete the requested withdrawal. Deposits cannot be withdrawn.');
     }
 
-    // Deduct available, increase pending
+    // Deduct winningsBalance, increase pendingWithdrawals
     await db.collection('wallets').updateOne(
       { userId },
       { 
         $inc: { 
-          availableBalance: -Number(amount), 
+          winningsBalance: -Number(amount), 
           pendingWithdrawals: Number(amount) 
         } 
       }
@@ -121,10 +148,10 @@ router.post('/withdraw', async (req, res) => {
       createdAt: new Date(),
     };
     await db.collection('transactions').insertOne(newWithdrawal);
-    res.json({ success: true, withdrawal: newWithdrawal });
+    res.json({ success: true, data: newWithdrawal });
   } catch (error) {
     console.error('Error submitting withdrawal:', error);
-    res.status(500).json({ error: 'Database error submitting withdrawal' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting withdrawal.');
   }
 });
 
@@ -134,10 +161,15 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
-      return res.status(404).json({ error: 'Pending deposit transaction not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending deposit transaction not found.');
     }
 
     // Mark approved
@@ -146,16 +178,16 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
       { $set: { status: 'approved', reviewedBy: 'admin1', approvedAt: new Date() } }
     );
 
-    // Update wallet balance
+    // Update wallet balance (credit to depositBalance)
     await db.collection('wallets').updateOne(
       { userId: tx.userId },
-      { $inc: { availableBalance: tx.amount } }
+      { $inc: { depositBalance: tx.amount } }
     );
 
     res.json({ success: true });
   } catch (error) {
     console.error('Error approving deposit:', error);
-    res.status(500).json({ error: 'Database error approving deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving deposit.');
   }
 });
 
@@ -165,6 +197,11 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const result = await db.collection('transactions').updateOne(
       { _id: new ObjectId(id), status: 'pending' },
@@ -172,12 +209,12 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
     );
 
     if (result.matchedCount === 0) {
-      return res.status(404).json({ error: 'Pending deposit not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending deposit not found.');
     }
     res.json({ success: true });
   } catch (error) {
     console.error('Error rejecting deposit:', error);
-    res.status(500).json({ error: 'Database error rejecting deposit' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error rejecting deposit.');
   }
 });
 
@@ -187,10 +224,15 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
   const { ObjectId } = await import('mongodb');
 
   try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
     const db = await getDb();
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
     if (!tx || tx.status !== 'pending') {
-      return res.status(404).json({ error: 'Pending withdrawal not found' });
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
     }
 
     // Approve transaction
@@ -208,7 +250,48 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error approving withdrawal:', error);
-    res.status(500).json({ error: 'Database error approving withdrawal' });
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving withdrawal.');
+  }
+});
+
+// 8. Admin Reject Withdrawal
+router.post('/admin/withdraw/:id/reject', async (req, res) => {
+  const { id } = req.params;
+  const { ObjectId } = await import('mongodb');
+
+  try {
+    const sessionData = await authService.getSession(req);
+    if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
+    const db = await getDb();
+    const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
+    if (!tx || tx.status !== 'pending') {
+      return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
+    }
+
+    // Mark transaction as rejected
+    await db.collection('transactions').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'rejected', reviewedBy: 'admin1', rejectedAt: new Date() } }
+    );
+
+    // Return funds: deduct pending, credit winningsBalance (since withdrawal is only from winnings)
+    await db.collection('wallets').updateOne(
+      { userId: tx.userId },
+      { 
+        $inc: { 
+          pendingWithdrawals: -tx.amount,
+          winningsBalance: tx.amount 
+        } 
+      }
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error rejecting withdrawal:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error rejecting withdrawal.');
   }
 });
 

@@ -1,0 +1,45 @@
+services:
+  # Backend Service
+  - type: web
+    name: idubbl-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "5000"
+      - key: NODE_ENV
+        value: production
+      - key: BETTER_AUTH_URL
+        value: https://idubbl-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://idubbl-frontend.onrender.com
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false # User will input their MongoDB Atlas URI in the Render dashboard
+      - key: RESEND_API_KEY
+        sync: false # User will input their Resend API key in the Render dashboard
+      - key: FLW_PUBLIC_KEY
+        sync: false
+      - key: FLW_SECRET_KEY
+        sync: false
+      - key: FLW_ENCRYPTION_KEY
+        sync: false
+
+  # Frontend Service (Static Site)
+  - type: web
+    name: idubbl-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://idubbl-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

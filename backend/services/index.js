@@ -22,10 +22,13 @@ const activePaymentName = config.payments?.active || 'flutterwave';
 const paymentConfig = config.payments?.gateways?.[activePaymentName] || {};
 const paymentService = paymentRegistry.initialize(activePaymentName, paymentConfig);
 
+import { sendEmail } from './emailService.js';
+
 export {
   config,
   authRegistry,
   authService,
   paymentRegistry,
   paymentService,
+  sendEmail,
 };

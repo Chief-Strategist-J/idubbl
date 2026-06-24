@@ -12,8 +12,8 @@ export default function MathDuel({ question, onAnswer, answered }) {
 
   const getOptionStyle = (index) => {
     if (selected === null) return {};
-    if (index === question.correct) return { borderColor: 'var(--accent-green)', background: 'rgba(16,185,129,0.08)', color: 'var(--accent-green)' };
-    if (index === selected && index !== question.correct) return { borderColor: '#dc2626', background: 'rgba(220,38,38,0.06)', color: '#dc2626' };
+    if (index === question.correct) return { borderColor: 'var(--accent-green)', background: 'rgba(16,185,129,0.12)', color: 'var(--accent-green)' };
+    if (index === selected && index !== question.correct) return { borderColor: 'var(--accent-red)', background: 'var(--accent-red-glow)', color: 'var(--accent-red)' };
     return { opacity: 0.5 };
   };
 
@@ -49,7 +49,7 @@ export default function MathDuel({ question, onAnswer, answered }) {
       </div>
 
       {selected !== null && !answered && (
-        <p style={{ textAlign: 'center', marginTop: '1rem', color: selected === question.correct ? 'var(--accent-green)' : '#dc2626', fontWeight: 600 }}>
+        <p style={{ textAlign: 'center', marginTop: '1rem', color: selected === question.correct ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
           {selected === question.correct ? '✓ Correct!' : '✗ Wrong answer'}
         </p>
       )}

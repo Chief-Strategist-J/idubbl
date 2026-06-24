@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 import config from './configLoader.js';
 
-const url = config.auth?.providers?.['better-auth']?.database?.url || 'mongodb://mongodb:27017/idubbl';
+const url = config.auth?.providers?.['better-auth']?.database?.url || process.env.MONGODB_URI || 'mongodb://mongodb:27017/idubbl';
 
 let client = null;
 let db = null;

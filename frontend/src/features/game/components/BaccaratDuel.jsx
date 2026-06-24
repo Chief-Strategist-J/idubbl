@@ -72,7 +72,7 @@ export default function BaccaratDuel({ onAnswer, answered }) {
           <div className="casino-actions" style={{ gap: '0.75rem' }}>
             <button className="casino-btn casino-btn-secondary" style={{ flex: 1 }} onClick={() => placeBet('Player')}>PLAYER<br /><span style={{ fontSize: '0.7rem', opacity: 0.7 }}>pays 1:1</span></button>
             <button className="casino-btn casino-btn-primary" style={{ flex: 1 }} onClick={() => placeBet('Banker')}>BANKER<br /><span style={{ fontSize: '0.7rem', opacity: 0.7 }}>pays 0.95:1</span></button>
-            <button className="casino-btn" style={{ flex: 1, background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.4)', color: '#fbbf24' }} onClick={() => placeBet('Tie')}>TIE<br /><span style={{ fontSize: '0.7rem', opacity: 0.7 }}>pays 8:1</span></button>
+            <button className="casino-btn" style={{ flex: 1, background: 'var(--accent-warning-glow)', border: '1px solid var(--accent-warning-glow)', color: 'var(--accent-warning)' }} onClick={() => placeBet('Tie')}>TIE<br /><span style={{ fontSize: '0.7rem', opacity: 0.7 }}>pays 8:1</span></button>
           </div>
         </>
       ) : cards && (

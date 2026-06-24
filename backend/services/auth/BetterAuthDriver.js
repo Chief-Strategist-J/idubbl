@@ -3,6 +3,7 @@ import { mongodbAdapter } from '@better-auth/mongo-adapter';
 import { MongoClient } from 'mongodb';
 import { toNodeHandler } from 'better-auth/node';
 import { AuthDriver } from './AuthDriver.js';
+import { sendEmail } from '../emailService.js';
 
 export class BetterAuthDriver extends AuthDriver {
   constructor(config) {
@@ -26,8 +27,55 @@ export class BetterAuthDriver extends AuthDriver {
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        plugins: [
+          // Enable role capabilities in Better Auth to natively fetch and populate user.role from the database user table
+          {
+            id: 'admin-roles',
+            schema: {
+              user: {
+                fields: {
+                  role: {
+                    type: 'string',
+                    required: false,
+                    defaultValue: 'player'
+                  }
+                }
+              }
+            }
+          }
+        ],
+        baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+        trustedOrigins: [
+          'https://idubbl-frontend.onrender.com',
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'http://localhost:5175',
+          'http://localhost:3000'
+        ],
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
+          sendResetPassword: async ({ user, url, token }) => {
+            console.log('--------------------------------------------------');
+            console.log(`[PASSWORD RESET] For user: ${user.email}`);
+            console.log(`[PASSWORD RESET] Token: ${token}`);
+            console.log(`[PASSWORD RESET] Link: ${url}`);
+            console.log('--------------------------------------------------');
+
+            await sendEmail({
+              to: user.email,
+              subject: 'Reset your iDubbl Password',
+              html: `
+                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 5px;">
+                  <h2 style="color: #1a1a1a; font-family: sans-serif;">Reset your Password</h2>
+                  <p style="color: #666; line-height: 1.5; font-family: sans-serif;">We received a request to reset your password for your iDubbl account. Click the button below to reset it:</p>
+                  <div style="margin: 25px 0;">
+                    <a href="${url}" style="background-color: #00f5a0; color: #04130d; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-family: sans-serif;">Reset Password</a>
+                  </div>
+                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">If you did not request a password reset, you can safely ignore this email.</p>
+                </div>
+              `
+            });
+          }
         },
       };
 

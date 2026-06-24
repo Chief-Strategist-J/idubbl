@@ -1,22 +1,40 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
+import useAuthStore from '../../shared/store/authStore.js';
 
 export default function ForgotPasswordPage() {
+  const { forgotPassword } = useAuthStore();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setSent(true); setLoading(false); }, 700);
+    setError('');
+    try {
+      const redirectTo = `${window.location.origin}/reset-password`;
+      const res = await forgotPassword(email, redirectTo);
+      setLoading(false);
+      if (res.success) {
+        setSent(true);
+      } else {
+        setError(res.error);
+      }
+    } catch (err) {
+      setLoading(false);
+      setError('An error occurred. Please try again.');
+    }
   };
 
   return (
     <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
       <div style={{ width: '100%', maxWidth: 420, padding: '1rem' }}>
-        <div className="logo" style={{ justifyContent: 'center', marginBottom: '2rem', fontSize: '2rem' }}>iDubbl</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ width: '120px', height: '120px', borderRadius: '24px', boxShadow: '0 6px 20px rgba(0,0,0,0.4)' }} />
+        </div>
 
         <Card>
           {sent ? (
@@ -34,6 +52,7 @@ export default function ForgotPasswordPage() {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>Enter your email and we will send a reset link.</p>
               <form onSubmit={handleSubmit}>
                 <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
                 <Button type="submit" loading={loading} fullWidth>Send reset link</Button>
               </form>
               <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>

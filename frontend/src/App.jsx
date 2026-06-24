@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './shared/store/authStore.js';
 
@@ -6,6 +6,7 @@ import LandingPage from './features/landing/LandingPage.jsx';
 import LoginPage from './features/auth/LoginPage.jsx';
 import SignupPage from './features/auth/SignupPage.jsx';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './features/auth/ResetPasswordPage.jsx';
 import DashboardPage from './features/dashboard/DashboardPage.jsx';
 import DepositPage from './features/deposit/DepositPage.jsx';
 import LobbyPage from './features/lobby/LobbyPage.jsx';
@@ -24,18 +25,40 @@ import AdminLedgerPage from './features/admin/features/ledger/AdminLedgerPage.js
 import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, sessionChecked } = useAuthStore();
+  if (!sessionChecked) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border)', borderTop: '4px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span>Loading session...</span>
+      </div>
+    );
+  }
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function AdminRoute({ children }) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, sessionChecked } = useAuthStore();
+  if (!sessionChecked) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border)', borderTop: '4px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span>Verifying admin authorization...</span>
+      </div>
+    );
+  }
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
-  return children;
+  if (user?.role === 'admin') return children;
+  return <Navigate to="/dashboard" replace />;
 }
 
 export default function App() {
+  const { checkSession } = useAuthStore();
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -43,6 +66,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/deposit" element={<ProtectedRoute><DepositPage /></ProtectedRoute>} />

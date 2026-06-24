@@ -70,7 +70,7 @@ export default function RecentMatches() {
                 <td style={{ fontWeight: 600 }}>
                   {row.winnerId === 'u1'
                     ? <span style={{ color: 'var(--accent-green)' }}>+{row.prize} USDT</span>
-                    : <span style={{ color: '#dc2626' }}>-{row.entryFee} USDT</span>
+                    : <span style={{ color: 'var(--accent-red)' }}>-{row.entryFee} USDT</span>
                   }
                 </td>
               </tr>

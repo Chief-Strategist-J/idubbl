@@ -73,7 +73,7 @@ export default function CasinoWar({ onAnswer, answered }) {
 
           {phase === 'revealed' && (
             <>
-              <p style={{ textAlign: 'center', color: '#fbbf24', fontWeight: 700, margin: '1rem 0 0.5rem', letterSpacing: 2 }}>⚔ TIE — GO TO WAR?</p>
+              <p style={{ textAlign: 'center', color: 'var(--accent-warning)', fontWeight: 700, margin: '1rem 0 0.5rem', letterSpacing: 2 }}>⚔ TIE — GO TO WAR?</p>
               <div className="casino-actions">
                 <button className="casino-btn casino-btn-primary" onClick={goToWar}>GO TO WAR</button>
                 <button className="casino-btn casino-btn-secondary" onClick={surrender}>SURRENDER</button>

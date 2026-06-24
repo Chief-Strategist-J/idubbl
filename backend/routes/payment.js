@@ -1,5 +1,7 @@
 import express from 'express';
 import { paymentService } from '../services/index.js';
+import { getDb } from '../services/db.js';
+import { errorRegistry } from '../services/errorRegistry.js';
 
 const router = express.Router();
 
@@ -9,7 +11,7 @@ router.post('/create', async (req, res) => {
   const orderId = `ord_${Date.now()}`;
 
   if (!amount || !customer || !customer.email) {
-    return res.status(400).json({ error: 'Missing required parameters: amount, customer.email' });
+    return errorRegistry.send(res, 'INVALID_AMOUNT', 'Amount and customer email are required to create a payment session.');
   }
 
   try {
@@ -20,10 +22,10 @@ router.post('/create', async (req, res) => {
       customer,
       description,
     });
-    res.json(result);
+    res.json({ success: true, data: result });
   } catch (error) {
     console.error('Payment creation failed:', error);
-    res.status(500).json({ error: error.message || 'Payment initiation failed' });
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Payment initiation failed.');
   }
 });
 
@@ -33,10 +35,10 @@ router.get('/verify/:transactionId', async (req, res) => {
 
   try {
     const result = await paymentService.verifyPayment(transactionId);
-    res.json(result);
+    res.json({ success: true, data: result });
   } catch (error) {
     console.error('Payment verification failed:', error);
-    res.status(500).json({ error: error.message || 'Payment verification failed' });
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Payment verification failed.');
   }
 });
 
@@ -45,11 +47,10 @@ router.post('/webhook', async (req, res) => {
   try {
     const event = await paymentService.handleWebhook(req);
     console.log('Webhook Event Processed:', event);
-    // Add logic here to update order status in DB
-    res.status(200).json({ received: true, event });
+    res.status(200).json({ success: true, received: true, event });
   } catch (error) {
     console.error('Webhook error:', error);
-    res.status(400).send(`Webhook Error: ${error.message}`);
+    return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Webhook processing failed.');
   }
 });
 
@@ -58,15 +59,55 @@ router.get('/callback/flutterwave', async (req, res) => {
   const { transaction_id, status, tx_ref } = req.query;
   console.log(`Flutterwave callback: ID=${transaction_id}, Status=${status}, Ref=${tx_ref}`);
   
+  const frontendUrl = process.env.FRONTEND_URL || 'https://idubbl-frontend.onrender.com';
+
   if (status === 'successful' || status === 'completed') {
     try {
       const verification = await paymentService.verifyPayment(transaction_id);
-      return res.send(`Payment Success! Reference: ${verification.orderId}`);
+      
+      const db = await getDb();
+      // Find the user by their email (case-insensitive)
+      const userEmail = verification.rawResponse?.data?.customer?.email;
+      if (userEmail) {
+        const user = await db.collection('user').findOne({ 
+          email: { $regex: new RegExp(`^${userEmail.trim()}$`, 'i') } 
+        });
+        if (user) {
+          const userId = user.id || user._id.toString();
+          
+          // Credit the wallet
+          await db.collection('wallets').updateOne(
+            { userId: userId },
+            { 
+              $inc: { depositBalance: Number(verification.amount) },
+              $setOnInsert: { winningsBalance: 0, lockedBalance: 0, pendingWithdrawals: 0, createdAt: new Date() }
+            },
+            { upsert: true }
+          );
+
+          // Log the transaction
+          await db.collection('transactions').insertOne({
+            userId: userId,
+            amount: Number(verification.amount),
+            status: 'approved',
+            type: 'deposit',
+            method: 'flutterwave',
+            txHash: transaction_id,
+            note: `Flutterwave Deposit Ref: ${verification.orderId}`,
+            createdAt: new Date(),
+          });
+        } else {
+          console.warn(`User with email "${userEmail}" not found in database for callback.`);
+        }
+      }
+
+      return res.redirect(`${frontendUrl}/transactions?payment=success&ref=${verification.orderId}`);
     } catch (err) {
-      return res.status(500).send(`Payment verified failed: ${err.message}`);
+      console.error('Callback processing failed:', err);
+      return res.redirect(`${frontendUrl}/transactions?payment=failed&error=${encodeURIComponent(err.message)}`);
     }
   }
-  res.send(`Payment incomplete. Status: ${status}`);
+  return res.redirect(`${frontendUrl}/transactions?payment=failed&status=${status}`);
 });
 
 // Callback redirect route for Juspay

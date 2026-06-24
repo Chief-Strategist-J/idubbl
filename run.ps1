@@ -1,0 +1,1 @@
+node "$PSScriptRoot/run.js"

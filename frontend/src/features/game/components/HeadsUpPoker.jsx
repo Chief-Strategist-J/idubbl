@@ -80,14 +80,14 @@ export default function HeadsUpPoker({ onAnswer, answered }) {
           {hole.map((c, i) => <GameCard key={i} card={c} />)}
         </div>
         {myEval && (
-          <p style={{ textAlign: 'center', color: '#c084fc', fontSize: '0.8rem', marginTop: '0.4rem' }}>{myEval.name}</p>
+          <p style={{ textAlign: 'center', color: 'var(--primary)', fontSize: '0.8rem', marginTop: '0.4rem' }}>{myEval.name}</p>
         )}
       </div>
 
       {phase !== 'showdown' && !answered && (
         <div className="casino-actions" style={{ marginTop: '1rem' }}>
           <button className="casino-btn casino-btn-secondary" onClick={() => act('fold')}>FOLD</button>
-          <button className="casino-btn" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee' }} onClick={() => act('call')}>
+          <button className="casino-btn" style={{ background: 'var(--accent-cyan-glow)', border: '1px solid var(--accent-cyan-glow)', color: 'var(--accent-cyan)' }} onClick={() => act('call')}>
             {phase === 'preflop' ? 'CALL → SEE FLOP' : 'CALL'}
           </button>
           <button className="casino-btn casino-btn-primary" onClick={() => act('raise')}>RAISE</button>

@@ -54,7 +54,7 @@ export default function ThreeCardPoker({ onAnswer, answered }) {
         <div className="casino-hand-label" style={{ marginTop: phase === 'showdown' ? '1rem' : 0 }}>Your Hand</div>
         <div className="casino-hand">{playerCards.map((c, i) => <GameCard key={i} card={c} />)}</div>
         <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-          <span style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 8, padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: '#c084fc' }}>
+          <span style={{ background: 'var(--primary-glow)', border: '1px solid var(--primary-glow)', borderRadius: 8, padding: '0.3rem 0.8rem', fontSize: '0.8rem', color: 'var(--primary)' }}>
             {playerHand.name} — {PAYOUTS[Math.min(playerHand.rank, 5)]}
           </span>
         </div>

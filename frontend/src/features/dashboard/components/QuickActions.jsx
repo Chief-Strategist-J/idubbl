@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Zap, Plus, ArrowUpRight, History } from 'lucide-react';
 
 const ACTIONS = [
-  { label: '🎯  Play Now', path: '/lobby', variant: 'primary' },
-  { label: '💳  Deposit', path: '/deposit', variant: 'secondary' },
-  { label: '💸  Withdraw', path: '/withdraw', variant: 'secondary' },
-  { label: '📋  History', path: '/transactions', variant: 'secondary' },
+  { label: 'Play Now', path: '/lobby', variant: 'primary', icon: Zap },
+  { label: 'Deposit', path: '/deposit', variant: 'secondary', icon: Plus },
+  { label: 'Withdraw', path: '/withdraw', variant: 'secondary', icon: ArrowUpRight },
+  { label: 'History', path: '/transactions', variant: 'secondary', icon: History },
 ];
 
 export default function QuickActions() {
@@ -13,15 +14,20 @@ export default function QuickActions() {
 
   return (
     <div className="quick-actions-grid">
-      {ACTIONS.map((a) => (
-        <button
-          key={a.path}
-          className={`quick-action-btn ${a.variant === 'primary' ? 'quick-action-primary' : 'quick-action-secondary'}`}
-          onClick={() => navigate(a.path)}
-        >
-          {a.label}
-        </button>
-      ))}
+      {ACTIONS.map((a) => {
+        const Icon = a.icon;
+        return (
+          <button
+            key={a.path}
+            className={`quick-action-btn ${a.variant === 'primary' ? 'quick-action-primary' : 'quick-action-secondary'}`}
+            onClick={() => navigate(a.path)}
+          >
+            <Icon size={18} className="quick-action-icon" />
+            <span>{a.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
+

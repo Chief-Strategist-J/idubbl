@@ -22,22 +22,31 @@ export default function SignupPage() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
-    setTimeout(() => {
-      signup(form);
+    try {
+      const result = await signup(form);
       setLoading(false);
-      navigate('/dashboard');
-    }, 700);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: result.error });
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrors({ submit: 'An error occurred during signup.' });
+    }
   };
 
   return (
     <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
       <div style={{ width: '100%', maxWidth: 480, padding: '1rem' }}>
-        <div className="logo" style={{ justifyContent: 'center', marginBottom: '2rem', fontSize: '2rem' }}>iDubbl</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ width: '120px', height: '120px', borderRadius: '24px', boxShadow: '0 6px 20px rgba(0,0,0,0.4)' }} />
+        </div>
 
         <Card>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Create your account</h2>
@@ -56,6 +65,7 @@ export default function SignupPage() {
             <Input label="Confirm password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
             <Input label="Referral code (optional)" name="referral" value={form.referral} onChange={handleChange} placeholder="FRIEND123" />
 
+            {errors.submit && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{errors.submit}</p>}
             <Button type="submit" loading={loading} fullWidth>Create account</Button>
           </form>
 

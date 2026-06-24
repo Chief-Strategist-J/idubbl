@@ -6,7 +6,7 @@ import { MIN_WITHDRAWAL, SUPPORTED_NETWORKS } from '../../../shared/mock/index.j
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
 
 export default function WithdrawForm() {
-  const { availableBalance, pendingWithdrawals, submitWithdrawal } = useWalletStore();
+  const { depositBalance, winningsBalance, pendingWithdrawals, submitWithdrawal } = useWalletStore();
   const [form, setForm] = useState({ amount: '', address: '', network: SUPPORTED_NETWORKS[0], note: '' });
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
@@ -16,16 +16,16 @@ export default function WithdrawForm() {
   const validate = () => {
     const errs = {};
     if (!form.amount || Number(form.amount) < MIN_WITHDRAWAL) errs.amount = `Minimum withdrawal is ${MIN_WITHDRAWAL} USDT`;
-    if (Number(form.amount) > availableBalance) errs.amount = 'Exceeds available balance';
+    if (Number(form.amount) > winningsBalance) errs.amount = 'Exceeds available winnings balance. Deposits cannot be withdrawn.';
     if (!form.address.trim()) errs.address = 'Wallet address required';
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    const result = submitWithdrawal({ amount: Number(form.amount), address: form.address, network: form.network, note: form.note });
+    const result = await submitWithdrawal({ amount: Number(form.amount), address: form.address, network: form.network, note: form.note });
     if (result.success) {
       setSuccess(true);
       setForm({ amount: '', address: '', network: SUPPORTED_NETWORKS[0], note: '' });
@@ -39,22 +39,29 @@ export default function WithdrawForm() {
     <Card>
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', marginBottom: '0.5rem' }}>Request Withdrawal</h3>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-        Request a withdrawal. Requests are reviewed before payout.
+        Request a withdrawal. You can only withdraw funds from your **Winnings Wallet**. Deposits are non-withdrawable.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ padding: '1rem', background: 'rgba(8, 145, 178, 0.08)', borderRadius: 10, border: '1px solid rgba(8, 145, 178, 0.2)' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Available to withdraw</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.3rem', color: 'var(--accent-cyan)' }}>{availableBalance.toFixed(2)} USDT</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+        <div style={{ padding: '0.75rem', background: 'var(--glass-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Deposit Wallet</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>{depositBalance.toFixed(2)} USDT</p>
+          <span style={{ fontSize: '0.6rem', color: 'var(--accent-red)' }}>Non-withdrawable</span>
         </div>
-        <div style={{ padding: '1rem', background: 'rgba(220, 38, 38, 0.05)', borderRadius: 10, border: '1px solid rgba(220, 38, 38, 0.2)' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Pending withdrawal</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.3rem', color: '#dc2626' }}>{pendingWithdrawals.toFixed(2)} USDT</p>
+        <div style={{ padding: '0.75rem', background: 'var(--accent-green-glow)', borderRadius: 10, border: '1px solid var(--accent-green-glow)' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Winnings Wallet</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent-green)', margin: '0.25rem 0 0 0' }}>{winningsBalance.toFixed(2)} USDT</p>
+          <span style={{ fontSize: '0.6rem', color: 'var(--accent-green)' }}>Withdrawable</span>
+        </div>
+        <div style={{ padding: '0.75rem', background: 'var(--accent-red-glow)', borderRadius: 10, border: '1px solid var(--accent-red-glow)' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Pending</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent-red)', margin: '0.25rem 0 0 0' }}>{pendingWithdrawals.toFixed(2)} USDT</p>
+          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>In review</span>
         </div>
       </div>
 
       {success && (
-        <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#15803d', fontSize: '0.9rem', fontWeight: 500 }}>
+        <div style={{ background: 'var(--accent-green-glow)', border: '1px solid var(--accent-green-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-green)', fontSize: '0.9rem' }}>
           ✓ Withdrawal request submitted. Pending admin approval.
         </div>
       )}

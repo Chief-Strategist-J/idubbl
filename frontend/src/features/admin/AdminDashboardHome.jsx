@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AdminLayout from '../../shared/components/layout/AdminLayout.jsx';
 import { Stat, Card, PageHeader, Badge } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
 
 export default function AdminDashboardHome() {
-  const { deposits, withdrawals } = useWalletStore();
-  const { matches, tiers } = useMatchStore();
+  const { deposits, withdrawals, fetchAdminDeposits, fetchAdminWithdrawals, loading: walletLoading } = useWalletStore();
+  const { matches, tiers, fetchAdminMatches, loading: matchLoading } = useMatchStore();
+
+  useEffect(() => {
+    fetchAdminDeposits();
+    fetchAdminWithdrawals();
+    fetchAdminMatches();
+  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches]);
+
+  const loading = walletLoading || matchLoading;
 
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
   const pendingWithdrawals = withdrawals.filter((w) => w.status === 'pending').length;
@@ -27,8 +35,8 @@ export default function AdminDashboardHome() {
       </div>
 
       {(pendingDeposits > 0 || pendingWithdrawals > 0) && (
-        <Card style={{ marginBottom: '1.5rem', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.05)' }}>
-          <p style={{ color: '#b45309', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
+        <Card style={{ marginBottom: '1.5rem', borderColor: 'var(--accent-warning-glow)', background: 'var(--accent-warning-glow)' }}>
+          <p style={{ color: 'var(--accent-warning)', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Action Required</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {pendingDeposits > 0 && `${pendingDeposits} deposit request(s) awaiting review. `}
             {pendingWithdrawals > 0 && `${pendingWithdrawals} withdrawal request(s) awaiting approval.`}

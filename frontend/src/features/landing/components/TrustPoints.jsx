@@ -8,10 +8,10 @@ const POINTS = [
 
 export default function TrustPoints() {
   return (
-    <section style={{ padding: '2rem 1rem 5rem' }}>
-      <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', maxWidth: 860, margin: '0 auto' }}>
+    <section className="trust-points-section">
+      <div className="trust-points-container">
         {POINTS.map((p) => (
-          <div key={p.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flex: '1 1 220px' }}>
+          <div key={p.title} className="trust-point-card">
             <span style={{ fontSize: '1.75rem', flexShrink: 0 }}>{p.icon}</span>
             <div>
               <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>{p.title}</h4>

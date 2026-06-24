@@ -4,20 +4,27 @@ import HeroSection from './components/HeroSection.jsx';
 import HowItWorks from './components/HowItWorks.jsx';
 import TrustPoints from './components/TrustPoints.jsx';
 
+import ThemeToggle from '../../shared/components/ui/ThemeToggle.jsx';
+
 export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
     <div className="app-container">
       <header className="header">
-        <div className="logo">iDubbl</div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="nav-btn" onClick={() => navigate('/login')}>Log in</button>
-          <button className="btn-primary" onClick={() => navigate('/signup')} style={{ padding: '0.5rem 1.25rem' }}>Sign up</button>
+        <div className="header-container">
+          <div className="logo">
+            <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
+          </div>
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ThemeToggle />
+            <button className="nav-btn" onClick={() => navigate('/login')}>Log in</button>
+            <button className="btn-primary" onClick={() => navigate('/signup')} style={{ padding: '0.5rem 1.25rem' }}>Sign up</button>
+          </div>
         </div>
       </header>
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+      <main className="landing-main">
         <HeroSection />
         <HowItWorks />
         <TrustPoints />

@@ -34,7 +34,7 @@ export default function TierCard({ tier }) {
       <div style={{ marginTop: '0.5rem' }}>
         <p style={{ color, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.8rem', letterSpacing: 2, textTransform: 'uppercase' }}>{tier.name}</p>
         {tier.gameLabel && (
-          <span style={{ display: 'inline-block', background: 'rgba(0,0,0,0.04)', fontSize: '0.7rem', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: 10, marginTop: '0.3rem' }}>
+          <span style={{ display: 'inline-block', background: 'var(--glass-bg-hover)', fontSize: '0.7rem', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: 10, marginTop: '0.3rem' }}>
             {tier.gameLabel}
           </span>
         )}
@@ -43,24 +43,24 @@ export default function TierCard({ tier }) {
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Platform rake: {tier.rakePercent}%</p>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1.5rem 0', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', borderRadius: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', margin: '1.25rem 0', padding: '0.65rem 0.85rem', background: 'var(--glass-bg)', borderRadius: 8, textAlign: 'left', fontSize: '0.8rem' }}>
         <div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Waiting</p>
-          <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>{tier.waitingCount} players</p>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Waiting: </span>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tier.waitingCount} players</span>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Est. wait</p>
-          <p style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : '#b45309', fontSize: '0.95rem' }}>{waitLabel}</p>
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Est. wait: </span>
+          <span style={{ fontWeight: 600, color: tier.waitingCount > 0 ? 'var(--accent-green)' : 'var(--accent-warning)' }}>{waitLabel}</span>
         </div>
       </div>
 
       {!canAfford && (
-        <p style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.75rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', marginBottom: '0.75rem', textAlign: 'center' }}>
           Insufficient balance. Deposit at least {tier.entryFee} USDT.
         </p>
       )}
       {alreadyInQueue && canAfford && (
-        <p style={{ color: '#b45309', fontSize: '0.8rem', marginBottom: '0.75rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', marginBottom: '0.75rem', textAlign: 'center' }}>
           Already in queue. Cancel current queue to join this tier.
         </p>
       )}

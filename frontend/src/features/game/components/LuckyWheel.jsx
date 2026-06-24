@@ -174,7 +174,7 @@ export default function LuckyWheel({ onAnswer, answered }) {
             <span style={{ fontWeight: 700, color: result.color, fontSize: '0.9rem' }}>{result.label}</span>
           </div>
           <p style={{
-            color: resultIndex === targetIndex ? 'var(--accent-green)' : '#dc2626',
+            color: resultIndex === targetIndex ? 'var(--accent-green)' : 'var(--accent-red)',
             fontWeight: 600, fontSize: '0.9rem',
           }}>
             {resultIndex === targetIndex ? '✓ Landed on target!' : `✗ Missed — landed on ${result.label}`}

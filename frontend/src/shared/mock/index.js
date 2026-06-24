@@ -16,7 +16,7 @@ export const MOCK_TIERS = [
   { id: 't8',  name: 'Baccarat',      entryFee: 20,  rakePercent: 10, prize: 36,  minWaitSeconds: 45, active: true, waitingCount: 3, color: 'baccarat',    gameType: 'baccarat',       gameLabel: 'Baccarat' },
   { id: 't9',  name: 'Casino War',    entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 5, color: 'casinowar',   gameType: 'casino_war',     gameLabel: 'Casino War' },
   { id: 't10', name: 'Red Dog',       entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 2, color: 'reddog',      gameType: 'red_dog',        gameLabel: 'Red Dog' },
-  { id: 't11', name: 'Pai Gow',       entryFee: 40,  rakePercent: 8,  prize: 74,  minWaitSeconds: 60, active: true, waitingCount: 1, color: 'paigow',      gameType: 'pai_gow',        gameLabel: 'Pai Gow Poker' },
+  { id: 't11', name: 'Pai Gow',       entryFee: 40,  rakePercent: 8,  prize: 74,  minWaitSeconds: 60, active: true, waitingCount: 1, color: 'paigow',      gameType: 'paigow',        gameLabel: 'Pai Gow Poker' },
   { id: 't12', name: 'Three Card',    entryFee: 15,  rakePercent: 10, prize: 27,  minWaitSeconds: 40, active: true, waitingCount: 3, color: 'threecard',   gameType: 'three_card',     gameLabel: 'Three Card Poker' },
   { id: 't13', name: 'Video Poker',   entryFee: 20,  rakePercent: 8,  prize: 37,  minWaitSeconds: 45, active: true, waitingCount: 2, color: 'videopoker',  gameType: 'video_poker',    gameLabel: 'Video Poker' },
 ];

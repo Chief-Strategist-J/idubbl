@@ -58,7 +58,7 @@ export default function RedDog({ onAnswer, answered }) {
           </p>
         )}
         {phase === 'bet' && spread <= 0 && (
-          <p style={{ textAlign: 'center', color: '#fbbf24', fontSize: '0.85rem', margin: '1rem 0' }}>
+          <p style={{ textAlign: 'center', color: 'var(--accent-warning)', fontSize: '0.85rem', margin: '1rem 0' }}>
             No spread — force reveal
           </p>
         )}

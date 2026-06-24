@@ -80,7 +80,7 @@ export default function LuckyBalls({ onAnswer, answered }) {
         };
       }
       if (i === selected && i !== targetBall) {
-        return { ...base, opacity: 0.4, background: 'rgba(239,68,68,0.2)', border: '2px solid #f87171' };
+        return { ...base, opacity: 0.4, background: 'var(--accent-red-glow)', border: '2px solid var(--accent-red)' };
       }
       return { ...base, opacity: 0.35 };
     }
@@ -143,7 +143,7 @@ export default function LuckyBalls({ onAnswer, answered }) {
 
       {selected !== null && (
         <p style={{
-          color: selected === targetBall ? 'var(--accent-green)' : '#f87171',
+          color: selected === targetBall ? 'var(--accent-green)' : 'var(--accent-red)',
           fontWeight: 600, fontSize: '0.9rem',
         }}>
           {selected === targetBall ? '✓ Correct ball!' : `✗ Wrong — it was ball ${targetBall + 1}`}

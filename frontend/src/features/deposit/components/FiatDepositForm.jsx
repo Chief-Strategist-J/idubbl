@@ -28,7 +28,11 @@ export default function FiatDepositForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/payment/create', {
+      let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+      if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+        apiBase = `https://${apiBase}`;
+      }
+      const response = await fetch(`${apiBase}/api/payment/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,11 +50,15 @@ export default function FiatDepositForm() {
 
       const data = await response.json();
 
-      if (response.ok && data.paymentUrl) {
+      // Support standardized { success, data } envelope as well as legacy flat object
+      const paymentUrl = data.success && data.data ? data.data.paymentUrl : data.paymentUrl;
+      const errorMessage = data.message || data.error || 'Failed to initiate checkout link';
+
+      if (response.ok && paymentUrl) {
         // Redirect user to payment checkout (Flutterwave / Juspay)
-        window.location.href = data.paymentUrl;
+        window.location.href = paymentUrl;
       } else {
-        throw new Error(data.error || 'Failed to initiate checkout link');
+        throw new Error(errorMessage);
       }
     } catch (err) {
       console.error(err);
@@ -68,7 +76,7 @@ export default function FiatDepositForm() {
       </p>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: '#dc2626', fontSize: '0.9rem' }}>
+        <div style={{ background: 'var(--accent-red-glow)', border: '1px solid var(--accent-red-glow)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1.5rem', color: 'var(--accent-red)', fontSize: '0.9rem' }}>
           ⚠️ {error}
         </div>
       )}

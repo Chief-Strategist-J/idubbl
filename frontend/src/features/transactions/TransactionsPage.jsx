@@ -17,7 +17,7 @@ const COLUMNS = [
   { key: 'refId', label: 'Ref ID', render: (v) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v}</code> },
   { key: 'description', label: 'Description' },
   { key: 'type', label: 'Type', render: (v) => <Badge status={v === 'winnings' || v === 'deposit' ? 'approved' : v === 'match_loss' || v === 'withdrawal' ? 'rejected' : 'pending'} label={v.replace('_', ' ')} /> },
-  { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: v > 0 ? 'var(--accent-green)' : '#f87171' }}>{v > 0 ? `+${v}` : v} USDT</span> },
+  { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: v > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{v > 0 ? `+${v}` : v} USDT</span> },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
   { key: 'date', label: 'Date', render: (v) => new Date(v).toLocaleString() },
 ];

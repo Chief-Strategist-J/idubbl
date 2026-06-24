@@ -23,11 +23,17 @@ const COLUMNS = (onApprove, onReject) => [
 ];
 
 export default function AdminWithdrawalsPage() {
-  const { withdrawals, approveWithdrawal, rejectWithdrawal } = useWalletStore();
+  const { withdrawals, approveWithdrawal, rejectWithdrawal, fetchAdminWithdrawals, loading } = useWalletStore();
   const [search, setSearch] = useState('');
 
+  React.useEffect(() => {
+    fetchAdminWithdrawals();
+  }, [fetchAdminWithdrawals]);
+
   const filtered = withdrawals.filter((w) =>
-    !search || w.user.toLowerCase().includes(search.toLowerCase()) || w.address.includes(search)
+    !search || 
+    (w.user && w.user.toLowerCase().includes(search.toLowerCase())) || 
+    (w.address && w.address.includes(search))
   );
 
   return (
@@ -37,7 +43,15 @@ export default function AdminWithdrawalsPage() {
         <div style={{ marginBottom: '1.5rem' }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search by user or address..." />
         </div>
-        <Table columns={COLUMNS(approveWithdrawal, rejectWithdrawal)} rows={filtered} emptyMessage="No withdrawal requests." />
+
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', justifyContent: 'center', alignItems: 'center', minHeight: '200px', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+            <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTop: '3px solid var(--secondary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <span>Loading withdrawals...</span>
+          </div>
+        ) : (
+          <Table columns={COLUMNS(approveWithdrawal, rejectWithdrawal)} rows={filtered} emptyMessage="No withdrawal requests." />
+        )}
       </Card>
     </AdminLayout>
   );
