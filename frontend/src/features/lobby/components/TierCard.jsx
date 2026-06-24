@@ -20,10 +20,11 @@ export default function TierCard({ tier }) {
     navigate(`/queue/${tier.id}`);
   };
 
+  // design.md §4.3: Rookie = text-secondary tint, Pro = accent-secondary, Elite = accent-primary
   const TIER_COLORS = {
-    bronze: '#d97706', silver: '#9ca3af', gold: '#eab308', platinum: '#06b6d4', diamond: '#ec4899',
-    blackjack: '#22c55e', poker: '#ef4444', baccarat: '#a855f7', casinowar: '#f97316',
-    reddog: '#f43f5e', paigow: '#0ea5e9', threecard: '#8b5cf6', videopoker: '#3b82f6',
+    rookie:     '#9AA4B2',
+    pro:        '#5B8DEF',
+    elite:      '#00E37A',
   };
   const color = TIER_COLORS[tier.color] || 'var(--primary)';
 

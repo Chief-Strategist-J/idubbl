@@ -48,12 +48,14 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Reset password</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>Enter your email and we will send a reset link.</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Reset your password</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>
+                Enter the email or phone on your account and we'll send you a reset code.
+              </p>
               <form onSubmit={handleSubmit}>
-                <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                <Input label="Email or phone" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com or +1 555 000 0000" required />
                 {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-                <Button type="submit" loading={loading} fullWidth>Send reset link</Button>
+                <Button type="submit" loading={loading} fullWidth>Send reset code</Button>
               </form>
               <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
                 <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Back to login</Link>

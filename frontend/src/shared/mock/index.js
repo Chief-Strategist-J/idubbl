@@ -5,26 +5,17 @@ export const MOCK_USERS = [
   { id: 'admin1', firstName: 'Sam', lastName: 'Admin', email: 'admin@idubbl.com', phone: '+1 555-0001', status: 'active', role: 'admin', createdAt: '2026-04-01' },
 ];
 
+// design.md §4.3 — MVP: exactly 3 tiers (Rookie / Pro / Elite)
 export const MOCK_TIERS = [
-  { id: 't1',  name: 'Bronze',        entryFee: 5,   rakePercent: 10, prize: 9,   minWaitSeconds: 30, active: true, waitingCount: 3, color: 'bronze',      gameType: 'word_duel',      gameLabel: 'Word Duel' },
-  { id: 't2',  name: 'Silver',        entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 45, active: true, waitingCount: 1, color: 'silver',      gameType: 'math_duel',      gameLabel: 'Math Duel' },
-  { id: 't3',  name: 'Gold',          entryFee: 25,  rakePercent: 8,  prize: 46,  minWaitSeconds: 60, active: true, waitingCount: 0, color: 'gold',        gameType: 'reaction_race',  gameLabel: 'Reaction Race' },
-  { id: 't4',  name: 'Platinum',      entryFee: 50,  rakePercent: 8,  prize: 92,  minWaitSeconds: 60, active: true, waitingCount: 2, color: 'platinum',    gameType: 'lucky_wheel',    gameLabel: 'Lucky Wheel' },
-  { id: 't5',  name: 'Diamond',       entryFee: 100, rakePercent: 8,  prize: 184, minWaitSeconds: 90, active: true, waitingCount: 1, color: 'diamond',     gameType: 'lucky_balls',    gameLabel: 'Lucky Balls' },
-  { id: 't6',  name: 'Blackjack',     entryFee: 15,  rakePercent: 10, prize: 27,  minWaitSeconds: 40, active: true, waitingCount: 4, color: 'blackjack',   gameType: 'blackjack',      gameLabel: 'Blackjack' },
-  { id: 't7',  name: 'Texas Hold\'em',entryFee: 30,  rakePercent: 8,  prize: 55,  minWaitSeconds: 60, active: true, waitingCount: 2, color: 'poker',       gameType: 'holdem_poker',   gameLabel: "Hold'em Poker" },
-  { id: 't8',  name: 'Baccarat',      entryFee: 20,  rakePercent: 10, prize: 36,  minWaitSeconds: 45, active: true, waitingCount: 3, color: 'baccarat',    gameType: 'baccarat',       gameLabel: 'Baccarat' },
-  { id: 't9',  name: 'Casino War',    entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 5, color: 'casinowar',   gameType: 'casino_war',     gameLabel: 'Casino War' },
-  { id: 't10', name: 'Red Dog',       entryFee: 10,  rakePercent: 10, prize: 18,  minWaitSeconds: 30, active: true, waitingCount: 2, color: 'reddog',      gameType: 'red_dog',        gameLabel: 'Red Dog' },
-  { id: 't11', name: 'Pai Gow',       entryFee: 40,  rakePercent: 8,  prize: 74,  minWaitSeconds: 60, active: true, waitingCount: 1, color: 'paigow',      gameType: 'paigow',        gameLabel: 'Pai Gow Poker' },
-  { id: 't12', name: 'Three Card',    entryFee: 15,  rakePercent: 10, prize: 27,  minWaitSeconds: 40, active: true, waitingCount: 3, color: 'threecard',   gameType: 'three_card',     gameLabel: 'Three Card Poker' },
-  { id: 't13', name: 'Video Poker',   entryFee: 20,  rakePercent: 8,  prize: 37,  minWaitSeconds: 45, active: true, waitingCount: 2, color: 'videopoker',  gameType: 'video_poker',    gameLabel: 'Video Poker' },
+  { id: 't1', name: 'Rookie', entryFee: 5,  rakePercent: 10, prize: 9,  minWaitSeconds: 30, active: true, waitingCount: 3, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't2', name: 'Pro',    entryFee: 20, rakePercent: 10, prize: 36, minWaitSeconds: 45, active: true, waitingCount: 1, color: 'pro',    gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't3', name: 'Elite',  entryFee: 50, rakePercent: 8,  prize: 92, minWaitSeconds: 60, active: true, waitingCount: 0, color: 'elite',  gameType: 'word_duel', gameLabel: 'Word Duel' },
 ];
 
 export const MOCK_MATCHES = [
-  { id: 'm1', tier: 'Bronze', player1: 'Alex Storm', player2: 'Maya Chen', status: 'completed', winner: 'Alex Storm', winnerId: 'u1', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '120-80' }, { roundNo: 2, winner: 'Maya Chen', score: '95-110' }, { roundNo: 3, winner: 'Alex Storm', score: '130-100' }], prize: 9, rake: 1, startedAt: '2026-06-16T10:00:00Z', endedAt: '2026-06-16T10:07:00Z', refId: 'M-001' },
-  { id: 'm2', tier: 'Silver', player1: 'Alex Storm', player2: 'Jordan Wick', status: 'completed', winner: 'Jordan Wick', winnerId: 'u3', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '110-90' }, { roundNo: 2, winner: 'Jordan Wick', score: '80-120' }, { roundNo: 3, winner: 'Jordan Wick', score: '95-130' }], prize: 18, rake: 2, startedAt: '2026-06-16T09:00:00Z', endedAt: '2026-06-16T09:09:00Z', refId: 'M-002' },
-  { id: 'm3', tier: 'Bronze', player1: 'Maya Chen', player2: 'Jordan Wick', status: 'active', winner: null, winnerId: null, rounds: [], prize: 9, rake: 1, startedAt: '2026-06-16T11:00:00Z', endedAt: null, refId: 'M-003' },
+  { id: 'm1', tier: 'Rookie', player1: 'Alex Storm', player2: 'Maya Chen',   status: 'completed', winner: 'Alex Storm',  winnerId: 'u1', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '120-80' }, { roundNo: 2, winner: 'Maya Chen', score: '95-110' }, { roundNo: 3, winner: 'Alex Storm', score: '130-100' }], prize: 9,  rake: 1, startedAt: '2026-06-16T10:00:00Z', endedAt: '2026-06-16T10:07:00Z', refId: 'M-001' },
+  { id: 'm2', tier: 'Pro',    player1: 'Alex Storm', player2: 'Jordan Wick', status: 'completed', winner: 'Jordan Wick', winnerId: 'u3', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '110-90' }, { roundNo: 2, winner: 'Jordan Wick', score: '80-120' }, { roundNo: 3, winner: 'Jordan Wick', score: '95-130' }], prize: 36, rake: 4, startedAt: '2026-06-16T09:00:00Z', endedAt: '2026-06-16T09:09:00Z', refId: 'M-002' },
+  { id: 'm3', tier: 'Rookie', player1: 'Maya Chen',  player2: 'Jordan Wick', status: 'active',    winner: null,         winnerId: null, rounds: [], prize: 9, rake: 1, startedAt: '2026-06-16T11:00:00Z', endedAt: null, refId: 'M-003' },
 ];
 
 export const MOCK_DEPOSITS = [
@@ -41,13 +32,13 @@ export const MOCK_WITHDRAWALS = [
 ];
 
 export const MOCK_TRANSACTIONS = [
-  { id: 'tx1', type: 'deposit', amount: 50, status: 'approved', date: '2026-06-15T08:00:00Z', refId: 'D-001', description: 'USDT Deposit' },
-  { id: 'tx2', type: 'match_reserve', amount: -5, status: 'completed', date: '2026-06-16T09:55:00Z', refId: 'M-001', description: 'Bronze tier entry reserve' },
-  { id: 'tx3', type: 'winnings', amount: 9, status: 'completed', date: '2026-06-16T10:07:00Z', refId: 'M-001', description: 'Match winnings' },
-  { id: 'tx4', type: 'match_reserve', amount: -10, status: 'completed', date: '2026-06-16T08:55:00Z', refId: 'M-002', description: 'Silver tier entry reserve' },
-  { id: 'tx5', type: 'match_loss', amount: -10, status: 'completed', date: '2026-06-16T09:09:00Z', refId: 'M-002', description: 'Match loss - pool deducted' },
-  { id: 'tx6', type: 'withdrawal', amount: -18, status: 'pending', date: '2026-06-16T10:30:00Z', refId: 'W-001', description: 'USDT Withdrawal request' },
-  { id: 'tx7', type: 'deposit', amount: 200, status: 'pending', date: '2026-06-16T11:15:00Z', refId: 'D-004', description: 'USDT Deposit (pending review)' },
+  { id: 'tx1', type: 'deposit',       amount: 50,  status: 'approved',  date: '2026-06-15T08:00:00Z', refId: 'D-001', description: 'USDT Deposit' },
+  { id: 'tx2', type: 'match_reserve', amount: -5,  status: 'completed', date: '2026-06-16T09:55:00Z', refId: 'M-001', description: 'Match entry — Rookie' },
+  { id: 'tx3', type: 'winnings',      amount: 9,   status: 'completed', date: '2026-06-16T10:07:00Z', refId: 'M-001', description: 'Match win — Rookie' },
+  { id: 'tx4', type: 'match_reserve', amount: -20, status: 'completed', date: '2026-06-16T08:55:00Z', refId: 'M-002', description: 'Match entry — Pro' },
+  { id: 'tx5', type: 'match_loss',    amount: -20, status: 'completed', date: '2026-06-16T09:09:00Z', refId: 'M-002', description: 'Match entry — Pro' },
+  { id: 'tx6', type: 'withdrawal',    amount: -18, status: 'pending',   date: '2026-06-16T10:30:00Z', refId: 'W-001', description: 'USDT Withdrawal request' },
+  { id: 'tx7', type: 'deposit',       amount: 200, status: 'pending',   date: '2026-06-16T11:15:00Z', refId: 'D-004', description: 'USDT Deposit (pending review)' },
 ];
 
 export const WORD_DUEL_QUESTIONS = [

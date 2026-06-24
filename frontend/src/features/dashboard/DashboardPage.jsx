@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { queueStatus, currentTier, leaveQueue, matches } = useMatchStore();
-  const { fetchWalletData } = useWalletStore();
+  const { fetchWalletData, withdrawals, transactions } = useWalletStore();
 
   useEffect(() => {
     if (user?.id) {
@@ -30,7 +30,7 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <PageHeader
-        title={`Welcome back, ${user?.firstName || 'Player'} 👋`}
+        title={`Welcome back, ${user?.firstName || 'Player'}`}
         subtitle="Your control room — balances, matches, and quick actions."
         action={<Button variant="primary" onClick={() => navigate('/lobby')}>Join a Tier</Button>}
       />
@@ -53,6 +53,22 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Pending Withdrawals banner */}
+      {(() => {
+        const pendingW = withdrawals.filter(w => w.status === 'pending');
+        return pendingW.length > 0 ? (
+          <Card style={{ borderColor: 'var(--accent-warning-glow)', background: 'rgba(255, 176, 32, 0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.25rem' }}>⏳</span>
+              <div>
+                <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{pendingW.length} withdrawal request{pendingW.length > 1 ? 's' : ''} pending review</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>You'll be notified when processed.</p>
+              </div>
+            </div>
+          </Card>
+        ) : null;
+      })()}
+
       <div className="dashboard-grid">
         {/* Balance widget — full width */}
         <BalanceWidget />
@@ -64,7 +80,7 @@ export default function DashboardPage() {
             <QuickActions />
           </Card>
 
-          <Card style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.06), rgba(16,185,129,0.06))' }}>
+          <Card style={{ background: 'rgba(0, 227, 122, 0.06)' }}>
             <h3 className="dash-section-title">Win / Loss Summary</h3>
             <div className="win-loss-row">
               <div className="win-loss-stat">
@@ -88,6 +104,28 @@ export default function DashboardPage() {
         {/* Recent matches — full width */}
         <Card>
           <RecentMatches />
+        </Card>
+
+        {/* Recent Wallet Activity */}
+        <Card>
+          <h3 className="dash-section-title">Recent Wallet Activity</h3>
+          {transactions.slice(0, 10).length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No wallet activity yet. Make your first deposit to begin.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {transactions.slice(0, 10).map((tx, i) => (
+                <div key={tx.refId || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: i < 9 ? '1px solid var(--border)' : 'none' }}>
+                  <div>
+                    <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{tx.description}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(tx.date).toLocaleDateString()}</p>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: tx.amount > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                    {tx.amount > 0 ? '+' : ''}{tx.amount} USDT
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </AppLayout>
