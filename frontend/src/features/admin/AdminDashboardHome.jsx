@@ -24,6 +24,18 @@ export default function AdminDashboardHome() {
 
   return (
     <AdminLayout>
+      {/* Wallet reserve health bar */}
+      <Card style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Hot Wallet Reserve</span>
+          <span style={{ color: 'var(--accent-green)', fontWeight: 700, fontSize: '0.9rem' }}>72% healthy</span>
+        </div>
+        <div style={{ background: 'var(--border)', borderRadius: 999, height: 8, overflow: 'hidden' }}>
+          <div style={{ width: '72%', height: '100%', background: 'linear-gradient(90deg, var(--primary-hover), var(--primary))', borderRadius: 999, transition: 'width 0.5s ease' }} />
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Hot wallet reserve: 72% healthy</p>
+      </Card>
+
       <PageHeader title="Admin Dashboard" subtitle="Monitor deposits, matches, withdrawals, and platform health in real time." />
 
       <div className="admin-stats-grid">

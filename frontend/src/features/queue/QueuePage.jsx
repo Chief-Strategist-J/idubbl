@@ -13,6 +13,7 @@ export default function QueuePage() {
   const { releaseReservation } = useWalletStore();
   const [elapsed, setElapsed] = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const STATUS_STEPS = ['searching', 'matched', 'starting'];
 
@@ -58,11 +59,41 @@ export default function QueuePage() {
             )}
 
             {statusIndex === 0 && (
-              <Button variant="secondary" onClick={handleCancel}>Cancel and Return to Lobby</Button>
+              <Button variant="secondary" onClick={() => setShowLeaveModal(true)}>Cancel and Return to Lobby</Button>
             )}
           </div>
         </Card>
       </div>
+
+      {/* Leave queue confirmation modal */}
+      {showLeaveModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem'
+        }}>
+          <div className="glass-card" style={{
+            maxWidth: 420, width: '100%', padding: '2rem',
+            borderRadius: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem'
+          }}>
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.5rem' }}>Leave the queue?</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Your reserved entry fee will be returned to your available balance immediately.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Button variant="secondary" fullWidth onClick={() => setShowLeaveModal(false)}>Stay in queue</Button>
+              <Button
+                variant="danger"
+                fullWidth
+                onClick={() => { setShowLeaveModal(false); handleCancel(); }}
+              >
+                Leave queue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

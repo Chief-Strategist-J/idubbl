@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Zap, PlusCircle, ArrowUpCircle, Clock } from 'lucide-react';
+import { Home, Zap, Wallet, Clock, User } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
 import useWalletStore from '../../store/walletStore.js';
 import ThemeToggle from '../ui/ThemeToggle.jsx';
+import OfflineBanner from '../ui/OfflineBanner.jsx';
+import SessionExpiredModal from '../ui/SessionExpiredModal.jsx';
 
+// design.md §2.3: 5 items — Home · Play · Wallet · History · Profile
 const NAV_ITEMS = [
-  { label: 'Dashboard', short: 'Home', path: '/dashboard', icon: Home },
-  { label: 'Play', short: 'Play', path: '/lobby', icon: Zap },
-  { label: 'Deposit', short: 'Deposit', path: '/deposit', icon: PlusCircle },
-  { label: 'Withdraw', short: 'Withdraw', path: '/withdraw', icon: ArrowUpCircle },
-  { label: 'History', short: 'History', path: '/transactions', icon: Clock },
+  { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home },
+  { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap },
+  { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet },
+  { label: 'History',   short: 'History', path: '/transactions',  icon: Clock },
+  { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User },
+];
+
+// Desktop header nav (subset — Wallet links to hub)
+const HEADER_NAV = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Play',      path: '/lobby' },
+  { label: 'Wallet',    path: '/wallet' },
+  { label: 'History',   path: '/transactions' },
 ];
 
 export default function AppLayout({ children }) {
@@ -27,6 +38,10 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="app-container">
+      {/* Global banners */}
+      <OfflineBanner />
+      <SessionExpiredModal />
+
       <header className="header">
         <div className="header-container">
           <div className="logo" onClick={() => navigate('/dashboard')}>
@@ -35,7 +50,7 @@ export default function AppLayout({ children }) {
 
           {/* Desktop-only navigation */}
           <nav className="nav-links">
-            {NAV_ITEMS.map((item) => (
+            {HEADER_NAV.map((item) => (
               <button
                 key={item.path}
                 className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
@@ -47,10 +62,13 @@ export default function AppLayout({ children }) {
           </nav>
 
           <div className="header-right">
-            <div className="balance-pill">
-              <span>💰</span>
+            <div
+              className="balance-pill"
+              title="Available balance: ready to use. Locked balance: reserved in active matches."
+              aria-label={`Available balance: ${availableBalance.toFixed(2)} USDT`}
+            >
               <span className="balance-pill-amount">{availableBalance.toFixed(2)}</span>
-              <span className="balance-pill-unit"> USDT</span>
+              <span className="balance-pill-unit"> USDT available</span>
             </div>
 
             <ThemeToggle className="desktop-only" />
@@ -103,7 +121,7 @@ export default function AppLayout({ children }) {
 
       <main className="main-content">{children}</main>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar — design.md §2.3: Home · Play · Wallet · History · Profile */}
       <nav className="bottom-nav" aria-label="Main navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;

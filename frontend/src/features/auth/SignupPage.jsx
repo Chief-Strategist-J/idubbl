@@ -9,16 +9,18 @@ export default function SignupPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '', referral: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const validate = () => {
     const errs = {};
-    if (!form.firstName.trim()) errs.firstName = 'Required';
-    if (!form.lastName.trim()) errs.lastName = 'Required';
-    if (!form.email.includes('@')) errs.email = 'Valid email required';
-    if (form.password.length < 8) errs.password = 'Minimum 8 characters';
-    if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    if (!form.firstName.trim()) errs.firstName = 'This field is required.';
+    if (!form.lastName.trim()) errs.lastName = 'This field is required.';
+    if (!form.email.trim() || !form.email.includes('@')) errs.email = 'Enter a valid email address.';
+    if (form.password.length < 8 || !/\d/.test(form.password)) errs.password = 'Password must be at least 8 characters and include a number.';
+    if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords don't match.";
+    if (!termsAccepted) errs.terms = "You must confirm you're 18 or older and accept the Terms to continue.";
     return errs;
   };
 
@@ -65,8 +67,27 @@ export default function SignupPage() {
             <Input label="Confirm password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
             <Input label="Referral code (optional)" name="referral" value={form.referral} onChange={handleChange} placeholder="FRIEND123" />
 
+            {/* 18+ Terms checkbox — required per design.md §3.2 */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  style={{ marginTop: '3px', accentColor: 'var(--primary)', width: 16, height: 16, flexShrink: 0 }}
+                />
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  I'm 18 or older and I agree to the{' '}
+                  <a href="/terms" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Terms of Service</a>
+                  {' '}and{' '}
+                  <a href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Privacy Policy</a>.
+                </span>
+              </label>
+              {errors.terms && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', marginTop: '0.4rem' }}>{errors.terms}</p>}
+            </div>
+
             {errors.submit && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{errors.submit}</p>}
-            <Button type="submit" loading={loading} fullWidth>Create account</Button>
+            <Button type="submit" loading={loading} fullWidth>Sign up</Button>
           </form>
 
           <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>

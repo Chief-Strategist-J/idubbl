@@ -11,8 +11,8 @@ export default function LobbyPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Choose Your Tier"
-        subtitle="Choose a tier to enter the next available match. Your entry fee will be reserved when you join."
+        title="Choose a tier to enter the next available match."
+        subtitle="Your entry fee will be reserved when you join."
       />
 
       <div className="matchmaking-grid">

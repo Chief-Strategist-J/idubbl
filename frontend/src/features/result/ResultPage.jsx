@@ -10,7 +10,7 @@ import useWalletStore from '../../shared/store/walletStore.js';
 export default function ResultPage() {
   const navigate = useNavigate();
   const { matchResult, clearMatch } = useMatchStore();
-  const { creditWinnings } = useWalletStore();
+  const { creditWinnings, availableBalance } = useWalletStore();
 
   useEffect(() => {
     if (matchResult?.isWinner) creditWinnings(matchResult.prize);
@@ -52,6 +52,15 @@ export default function ResultPage() {
             <PrizeBreakdown entryFee={matchResult.entryFee} rake={matchResult.rake} prize={matchResult.prize} isWinner={matchResult.isWinner} />
           </Card>
 
+          <Card style={{ background: 'rgba(0, 227, 122, 0.06)', borderColor: 'var(--hologram-card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>New available balance</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--accent-green)', fontSize: '1.1rem' }}>
+                {availableBalance.toFixed(2)} USDT
+              </span>
+            </div>
+          </Card>
+
           <Card style={{ background: 'rgba(255,255,255,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
@@ -67,6 +76,7 @@ export default function ResultPage() {
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Button variant="primary" fullWidth onClick={handlePlayAgain}>Play Again in Same Tier</Button>
+            <Button variant="secondary" fullWidth onClick={() => { clearMatch(); navigate('/lobby'); }}>Choose a Different Tier</Button>
             <Button variant="secondary" fullWidth onClick={() => { clearMatch(); navigate('/dashboard'); }}>Back to Dashboard</Button>
           </div>
         </div>

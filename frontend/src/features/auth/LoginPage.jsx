@@ -112,11 +112,28 @@ export default function LoginPage() {
           </div>
 
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-            {roleMode === 'admin' ? 'Admin Portal Access' : 'Welcome back'}
+            {roleMode === 'admin' ? 'Admin sign in' : 'Welcome back'}
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2.5rem' }}>
-            {roleMode === 'admin' ? 'Log in to manage deposits, match ledger and withdrawals.' : 'Log in to play and manage your wallet.'}
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: roleMode === 'admin' ? '0.75rem' : '2.5rem' }}>
+            {roleMode === 'admin'
+              ? 'Log in to manage deposits, match ledger and withdrawals.'
+              : 'Log in to check your balance and jump into a match.'}
           </p>
+          {/* design.md §6.1 — admin restriction note */}
+          {roleMode === 'admin' && (
+            <div style={{
+              background: 'rgba(255, 176, 32, 0.06)',
+              border: '1px solid rgba(255, 176, 32, 0.25)',
+              borderRadius: 8,
+              padding: '0.65rem 1rem',
+              marginBottom: '1.75rem',
+              fontSize: '0.82rem',
+              color: 'var(--accent-warning)',
+              lineHeight: 1.5,
+            }}>
+              🔒 This portal is restricted to authorized personnel. All access is logged.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <Input 
@@ -139,7 +156,7 @@ export default function LoginPage() {
             />
             {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
             <Button type="submit" loading={loading} fullWidth>
-              {roleMode === 'admin' ? 'Access Admin Panel' : 'Log in'}
+              {roleMode === 'admin' ? 'Sign in' : 'Log in'}
             </Button>
           </form>
 

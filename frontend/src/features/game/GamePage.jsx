@@ -21,7 +21,7 @@ import RoundTransition from './components/RoundTransition.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import { MATH_DUEL_QUESTIONS } from '../../shared/mock/index.js';
 
-const ROUND_TIME = 30;
+const ROUND_TIME = 20;
 const TRANSITION_DURATION = 2500;
 
 export default function GamePage() {
