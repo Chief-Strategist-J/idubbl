@@ -3,6 +3,8 @@ import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Input, Card, Modal } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
 
+import PersonalWalletsWidget from '../deposit/components/PersonalWalletsWidget.jsx';
+
 /* ── Toggle row ─────────────────────────────────────────────────────────── */
 function ToggleRow({ label, checked, onChange }) {
   return (
@@ -323,7 +325,8 @@ export default function ProfilePage() {
           <SuccessBanner message={notifSuccess} />
         </Card>
 
-        {/* ── Danger Zone ───────────────────────────────────────────────── */}
+        <PersonalWalletsWidget />
+
         <Card
           style={{
             border: '1.5px solid rgba(239,68,68,0.45)',
