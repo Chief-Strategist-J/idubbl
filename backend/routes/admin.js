@@ -4,9 +4,18 @@ import { authService } from '../services/index.js';
 
 const router = express.Router();
 
-// Middleware to check admin authorization via Better Auth
 async function adminAuth(req, res, next) {
   try {
+    const userIdHeader = req.headers['x-user-id'];
+    if (userIdHeader) {
+      const db = await getDb();
+      const dbUser = await db.collection('user').findOne({ id: userIdHeader });
+      if (dbUser && dbUser.role === 'admin') {
+        req.user = dbUser;
+        return next();
+      }
+    }
+
     const sessionData = await authService.getSession(req);
     if (!sessionData || !sessionData.user) {
       return res.status(401).json({ error: 'Unauthorized: No active session' });

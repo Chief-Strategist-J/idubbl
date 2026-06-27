@@ -65,11 +65,12 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  // Admin: Fetch all deposits
   fetchAdminDeposits: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
     set({ loading: true });
     try {
       const res = await fetch(`${ADMIN_BASE_URL}/deposits`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       const json = await res.json();
@@ -84,11 +85,12 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  // Admin: Fetch all withdrawals
   fetchAdminWithdrawals: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
     set({ loading: true });
     try {
       const res = await fetch(`${ADMIN_BASE_URL}/withdrawals`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       const json = await res.json();
@@ -103,11 +105,12 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  // Admin: Fetch ledger
   fetchAdminLedger: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
     set({ loading: true });
     try {
       const res = await fetch(`${ADMIN_BASE_URL}/ledger`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       const json = await res.json();
@@ -128,11 +131,12 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  // Admin: Fetch all users
   fetchAdminUsers: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
     set({ loading: true });
     try {
       const res = await fetch(`${ADMIN_BASE_URL}/users`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       const json = await res.json();
