@@ -47,17 +47,24 @@ export default function HowToUsePage() {
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-cyan)' }}>How to Deposit:</span>
                 <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <li>Go to the <a href="/deposit" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline' }}>Deposit Page</a> and click <strong>Generate My Deposit Wallets</strong>.</li>
-                  <li>Copy your unique TRON address and transfer your TRC-20 USDT tokens to it.</li>
-                  <li>After sending, copy the transaction hash, paste it into the deposit form, and submit.</li>
+                  <li>Copy either your TRON address (for TRC-20 USDT) or Ethereum address (for ERC-20 USDT).</li>
+                  <li>Send your USDT tokens to that address from your personal web3 wallet (like TronLink, MetaMask, or Trust Wallet).</li>
+                  <li>After sending, copy the transaction hash, paste it into the deposit form, select the network, and submit.</li>
                 </ol>
               </div>
 
-              <div style={{ background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)', padding: '1rem', borderRadius: '10px' }}>
+              <div style={{ background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)', padding: '1rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-warning)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  ⚠️ Shasta Testnet Sandbox Mode:
+                  ⚠️ Testnet Sandbox Faucets (Free Tokens):
                 </span>
-                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                  Need free test tokens? Claim free Shasta Testnet TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>. Once received on-chain, click <strong>Refresh Balances</strong> to sync them automatically!
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                  <strong>For TRON (Shasta Network)</strong>: Claim free test TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>.
+                </p>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                  <strong>For Ethereum (Sepolia Network)</strong>: Claim free test Sepolia ETH gas from the <a href="https://sepoliafaucet.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Sepolia Faucet</a> or <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>QuickNode Faucet</a>.
+                </p>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                  Once you receive the testnet tokens in your wallet, click **Refresh Balances** on the deposit page to sync them!
                 </p>
               </div>
             </div>
