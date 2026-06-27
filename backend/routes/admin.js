@@ -101,10 +101,16 @@ router.get('/users', adminAuth, async (req, res) => {
     const db = await getDb();
     const users = await db.collection('user').find({}).toArray();
     const wallets = await db.collection('wallets').find({}).toArray();
+    const personalWallets = await db.collection('user_wallets').find({}).toArray();
 
     const walletMap = {};
     wallets.forEach(w => {
       walletMap[w.userId] = w;
+    });
+
+    const personalWalletMap = {};
+    personalWallets.forEach(pw => {
+      personalWalletMap[pw.userId] = pw;
     });
 
     const usersWithBalances = users.map(u => {
@@ -123,7 +129,11 @@ router.get('/users', adminAuth, async (req, res) => {
           availableBalance: (wallet.depositBalance || 0) + (wallet.winningsBalance || 0),
           lockedBalance: wallet.lockedBalance,
           pendingWithdrawals: wallet.pendingWithdrawals
-        }
+        },
+        personalWallets: personalWalletMap[userId] ? {
+          tron: personalWalletMap[userId].tron?.address || '',
+          ethereum: personalWalletMap[userId].ethereum?.address || ''
+        } : null
       };
     });
 
