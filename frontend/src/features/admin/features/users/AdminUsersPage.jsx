@@ -16,16 +16,6 @@ const COLUMNS = (onSuspend) => [
       </div>
     ) : '—' 
   },
-  {
-    key: 'personalWallets',
-    label: 'On-Chain Wallets',
-    render: (v) => v ? (
-      <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', lineHeight: 1.3, wordBreak: 'break-all', maxWidth: '220px' }}>
-        TRX: <span style={{ color: 'var(--accent-cyan)' }}>{v.tron || '—'}</span><br />
-        ETH: <span style={{ color: 'var(--accent-cyan)' }}>{v.ethereum || '—'}</span>
-      </div>
-    ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>None</span>
-  },
   { key: 'role', label: 'Role', render: (v) => <Badge status={v === 'admin' ? 'approved' : 'pending'} label={v} /> },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v || 'active'} /> },
   { key: 'createdAt', label: 'Joined', render: (v) => new Date(v).toLocaleDateString() },
