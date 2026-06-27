@@ -210,6 +210,16 @@ export default function PersonalWalletsWidget() {
                 {copiedText['tron'] ? 'Copied!' : 'Copy'}
               </Button>
             </div>
+            <div style={{ marginTop: '0.35rem' }}>
+              <a
+                href={`https://shasta.tronscan.org/#/address/${wallets.tron?.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 500 }}
+              >
+                View on Tronscan Explorer
+              </a>
+            </div>
           </div>
 
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -226,6 +236,16 @@ export default function PersonalWalletsWidget() {
               <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.address, 'ethereum')}>
                 {copiedText['ethereum'] ? 'Copied!' : 'Copy'}
               </Button>
+            </div>
+            <div style={{ marginTop: '0.35rem' }}>
+              <a
+                href={`https://sepolia.etherscan.io/address/${wallets.ethereum?.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 500 }}
+              >
+                View on Etherscan Explorer
+              </a>
             </div>
           </div>
 

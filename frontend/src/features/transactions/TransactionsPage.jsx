@@ -15,7 +15,28 @@ const TYPE_OPTIONS = [
 ];
 
 const COLUMNS = [
-  { key: 'refId', label: 'Ref ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v || row.txHash || (row._id ? row._id.toString().substring(0, 10) : '—')}</code> },
+  { key: 'refId', label: 'Ref ID', render: (v, row) => {
+      const hash = row.txHash || row.payoutTxHash || v;
+      const isMock = !hash || hash.startsWith('test_') || hash.startsWith('mock_') || hash.startsWith('simulated_') || hash === '12';
+      const isTron = (row.network || '').toUpperCase().includes('TRON') || (row.network || '').toUpperCase().includes('TRC20');
+      const explorerUrl = isMock ? null : (isTron ? `https://shasta.tronscan.org/#/transaction/${hash}` : `https://sepolia.etherscan.io/tx/${hash}`);
+      
+      const label = v || row.txHash || (row._id ? row._id.toString().substring(0, 10) : '—');
+      
+      if (hash && explorerUrl) {
+        return (
+          <a
+            href={explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', textDecoration: 'underline', fontFamily: 'monospace' }}
+          >
+            {label}
+          </a>
+        );
+      }
+      return <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{label}</code>;
+  }},
   { key: 'description', label: 'Description', render: (v, row) => v || row.note || `${row.type ? row.type.charAt(0).toUpperCase() + row.type.slice(1) : 'Transaction'} (${row.method || 'Platform'})` },
   { key: 'type', label: 'Type', render: (v) => <span style={{ textTransform: 'capitalize', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.85rem' }}>{v ? v.replace('_', ' ') : '—'}</span> },
   { key: 'amount', label: 'Amount', render: (v, row) => {
