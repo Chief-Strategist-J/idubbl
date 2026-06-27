@@ -320,9 +320,14 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
       return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
     }
 
+    const payout = await blockchainService.sendOnchainUSDT(tx.address, tx.amount, tx.network);
+    if (!payout.success) {
+      return res.status(400).json({ success: false, error: 'On-chain payout failed: ' + payout.error });
+    }
+
     await db.collection('transactions').updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: 'approved', reviewedBy: 'admin1', paidAt: new Date() } }
+      { $set: { status: 'approved', reviewedBy: 'admin1', paidAt: new Date(), payoutTxHash: payout.txHash } }
     );
 
     await db.collection('wallets').updateOne(
@@ -330,7 +335,7 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
       { $inc: { pendingWithdrawals: -tx.amount } }
     );
 
-    res.json({ success: true });
+    res.json({ success: true, payoutTxHash: payout.txHash });
   } catch (error) {
     console.error('Error approving withdrawal:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving withdrawal.');
