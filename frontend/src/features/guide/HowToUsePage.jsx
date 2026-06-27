@@ -44,12 +44,32 @@ export default function HowToUsePage() {
               </p>
               
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-cyan)' }}>How to Deposit:</span>
-                <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <li>Go to the <a href="/deposit" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline' }}>Deposit Page</a> and click <strong>Generate My Deposit Wallets</strong>.</li>
-                  <li>Copy either your TRON address (for TRC-20 USDT) or Ethereum address (for ERC-20 USDT).</li>
-                  <li>Send your USDT tokens to that address from your personal web3 wallet (like TronLink, MetaMask, or Trust Wallet).</li>
-                  <li>After sending, copy the transaction hash, paste it into the deposit form, select the network, and submit.</li>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-cyan)' }}>How to Set Up & Deposit:</span>
+                <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <li>
+                    <strong>Generate a Brand New Wallet Dynamically</strong>:
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.15rem' }}>
+                      Go to the <a href="/deposit" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline' }}>Deposit Page</a> and click <strong>Generate My Deposit Wallets</strong> (or Reset Wallets).
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Import the Website Wallet into your TronLink / MetaMask</strong>:
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.15rem' }}>
+                      Click <strong>Reveal Private Key</strong> next to the newly generated address, copy it, and select "Import Wallet via Private Key" inside your TronLink extension or MetaMask app.
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Get Free Funds for Your Website Wallet</strong>:
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.15rem' }}>
+                      Use the testnet sandbox faucets linked below to claim free test tokens (TRX / Sepolia ETH / USDT) directly to your newly generated website address.
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Verify Live Balances</strong>:
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.15rem' }}>
+                      Click <strong>Refresh Balances</strong> on the deposit page. The website queries the blockchain dynamically, and your TRX gas and USDT balances will appear immediately!
+                    </div>
+                  </li>
                 </ol>
               </div>
 
