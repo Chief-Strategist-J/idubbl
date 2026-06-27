@@ -1,4 +1,5 @@
 import express from 'express';
+import { ObjectId } from 'mongodb';
 import { getDb } from '../services/db.js';
 import { authService } from '../services/index.js';
 
@@ -9,7 +10,12 @@ async function adminAuth(req, res, next) {
     const userIdHeader = req.headers['x-user-id'];
     if (userIdHeader) {
       const db = await getDb();
-      const dbUser = await db.collection('user').findOne({ id: userIdHeader });
+      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
+      if (!dbUser && userIdHeader.length === 24) {
+        try {
+          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
+        } catch (err) {}
+      }
       if (dbUser && dbUser.role === 'admin') {
         req.user = dbUser;
         return next();
@@ -132,6 +138,7 @@ router.get('/users', adminAuth, async (req, res) => {
       };
       return {
         ...u,
+        id: u.id || u._id.toString(),
         balances: {
           depositBalance: wallet.depositBalance,
           winningsBalance: wallet.winningsBalance,
