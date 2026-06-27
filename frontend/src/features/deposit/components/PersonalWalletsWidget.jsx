@@ -305,9 +305,12 @@ export default function PersonalWalletsWidget() {
           </div>
 
           <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--accent-warning)', fontWeight: 600 }}>⚠️ Testnet Sandbox Mode:</span>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Need testnet funds for testing? Claim free Shasta Testnet TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or the <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>.
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-warning)', fontWeight: 600 }}>⚠️ Testnet Sandbox Faucets:</span>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <strong>TRON (Shasta)</strong>: Get test TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>.
+            </p>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <strong>Ethereum (Sepolia)</strong>: Get test gas ETH from the <a href="https://sepoliafaucet.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Sepolia Faucet</a> or <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>QuickNode Faucet</a>.
             </p>
           </div>
         </div>
