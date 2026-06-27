@@ -71,13 +71,13 @@ export class BlockchainService {
     return balance;
   }
 
-  async sendOnchainUSDT(toAddress, amount, network) {
+  async sendOnchainUSDT(toAddress, amount, network, senderPrivateKey = null) {
     const normalizedNetwork = (network || '').toUpperCase();
     const isTron = normalizedNetwork.includes('TRC20') || normalizedNetwork.includes('TRON');
     const isEth = normalizedNetwork.includes('ERC20') || normalizedNetwork.includes('ETHEREUM');
 
     if (isTron) {
-      const privateKey = process.env.TRON_HOT_WALLET_PRIVATE_KEY;
+      const privateKey = senderPrivateKey || process.env.TRON_HOT_WALLET_PRIVATE_KEY;
       if (!privateKey) {
         return { success: true, txHash: 'simulated_tron_payout_' + Math.random().toString(36).substring(2, 15) };
       }
@@ -117,7 +117,7 @@ export class BlockchainService {
     }
 
     if (isEth) {
-      const privateKey = process.env.ETH_HOT_WALLET_PRIVATE_KEY;
+      const privateKey = senderPrivateKey || process.env.ETH_HOT_WALLET_PRIVATE_KEY;
       if (!privateKey) {
         return { success: true, txHash: 'simulated_eth_payout_' + Math.random().toString(36).substring(2, 15) };
       }
