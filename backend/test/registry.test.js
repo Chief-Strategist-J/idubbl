@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { authRegistry } from '../services/auth/AuthRegistry.js';
-import { AuthDriver } from '../services/auth/AuthDriver.js';
+import { AuthDriver } from '../services/auth/ports/AuthDriver.js';
 import { paymentRegistry } from '../services/payment/PaymentRegistry.js';
-import { PaymentDriver } from '../services/payment/PaymentDriver.js';
+import { PaymentDriver } from '../services/payment/ports/PaymentDriver.js';
 
 // Define mock drivers for testing registry logic without external database dependencies
 class MockAuthDriver extends AuthDriver {

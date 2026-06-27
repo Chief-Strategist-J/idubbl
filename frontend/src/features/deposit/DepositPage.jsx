@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader } from '../../shared/components/ui/index.js';
-import UsdtDepositForm from './components/FiatDepositForm.jsx';
+import DepositForm from './components/DepositForm.jsx';
 import DepositHistory from './components/DepositHistory.jsx';
+import PersonalWalletsWidget from './components/PersonalWalletsWidget.jsx';
 import useAuthStore from '../../shared/store/authStore.js';
 import useWalletStore from '../../shared/store/walletStore.js';
 
@@ -20,10 +21,13 @@ export default function DepositPage() {
     <AppLayout>
       <PageHeader
         title="Deposit Funds"
-        subtitle="Top up your wallet using your card, bank account, or mobile money securely via Flutterwave."
+        subtitle="Top up your wallet using secure payment methods."
       />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-        <UsdtDepositForm />
+        <div>
+          <DepositForm />
+          <PersonalWalletsWidget />
+        </div>
         <DepositHistory />
       </div>
     </AppLayout>

@@ -1,0 +1,205 @@
+import React, { useState, useEffect } from 'react';
+import { Button, Card, Input } from '../../../shared/components/ui/index.js';
+
+const apiBase = (() => {
+  let base = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+  if (base && !base.startsWith('http://') && !base.startsWith('https://')) {
+    base = `https://${base}`;
+  }
+  return base;
+})();
+
+export default function PersonalWalletsWidget() {
+  const [wallets, setWallets] = useState(null);
+  const [balances, setBalances] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ tronAddress: '', ethereumAddress: '' });
+  const [copiedText, setCopiedText] = useState({});
+
+  const fetchWallets = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/wallet/personal`, {
+        headers: { 'x-user-id': 'u1' } // Demo user
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setWallets(json.data);
+          setEditForm({
+            tronAddress: json.data.tron?.address || '',
+            ethereumAddress: json.data.ethereum?.address || ''
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/wallet/personal/create`, {
+        method: 'POST',
+        headers: { 'x-user-id': 'u1' }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setWallets(json.data);
+          setEditForm({
+            tronAddress: json.data.tron?.address || '',
+            ethereumAddress: json.data.ethereum?.address || ''
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/wallet/personal/edit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': 'u1'
+        },
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        setEditing(false);
+        fetchWallets();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBalances = async () => {
+    setBalanceLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/wallet/personal/balance`, {
+        headers: { 'x-user-id': 'u1' }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setBalances(json.data);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWallets();
+  }, []);
+
+  const copyToClipboard = (address, type) => {
+    navigator.clipboard.writeText(address);
+    setCopiedText({ ...copiedText, [type]: true });
+    setTimeout(() => {
+      setCopiedText({ ...copiedText, [type]: false });
+    }, 2000);
+  };
+
+  return (
+    <Card style={{ marginTop: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', margin: 0 }}>My Personal Crypto Addresses</h3>
+        {wallets && (
+          <Button variant="secondary" size="sm" onClick={() => setEditing(!editing)}>
+            {editing ? 'Cancel' : 'Edit Addresses'}
+          </Button>
+        )}
+      </div>
+
+      {!wallets ? (
+        <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Generate your own unique personal addresses to deposit USDT directly to your account.
+          </p>
+          <Button onClick={handleGenerate} loading={loading}>
+            Generate My Deposit Wallets
+          </Button>
+        </div>
+      ) : editing ? (
+        <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Input
+            label="USDT TRC20 (Tron) Address"
+            value={editForm.tronAddress}
+            onChange={(e) => setEditForm({ ...editForm, tronAddress: e.target.value })}
+            placeholder="T..."
+          />
+          <Input
+            label="USDT ERC20 (Ethereum) Address"
+            value={editForm.ethereumAddress}
+            onChange={(e) => setEditForm({ ...editForm, ethereumAddress: e.target.value })}
+            placeholder="0x..."
+          />
+          <Button type="submit" loading={loading}>Save Custom Addresses</Button>
+        </form>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* TRON Wallet */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT TRC-20 (TRON)</span>
+              {balances?.tron && (
+                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
+                  On-chain: {balances.tron.balance} USDT
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.85rem' }}>{wallets.tron?.address}</code>
+              <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron?.address, 'tron')}>
+                {copiedText['tron'] ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Ethereum Wallet */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT ERC-20 (Ethereum)</span>
+              {balances?.ethereum && (
+                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
+                  On-chain: {balances.ethereum.balance} USDT
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.85rem' }}>{wallets.ethereum?.address}</code>
+              <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.address, 'ethereum')}>
+                {copiedText['ethereum'] ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            <Button variant="secondary" fullWidth onClick={fetchBalances} loading={balanceLoading}>
+              Refresh On-chain Balances
+            </Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}

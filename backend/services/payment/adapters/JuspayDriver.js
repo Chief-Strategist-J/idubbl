@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { PaymentDriver } from './PaymentDriver.js';
+import { PaymentDriver } from '../ports/PaymentDriver.js';
 
 export class JuspayDriver extends PaymentDriver {
   constructor(config) {

@@ -20,6 +20,7 @@ class ErrorRegistry {
     this.register('MISSING_TX_HASH', 400, 'Transaction hash is required to verify the payment.');
     this.register('USER_NOT_FOUND', 404, 'User account could not be found.');
     this.register('PENDING_TX_NOT_FOUND', 404, 'The requested transaction is not pending or does not exist.');
+    this.register('TX_ALREADY_USED', 400, 'This transaction hash has already been submitted or used.');
 
     // Withdrawal errors
     this.register('INSUFFICIENT_FUNDS', 400, 'You do not have enough available balance to perform this action.');

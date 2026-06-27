@@ -1,7 +1,7 @@
 import express from 'express';
 import { getDb } from '../services/db.js';
 import { errorRegistry } from '../services/errorRegistry.js';
-import { authService } from '../services/index.js';
+import { authService, blockchainService } from '../services/index.js';
 
 const router = express.Router();
 
@@ -78,7 +78,7 @@ router.get('/transactions', async (req, res) => {
   }
 });
 
-// 3. Submit Manual USDT Deposit
+// 3. Submit USDT Deposit (with Auto-Verification & Manual Fallback)
 router.post('/deposit', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
   const { amount, network, txHash, note } = req.body;
@@ -92,18 +92,62 @@ router.post('/deposit', async (req, res) => {
 
   try {
     const db = await getDb();
-    const newDeposit = {
-      userId,
-      amount: Number(amount),
-      network,
-      txHash,
-      note,
-      status: 'pending',
-      type: 'deposit',
-      createdAt: new Date(),
-    };
-    await db.collection('transactions').insertOne(newDeposit);
-    res.json({ success: true, data: newDeposit });
+
+    // 1. Prevent replay/double spend attacks by checking if txHash was already submitted
+    const existingTx = await db.collection('transactions').findOne({ txHash: txHash.trim() });
+    if (existingTx) {
+      return errorRegistry.send(res, 'TX_ALREADY_USED', 'This transaction hash has already been used.');
+    }
+
+    // 2. Perform Blockchain Verification via Hexagonal Adapter
+    const verification = await blockchainService.verifyUSDTDeposit(txHash, network, Number(amount));
+
+    if (verification.success) {
+      // Auto-verified: credit wallet and save as approved immediately
+      const newDeposit = {
+        userId,
+        amount: verification.amount || Number(amount),
+        network,
+        txHash,
+        note: note ? `${note} (Auto-verified)` : 'Auto-verified',
+        status: 'approved',
+        type: 'deposit',
+        verifiedAt: new Date(),
+        createdAt: new Date(),
+      };
+
+      await db.collection('transactions').insertOne(newDeposit);
+      
+      // Update wallet balance (credit to depositBalance)
+      await db.collection('wallets').updateOne(
+        { userId },
+        { $inc: { depositBalance: newDeposit.amount } }
+      );
+
+      return res.json({ success: true, autoVerified: true, data: newDeposit });
+    } else {
+      // Verification failed or pending: save as pending for manual admin review
+      const newDeposit = {
+        userId,
+        amount: Number(amount),
+        network,
+        txHash,
+        note: note ? `${note} (Auto-verify failed: ${verification.error})` : `Auto-verify failed: ${verification.error}`,
+        status: 'pending',
+        type: 'deposit',
+        createdAt: new Date(),
+      };
+
+      await db.collection('transactions').insertOne(newDeposit);
+      
+      return res.json({ 
+        success: true, 
+        autoVerified: false, 
+        data: newDeposit,
+        warning: `Auto-verification failed: ${verification.error}. Saved for manual admin review.`
+      });
+    }
+
   } catch (error) {
     console.error('Error submitting deposit:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting deposit.');
@@ -292,6 +336,118 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
   } catch (error) {
     console.error('Error rejecting withdrawal:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error rejecting withdrawal.');
+  }
+});
+
+router.post('/personal/create', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  try {
+    const db = await getDb();
+    const keypair = blockchainService.generatePersonalWallet();
+    
+    await db.collection('user_wallets').updateOne(
+      { userId },
+      {
+        $set: {
+          tron: {
+            address: keypair.tron.address,
+            privateKey: keypair.tron.privateKey
+          },
+          ethereum: {
+            address: keypair.ethereum.address,
+            privateKey: keypair.ethereum.privateKey
+          },
+          updatedAt: new Date()
+        },
+        $setOnInsert: {
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
+    
+    const clientData = {
+      userId,
+      tron: { address: keypair.tron.address },
+      ethereum: { address: keypair.ethereum.address }
+    };
+
+    res.json({ success: true, data: clientData });
+  } catch (error) {
+    console.error('Error creating personal wallet:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error creating personal wallet.');
+  }
+});
+
+router.get('/personal', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  try {
+    const db = await getDb();
+    const wallet = await db.collection('user_wallets').findOne({ userId });
+    if (!wallet) {
+      return res.status(404).json({ success: false, error: 'Personal wallets not generated yet.' });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        userId: wallet.userId,
+        tron: { address: wallet.tron.address },
+        ethereum: { address: wallet.ethereum.address }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching personal wallets:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching personal wallets.');
+  }
+});
+
+router.post('/personal/edit', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  const { tronAddress, ethereumAddress } = req.body;
+  try {
+    const db = await getDb();
+    const updateFields = { updatedAt: new Date() };
+    if (tronAddress) updateFields['tron.address'] = tronAddress;
+    if (ethereumAddress) updateFields['ethereum.address'] = ethereumAddress;
+
+    await db.collection('user_wallets').updateOne(
+      { userId },
+      { $set: updateFields },
+      { upsert: true }
+    );
+
+    res.json({ success: true, message: 'Wallet addresses updated successfully.' });
+  } catch (error) {
+    console.error('Error editing personal wallets:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error editing personal wallets.');
+  }
+});
+
+router.get('/personal/balance', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  try {
+    const db = await getDb();
+    const wallet = await db.collection('user_wallets').findOne({ userId });
+    if (!wallet) {
+      return res.status(404).json({ success: false, error: 'Personal wallets not found.' });
+    }
+
+    const [tronBalance, ethBalance] = await Promise.all([
+      blockchainService.getOnchainUSDTBalance(wallet.tron.address, 'TRON'),
+      blockchainService.getOnchainUSDTBalance(wallet.ethereum.address, 'ETHEREUM')
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        tron: { address: wallet.tron.address, balance: tronBalance },
+        ethereum: { address: wallet.ethereum.address, balance: ethBalance }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching on-chain balances:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error checking on-chain balances.');
   }
 });
 

@@ -28,21 +28,8 @@ if (process.env.MONGODB_URI && config.auth?.providers?.['better-auth']?.database
   config.auth.providers['better-auth'].database.url = process.env.MONGODB_URI;
 }
 
-if (process.env.FLW_SECRET_KEY && config.payments?.gateways?.flutterwave) {
-  config.payments.gateways.flutterwave.secretKey = process.env.FLW_SECRET_KEY;
-}
-if (process.env.FLW_PUBLIC_KEY && config.payments?.gateways?.flutterwave) {
-  config.payments.gateways.flutterwave.publicKey = process.env.FLW_PUBLIC_KEY;
-}
-if (process.env.FLW_ENCRYPTION_KEY && config.payments?.gateways?.flutterwave) {
-  config.payments.gateways.flutterwave.encryptionKey = process.env.FLW_ENCRYPTION_KEY;
-}
-
 // Dynamically construct payment callback URLs
 const paymentBackendUrl = process.env.BACKEND_URL || process.env.BETTER_AUTH_URL || 'http://localhost:5000';
-if (config.payments?.gateways?.flutterwave) {
-  config.payments.gateways.flutterwave.redirectUrl = `${paymentBackendUrl}/api/payment/callback/flutterwave`;
-}
 
 if (process.env.JUSPAY_API_KEY && config.payments?.gateways?.juspay) {
   config.payments.gateways.juspay.apiKey = process.env.JUSPAY_API_KEY;

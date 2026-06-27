@@ -42,7 +42,7 @@ router.get('/verify/:transactionId', async (req, res) => {
   }
 });
 
-// Generic Webhook Callback handler (e.g. Flutterwave/Juspay)
+// Generic Webhook Callback handler (e.g. Juspay)
 router.post('/webhook', async (req, res) => {
   try {
     const event = await paymentService.handleWebhook(req);
@@ -52,63 +52,6 @@ router.post('/webhook', async (req, res) => {
     console.error('Webhook error:', error);
     return errorRegistry.send(res, 'SERVICE_ERROR', error.message || 'Webhook processing failed.');
   }
-});
-
-// Callback redirect route for Flutterwave
-router.get('/callback/flutterwave', async (req, res) => {
-  const { transaction_id, status, tx_ref } = req.query;
-  console.log(`Flutterwave callback: ID=${transaction_id}, Status=${status}, Ref=${tx_ref}`);
-  
-  const host = req.get('host') || '';
-  const frontendUrl = process.env.FRONTEND_URL || (host.includes('localhost') ? 'http://localhost:5173' : 'https://idubbl-frontend.onrender.com');
-
-  if (status === 'successful' || status === 'completed') {
-    try {
-      const verification = await paymentService.verifyPayment(transaction_id);
-      
-      const db = await getDb();
-      // Find the user by their email (case-insensitive)
-      const userEmail = verification.rawResponse?.data?.customer?.email;
-      if (userEmail) {
-        const user = await db.collection('user').findOne({ 
-          email: { $regex: new RegExp(`^${userEmail.trim()}$`, 'i') } 
-        });
-        if (user) {
-          const userId = user.id || user._id.toString();
-          
-          // Credit the wallet
-          await db.collection('wallets').updateOne(
-            { userId: userId },
-            { 
-              $inc: { depositBalance: Number(verification.amount) },
-              $setOnInsert: { winningsBalance: 0, lockedBalance: 0, pendingWithdrawals: 0, createdAt: new Date() }
-            },
-            { upsert: true }
-          );
-
-          // Log the transaction
-          await db.collection('transactions').insertOne({
-            userId: userId,
-            amount: Number(verification.amount),
-            status: 'approved',
-            type: 'deposit',
-            method: 'flutterwave',
-            txHash: transaction_id,
-            note: `Flutterwave Deposit Ref: ${verification.orderId}`,
-            createdAt: new Date(),
-          });
-        } else {
-          console.warn(`User with email "${userEmail}" not found in database for callback.`);
-        }
-      }
-
-      return res.redirect(`${frontendUrl}/transactions?payment=success&ref=${verification.orderId}`);
-    } catch (err) {
-      console.error('Callback processing failed:', err);
-      return res.redirect(`${frontendUrl}/transactions?payment=failed&error=${encodeURIComponent(err.message)}`);
-    }
-  }
-  return res.redirect(`${frontendUrl}/transactions?payment=failed&status=${status}`);
 });
 
 // Callback redirect route for Juspay

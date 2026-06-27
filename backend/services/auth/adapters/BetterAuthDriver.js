@@ -3,8 +3,8 @@ import { mongodbAdapter } from '@better-auth/mongo-adapter';
 import { MongoClient } from 'mongodb';
 import { toNodeHandler } from 'better-auth/node';
 import { APIError } from 'better-auth/api';
-import { AuthDriver } from './AuthDriver.js';
-import { sendEmail } from '../emailService.js';
+import { AuthDriver } from '../ports/AuthDriver.js';
+import { sendEmail } from '../../emailService.js';
 
 export class BetterAuthDriver extends AuthDriver {
   constructor(config) {

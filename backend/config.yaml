@@ -15,16 +15,18 @@ auth:
           enabled: true
 
 payments:
-  active: "flutterwave"
+  active: "juspay"
   gateways:
-    flutterwave:
-      secretKey: "FLWSECK-your-test-secret-key"
-      publicKey: "FLWPUBK-your-test-public-key"
-      encryptionKey: "your-encryption-key"
-      baseUrl: "https://api.flutterwave.com/v3"
-      redirectUrl: "http://localhost:5000/api/payment/callback/flutterwave"
     juspay:
       apiKey: "your-juspay-api-key"
       merchantId: "your-juspay-merchant-id"
       baseUrl: "https://sandbox.juspay.in"
       returnUrl: "http://localhost:5000/api/payment/callback/juspay"
+
+blockchain:
+  wallets:
+    tron: "TDsqW9XXXXXXXXXXXXXXXXXXXXXXX"
+    ethereum: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+  keys:
+    trongrid: "1aba6f7f-092d-4640-9a50-3987a7383e33"
+    etherscan: "5I3STHGMTCUVHEBBEWNUSVTRZU2ZFZNJ3F"
