@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Input } from '../../../shared/components/ui/index.js';
+import useAuthStore from '../../../shared/store/authStore.js';
 
 const apiBase = (() => {
   let base = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
@@ -10,6 +11,9 @@ const apiBase = (() => {
 })();
 
 export default function PersonalWalletsWidget() {
+  const { user } = useAuthStore();
+  const activeUserId = user?.id || 'u1';
+
   const [wallets, setWallets] = useState(null);
   const [balances, setBalances] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,10 +23,11 @@ export default function PersonalWalletsWidget() {
   const [copiedText, setCopiedText] = useState({});
 
   const fetchWallets = async () => {
+    if (!activeUserId) return;
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/wallet/personal`, {
-        headers: { 'x-user-id': 'u1' } // Demo user
+        headers: { 'x-user-id': activeUserId }
       });
       if (res.ok) {
         const json = await res.json();
@@ -42,11 +47,12 @@ export default function PersonalWalletsWidget() {
   };
 
   const handleGenerate = async () => {
+    if (!activeUserId) return;
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/wallet/personal/create`, {
         method: 'POST',
-        headers: { 'x-user-id': 'u1' }
+        headers: { 'x-user-id': activeUserId }
       });
       if (res.ok) {
         const json = await res.json();
@@ -67,13 +73,14 @@ export default function PersonalWalletsWidget() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!activeUserId) return;
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/wallet/personal/edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': 'u1'
+          'x-user-id': activeUserId
         },
         body: JSON.stringify(editForm)
       });
@@ -89,10 +96,11 @@ export default function PersonalWalletsWidget() {
   };
 
   const fetchBalances = async () => {
+    if (!activeUserId) return;
     setBalanceLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/wallet/personal/balance`, {
-        headers: { 'x-user-id': 'u1' }
+        headers: { 'x-user-id': activeUserId }
       });
       if (res.ok) {
         const json = await res.json();
@@ -108,12 +116,13 @@ export default function PersonalWalletsWidget() {
   };
 
   const handleDelete = async () => {
+    if (!activeUserId) return;
     if (!window.confirm('Are you sure you want to delete/reset your generated crypto wallets?')) return;
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/wallet/personal`, {
         method: 'DELETE',
-        headers: { 'x-user-id': 'u1' }
+        headers: { 'x-user-id': activeUserId }
       });
       if (res.ok) {
         setWallets(null);
@@ -127,8 +136,11 @@ export default function PersonalWalletsWidget() {
   };
 
   useEffect(() => {
-    fetchWallets();
-  }, []);
+    if (activeUserId) {
+      fetchWallets();
+      fetchBalances();
+    }
+  }, [activeUserId]);
 
   const copyToClipboard = (address, type) => {
     navigator.clipboard.writeText(address);
@@ -180,9 +192,16 @@ export default function PersonalWalletsWidget() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT TRC-20 (TRON)</span>
               {balances?.tron && (
-                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
-                  On-chain: {balances.tron.balance} USDT
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <span style={{ color: 'var(--accent-green)', fontWeight: 600, fontSize: '0.85rem' }}>
+                    USDT: {balances.tron.balance} USDT
+                  </span>
+                  {balances.tron.nativeBalance !== undefined && (
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 500 }}>
+                      Gas: {balances.tron.nativeBalance} TRX
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -217,6 +236,13 @@ export default function PersonalWalletsWidget() {
             <Button variant="danger" onClick={handleDelete} loading={loading} style={{ flex: 1 }}>
               Reset Wallets
             </Button>
+          </div>
+
+          <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-warning)', fontWeight: 600 }}>⚠️ Testnet Sandbox Mode:</span>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              Need testnet funds for testing? Claim free Shasta Testnet TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or the <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>.
+            </p>
           </div>
         </div>
       )}

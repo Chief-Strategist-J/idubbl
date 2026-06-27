@@ -47,8 +47,12 @@ export class TronGridAdapter extends BlockchainPort {
     super();
     this.apiKey = config.apiKey || process.env.TRONGRID_API_KEY;
     this.baseUrl = config.baseUrl || 'https://api.trongrid.io';
-    // USDT Contract Address on Tron Mainnet
-    this.usdtContractHex = '41a614f803b6fd5c617a480d12e622bde91a6d84d3'; // TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t in Hex
+    
+    const isTestnet = this.baseUrl.includes('shasta') || this.baseUrl.includes('nile');
+    this.usdtContract = isTestnet ? 'TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3' : 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+    this.usdtContractHex = isTestnet 
+      ? '419356efd2e33db37604f85e4860d5bfa4a34b22ee' 
+      : '41a614f803b6fd5c617a480d12e622bde91a6d84d3';
   }
 
   async verifyTransaction(txHash, expectedAmount, expectedReceiver) {
@@ -162,16 +166,34 @@ export class TronGridAdapter extends BlockchainPort {
       }
 
       const trc20Balances = res.data[0].trc20 || [];
-      const usdtContractHexUpper = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+      const usdtContractKey = this.usdtContract;
       
       // Find USDT balance
-      const usdtInfo = trc20Balances.find(item => Object.keys(item)[0] === usdtContractHexUpper);
+      const usdtInfo = trc20Balances.find(item => Object.keys(item)[0] === usdtContractKey);
       if (!usdtInfo) return 0;
 
       const rawBalance = Object.values(usdtInfo)[0];
       return parseFloat(rawBalance) / 1_000_000;
     } catch (error) {
       console.error('Error fetching Tron balance:', error);
+      return 0;
+    }
+  }
+
+  async getNativeBalance(address) {
+    const endpoint = `${this.baseUrl}/v1/accounts/${address}`;
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (this.apiKey) {
+        headers['TRON-PRO-API-KEY'] = this.apiKey;
+      }
+      const response = await fetch(endpoint, { method: 'GET', headers });
+      if (!response.ok) return 0;
+      const res = await response.json();
+      if (!res.success || !res.data || res.data.length === 0) return 0;
+      return (res.data[0].balance || 0) / 1_000_000;
+    } catch (e) {
+      console.error('Error fetching native TRX balance:', e);
       return 0;
     }
   }

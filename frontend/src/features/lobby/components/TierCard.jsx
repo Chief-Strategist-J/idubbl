@@ -15,7 +15,7 @@ export default function TierCard({ tier }) {
 
   const handleJoin = () => {
     if (!canAfford || alreadyInQueue) return;
-    reserveForMatch(tier.entryFee);
+    reserveForMatch(tier.entryFee, { tier: tier.name });
     joinQueue(tier.id);
     navigate(`/queue/${tier.id}`);
   };

@@ -17,7 +17,7 @@ export default function WithdrawForm() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const totalAvailable = (depositBalance || 0) + (winningsBalance || 0);
+  const totalAvailable = winningsBalance || 0;
 
   // Fetch personal wallets on mount
   useEffect(() => {
@@ -47,8 +47,16 @@ export default function WithdrawForm() {
   }, [user?.id]);
 
   const walletOptions = personalWallets ? [
-    personalWallets.tron && { label: `Tron (TRC-20) — ${personalWallets.tron}`, address: personalWallets.tron, network: 'TRC20 (TRON)' },
-    personalWallets.ethereum && { label: `Ethereum (ERC-20) — ${personalWallets.ethereum}`, address: personalWallets.ethereum, network: 'ERC20 (Ethereum)' },
+    (personalWallets.tron?.address || (typeof personalWallets.tron === 'string' && personalWallets.tron)) && {
+      label: `Tron (TRC-20) — ${personalWallets.tron.address || personalWallets.tron}`,
+      address: personalWallets.tron.address || personalWallets.tron,
+      network: 'TRC20 (TRON)'
+    },
+    (personalWallets.ethereum?.address || (typeof personalWallets.ethereum === 'string' && personalWallets.ethereum)) && {
+      label: `Ethereum (ERC-20) — ${personalWallets.ethereum.address || personalWallets.ethereum}`,
+      address: personalWallets.ethereum.address || personalWallets.ethereum,
+      network: 'ERC20 (Ethereum)'
+    },
   ].filter(Boolean) : [];
 
   const handleWalletSelect = (opt) => {
@@ -100,10 +108,10 @@ export default function WithdrawForm() {
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--secondary)', margin: '0.25rem 0 0 0' }}>
             {(idubbuBalance || 0).toLocaleString()}
           </p>
-          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>= {(totalAvailable).toFixed(2)} USDT</span>
+          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>= {((depositBalance || 0) + (winningsBalance || 0)).toFixed(2)} USDT</span>
         </div>
         <div style={{ padding: '0.75rem', background: 'var(--accent-green-glow)', borderRadius: 10, border: '1px solid var(--accent-green-glow)' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Available (USDT)</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Winnings (USDT)</p>
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--accent-green)', margin: '0.25rem 0 0 0' }}>{totalAvailable.toFixed(2)}</p>
           <span style={{ fontSize: '0.6rem', color: 'var(--accent-green)' }}>Withdrawable</span>
         </div>

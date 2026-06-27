@@ -13,7 +13,14 @@ export default function ResultPage() {
   const { creditWinnings, availableBalance } = useWalletStore();
 
   useEffect(() => {
-    if (matchResult?.isWinner) creditWinnings(matchResult.prize);
+    if (matchResult) {
+      creditWinnings(matchResult.isWinner ? matchResult.prize : 0, {
+        entryFee: matchResult.entryFee,
+        refId: matchResult.refId,
+        matchId: matchResult.refId,
+        tier: matchResult.winner
+      });
+    }
   }, []);
 
   if (!matchResult) {
@@ -74,10 +81,11 @@ export default function ResultPage() {
             </div>
           </Card>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Button variant="primary" fullWidth onClick={handlePlayAgain}>Play Again in Same Tier</Button>
-            <Button variant="secondary" fullWidth onClick={() => { clearMatch(); navigate('/lobby'); }}>Choose a Different Tier</Button>
-            <Button variant="secondary" fullWidth onClick={() => { clearMatch(); navigate('/dashboard'); }}>Back to Dashboard</Button>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+            <Button variant="primary" onClick={handlePlayAgain}>Play Again in Same Tier</Button>
+            <Button variant="secondary" onClick={() => { clearMatch(); navigate('/lobby'); }}>Choose a Different Tier</Button>
+            <Button style={{ background: 'var(--accent-green-glow)', borderColor: 'rgba(0, 227, 122, 0.4)', color: 'var(--accent-green)' }} onClick={() => { clearMatch(); navigate('/withdraw'); }}>Withdraw Winnings</Button>
+            <Button variant="secondary" onClick={() => { clearMatch(); navigate('/dashboard'); }}>Back to Dashboard</Button>
           </div>
         </div>
       </div>

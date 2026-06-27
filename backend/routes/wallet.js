@@ -85,6 +85,76 @@ router.get('/transactions', async (req, res) => {
   }
 });
 
+// 3a. Deduct entry fee when player joins a match
+router.post('/match/join-deduct', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  const { entryFee, matchId, tier } = req.body;
+  if (!entryFee) return errorRegistry.send(res, 'MISSING_ENTRY_FEE', 'Entry fee required.');
+  try {
+    const db = await getDb();
+    const wallet = await getOrCreateWallet(db, userId);
+    const total = (wallet.depositBalance || 0) + (wallet.winningsBalance || 0);
+    if (total < Number(entryFee)) {
+      return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient balance to join match.');
+    }
+    const fromDeposit  = Math.min(wallet.depositBalance || 0, Number(entryFee));
+    const fromWinnings = Number(entryFee) - fromDeposit;
+    await db.collection('wallets').updateOne(
+      { userId },
+      { $inc: {
+          depositBalance:  -fromDeposit,
+          winningsBalance: -fromWinnings,
+          lockedBalance:    Number(entryFee),
+          idubbuBalance:   -Number(entryFee) * IDUBBU_RATE
+      }}
+    );
+    await db.collection('transactions').insertOne({
+      userId, type: 'match_entry', amount: Number(entryFee),
+      matchId, tier, status: 'locked', createdAt: new Date()
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deducting entry fee:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error deducting entry fee.');
+  }
+});
+
+// 3b. Settle match result — credit winner, record loss for loser
+router.post('/match/settle', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  const { isWinner, prize, entryFee, matchId, tier, refId } = req.body;
+  try {
+    const db = await getDb();
+    if (isWinner && prize > 0) {
+      await db.collection('wallets').updateOne(
+        { userId },
+        { $inc: {
+            winningsBalance: Number(prize),
+            lockedBalance:  -Number(entryFee),
+            idubbuBalance:   Number(prize) * IDUBBU_RATE
+        }}
+      );
+      await db.collection('transactions').insertOne({
+        userId, type: 'win', amount: Number(prize),
+        matchId, tier, refId, status: 'approved', createdAt: new Date()
+      });
+    } else {
+      await db.collection('wallets').updateOne(
+        { userId },
+        { $inc: { lockedBalance: -Number(entryFee) } }
+      );
+      await db.collection('transactions').insertOne({
+        userId, type: 'loss', amount: Number(entryFee),
+        matchId, tier, refId, status: 'approved', createdAt: new Date()
+      });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error settling match:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error settling match.');
+  }
+});
+
 // 3. Submit USDT Deposit (with Auto-Verification & Manual Fallback)
 router.post('/deposit', async (req, res) => {
   const userId = req.headers['x-user-id'] || 'u1';
@@ -173,21 +243,16 @@ router.post('/withdraw', async (req, res) => {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
 
-    const totalAvailable = (wallet.winningsBalance || 0) + (wallet.depositBalance || 0);
+    const totalAvailable = wallet.winningsBalance || 0;
     if (totalAvailable < Number(amount)) {
-      return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient balance to complete the withdrawal.');
+      return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient winnings balance to complete the withdrawal.');
     }
-
-    // Deduct from winnings first, then deposits
-    const fromWinnings = Math.min(wallet.winningsBalance || 0, Number(amount));
-    const fromDeposit  = Number(amount) - fromWinnings;
 
     await db.collection('wallets').updateOne(
       { userId },
       {
         $inc: {
-          winningsBalance: -fromWinnings,
-          depositBalance: -fromDeposit,
+          winningsBalance: -Number(amount),
           pendingWithdrawals: Number(amount)
         }
       }
@@ -502,15 +567,16 @@ router.get('/personal/balance', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Personal wallets not found.' });
     }
 
-    const [tronBalance, ethBalance] = await Promise.all([
+    const [tronBalance, ethBalance, nativeTronBalance] = await Promise.all([
       blockchainService.getOnchainUSDTBalance(wallet.tron.address, 'TRON'),
-      blockchainService.getOnchainUSDTBalance(wallet.ethereum.address, 'ETHEREUM')
+      blockchainService.getOnchainUSDTBalance(wallet.ethereum.address, 'ETHEREUM'),
+      blockchainService.adapters.tron.getNativeBalance(wallet.tron.address)
     ]);
 
     res.json({
       success: true,
       data: {
-        tron: { address: wallet.tron.address, balance: tronBalance },
+        tron: { address: wallet.tron.address, balance: tronBalance, nativeBalance: nativeTronBalance },
         ethereum: { address: wallet.ethereum.address, balance: ethBalance }
       }
     });

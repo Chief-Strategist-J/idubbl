@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Card, Table, Badge, SearchBar, Select } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
+import useAuthStore from '../../shared/store/authStore.js';
 
 const TYPE_OPTIONS = [
   { value: '', label: 'All types' },
@@ -16,16 +17,28 @@ const TYPE_OPTIONS = [
 const COLUMNS = [
   { key: 'refId', label: 'Ref ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v || row.txHash || (row._id ? row._id.toString().substring(0, 10) : '—')}</code> },
   { key: 'description', label: 'Description', render: (v, row) => v || row.note || `${row.type ? row.type.charAt(0).toUpperCase() + row.type.slice(1) : 'Transaction'} (${row.method || 'Platform'})` },
-  { key: 'type', label: 'Type', render: (v) => <Badge status={v === 'winnings' || v === 'deposit' ? 'approved' : v === 'match_loss' || v === 'withdrawal' ? 'rejected' : 'pending'} label={v ? v.replace('_', ' ') : '—'} /> },
-  { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: v > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{v > 0 ? `+${v}` : v} USDT</span> },
+  { key: 'type', label: 'Type', render: (v) => <span style={{ textTransform: 'capitalize', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.85rem' }}>{v ? v.replace('_', ' ') : '—'}</span> },
+  { key: 'amount', label: 'Amount', render: (v, row) => {
+      const isNegative = row.type === 'withdrawal' || row.type === 'loss' || row.type === 'match_loss' || row.type === 'match_entry' || row.type === 'match_reserve';
+      const color = isNegative ? 'var(--accent-red)' : 'var(--accent-green)';
+      const prefix = isNegative ? '-' : '+';
+      return <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color }}>{prefix}{v || 0} USDT</span>;
+  }},
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
   { key: 'date', label: 'Date', render: (v, row) => new Date(v || row.createdAt).toLocaleString() },
 ];
 
 export default function TransactionsPage() {
-  const { transactions } = useWalletStore();
+  const { fetchWalletData, transactions } = useWalletStore();
+  const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchWalletData(user.id);
+    }
+  }, [user?.id, fetchWalletData]);
 
   const filtered = transactions.filter((t) => {
     const refIdStr = t.refId || t.txHash || (t._id ? t._id.toString() : '');
