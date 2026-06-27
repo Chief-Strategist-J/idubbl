@@ -16,12 +16,12 @@ const NAV_ITEMS = [
   { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User },
 ];
 
-// Desktop header nav (subset — Wallet links to hub)
 const HEADER_NAV = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Play',      path: '/lobby' },
   { label: 'Wallet',    path: '/wallet' },
   { label: 'History',   path: '/transactions' },
+  { label: 'Profile',   path: '/profile' },
 ];
 
 export default function AppLayout({ children }) {
@@ -38,7 +38,6 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="app-container">
-      {/* Global banners */}
       <OfflineBanner />
       <SessionExpiredModal />
 
@@ -48,7 +47,6 @@ export default function AppLayout({ children }) {
             <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
           </div>
 
-          {/* Desktop-only navigation */}
           <nav className="nav-links">
             {HEADER_NAV.map((item) => (
               <button
@@ -84,7 +82,6 @@ export default function AppLayout({ children }) {
             )}
             <button className="nav-btn desktop-only" onClick={handleLogout}>Logout</button>
 
-            {/* Mobile: hamburger opens overflow menu (logout + admin) */}
             <button
               className="hamburger-btn"
               onClick={() => setMenuOpen((o) => !o)}
@@ -99,6 +96,12 @@ export default function AppLayout({ children }) {
       </header>
 
       <div className={`mobile-overflow-drawer ${menuOpen ? 'drawer-open' : ''}`}>
+        <button
+          className="overflow-drawer-btn"
+          onClick={() => { navigate('/profile'); setMenuOpen(false); }}
+        >
+          <span>Profile Settings</span>
+        </button>
         {user?.role === 'admin' && (
           <button
             className="overflow-drawer-btn"
