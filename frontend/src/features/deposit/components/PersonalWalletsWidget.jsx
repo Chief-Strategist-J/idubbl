@@ -213,7 +213,7 @@ export default function PersonalWalletsWidget() {
             </div>
              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
               <a
-                href={`https://shasta.tronscan.org/#/address/${wallets.tron?.address}`}
+                href={`${wallets.tron?.explorerBase || balances?.tron?.explorerBase || 'https://tronscan.org'}/#/address/${wallets.tron?.address}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 500 }}
@@ -266,7 +266,7 @@ export default function PersonalWalletsWidget() {
             </div>
              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
               <a
-                href={`https://sepolia.etherscan.io/address/${wallets.ethereum?.address}`}
+                href={`${wallets.ethereum?.explorerBase || balances?.ethereum?.explorerBase || 'https://etherscan.io'}/address/${wallets.ethereum?.address}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 500 }}

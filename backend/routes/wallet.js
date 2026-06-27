@@ -522,12 +522,20 @@ router.get('/personal', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Personal wallets not generated yet.' });
     }
 
+    const tronHost = process.env.TRONGRID_BASE_URL || 'https://api.trongrid.io';
+    const isTronTestnet = tronHost.includes('shasta') || tronHost.includes('nile');
+    const tronExplorer = isTronTestnet ? 'https://shasta.tronscan.org' : 'https://tronscan.org';
+
+    const ethHost = process.env.ETH_PROVIDER_URL || '';
+    const isEthTestnet = ethHost.includes('sepolia') || ethHost.includes('goerli');
+    const ethExplorer = isEthTestnet ? 'https://sepolia.etherscan.io' : 'https://etherscan.io';
+
     res.json({
       success: true,
       data: {
         userId: wallet.userId,
-        tron: { address: wallet.tron.address, privateKey: wallet.tron.privateKey },
-        ethereum: { address: wallet.ethereum.address, privateKey: wallet.ethereum.privateKey }
+        tron: { address: wallet.tron.address, privateKey: wallet.tron.privateKey, explorerBase: tronExplorer },
+        ethereum: { address: wallet.ethereum.address, privateKey: wallet.ethereum.privateKey, explorerBase: ethExplorer }
       }
     });
   } catch (error) {
@@ -574,11 +582,19 @@ router.get('/personal/balance', async (req, res) => {
       blockchainService.adapters.ethereum.getNativeBalance(wallet.ethereum.address)
     ]);
 
+    const tronHost = process.env.TRONGRID_BASE_URL || 'https://api.trongrid.io';
+    const isTronTestnet = tronHost.includes('shasta') || tronHost.includes('nile');
+    const tronExplorer = isTronTestnet ? 'https://shasta.tronscan.org' : 'https://tronscan.org';
+
+    const ethHost = process.env.ETH_PROVIDER_URL || '';
+    const isEthTestnet = ethHost.includes('sepolia') || ethHost.includes('goerli');
+    const ethExplorer = isEthTestnet ? 'https://sepolia.etherscan.io' : 'https://etherscan.io';
+
     res.json({
       success: true,
       data: {
-        tron: { address: wallet.tron.address, balance: tronBalance, nativeBalance: nativeTronBalance },
-        ethereum: { address: wallet.ethereum.address, balance: ethBalance, nativeBalance: nativeEthBalance }
+        tron: { address: wallet.tron.address, balance: tronBalance, nativeBalance: nativeTronBalance, explorerBase: tronExplorer },
+        ethereum: { address: wallet.ethereum.address, balance: ethBalance, nativeBalance: nativeEthBalance, explorerBase: ethExplorer }
       }
     });
   } catch (error) {

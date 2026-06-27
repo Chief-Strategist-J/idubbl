@@ -18,8 +18,15 @@ const COLUMNS = [
   { key: 'refId', label: 'Ref ID', render: (v, row) => {
       const hash = row.txHash || row.payoutTxHash || v;
       const isMock = !hash || hash.startsWith('test_') || hash.startsWith('mock_') || hash.startsWith('simulated_') || hash === '12';
+      
+      const apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+      const isMainnet = apiBase.includes('idubbl-backend.onrender.com');
       const isTron = (row.network || '').toUpperCase().includes('TRON') || (row.network || '').toUpperCase().includes('TRC20');
-      const explorerUrl = isMock ? null : (isTron ? `https://shasta.tronscan.org/#/transaction/${hash}` : `https://sepolia.etherscan.io/tx/${hash}`);
+      
+      const tronExplorer = isMainnet ? 'https://tronscan.org' : 'https://shasta.tronscan.org';
+      const ethExplorer = isMainnet ? 'https://etherscan.io' : 'https://sepolia.etherscan.io';
+      
+      const explorerUrl = isMock ? null : (isTron ? `${tronExplorer}/#/transaction/${hash}` : `${ethExplorer}/tx/${hash}`);
       
       const label = v || row.txHash || (row._id ? row._id.toString().substring(0, 10) : '—');
       
