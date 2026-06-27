@@ -20,9 +20,9 @@ const COLUMNS = (onSuspend) => [
     key: 'personalWallets',
     label: 'On-Chain Wallets',
     render: (v) => v ? (
-      <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', lineHeight: 1.3 }}>
-        TRX: <span style={{ color: 'var(--accent-cyan)' }}>{v.tron ? v.tron.substring(0, 8) + '...' : '—'}</span><br />
-        ETH: <span style={{ color: 'var(--accent-cyan)' }}>{v.ethereum ? v.ethereum.substring(0, 8) + '...' : '—'}</span>
+      <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', lineHeight: 1.3, wordBreak: 'break-all', maxWidth: '220px' }}>
+        TRX: <span style={{ color: 'var(--accent-cyan)' }}>{v.tron || '—'}</span><br />
+        ETH: <span style={{ color: 'var(--accent-cyan)' }}>{v.ethereum || '—'}</span>
       </div>
     ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>None</span>
   },
