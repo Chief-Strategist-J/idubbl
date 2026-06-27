@@ -58,7 +58,7 @@ router.get('/deposits', adminAuth, async (req, res) => {
 
     const enrichedDeposits = deposits.map(d => {
       const user = userMap[d.userId];
-      const name = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unknown';
+      const name = user ? (user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()) : 'Unknown';
       return {
         ...d,
         id: d._id.toString(),
@@ -74,12 +74,9 @@ router.get('/deposits', adminAuth, async (req, res) => {
   }
 });
 
-// 2. GET /api/admin/withdrawals - List all user withdrawal requests
 router.get('/withdrawals', adminAuth, async (req, res) => {
   try {
     const db = await getDb();
-    
-    // Fetch all users to map user information
     const users = await db.collection('user').find({}).toArray();
     const userMap = {};
     users.forEach(u => {
@@ -94,7 +91,7 @@ router.get('/withdrawals', adminAuth, async (req, res) => {
 
     const enrichedWithdrawals = withdrawals.map(w => {
       const user = userMap[w.userId];
-      const name = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unknown';
+      const name = user ? (user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim()) : 'Unknown';
       return {
         ...w,
         id: w._id.toString(),
