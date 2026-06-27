@@ -19,8 +19,8 @@ export default function DepositPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Deposit USDT"
-        subtitle="Send USDT to the address below and paste the transaction hash for review."
+        title="Deposit Funds"
+        subtitle="Top up your wallet using your card, bank account, or mobile money securely via Flutterwave."
       />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <UsdtDepositForm />

@@ -59,7 +59,8 @@ router.get('/callback/flutterwave', async (req, res) => {
   const { transaction_id, status, tx_ref } = req.query;
   console.log(`Flutterwave callback: ID=${transaction_id}, Status=${status}, Ref=${tx_ref}`);
   
-  const frontendUrl = process.env.FRONTEND_URL || 'https://idubbl-frontend.onrender.com';
+  const host = req.get('host') || '';
+  const frontendUrl = process.env.FRONTEND_URL || (host.includes('localhost') ? 'http://localhost:5173' : 'https://idubbl-frontend.onrender.com');
 
   if (status === 'successful' || status === 'completed') {
     try {

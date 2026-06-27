@@ -4,6 +4,7 @@ import useAuthStore from './shared/store/authStore.js';
 
 import LandingPage from './features/landing/LandingPage.jsx';
 import LoginPage from './features/auth/LoginPage.jsx';
+import AdminLoginPage from './features/auth/AdminLoginPage.jsx';
 import SignupPage from './features/auth/SignupPage.jsx';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './features/auth/ResetPasswordPage.jsx';
@@ -34,7 +35,7 @@ import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, sessionChecked } = useAuthStore();
+  const { isAuthenticated, user, sessionChecked } = useAuthStore();
   if (!sessionChecked) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>
@@ -43,7 +44,8 @@ function ProtectedRoute({ children }) {
       </div>
     );
   }
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
 }
 
 function AdminRoute({ children }) {
@@ -56,9 +58,20 @@ function AdminRoute({ children }) {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
   if (user?.role === 'admin') return children;
   return <Navigate to="/dashboard" replace />;
+}
+
+function AdminLoginRedirectRoute({ children }) {
+  const { isAuthenticated, user, sessionChecked } = useAuthStore();
+  if (!sessionChecked) {
+    return null;
+  }
+  if (isAuthenticated && user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
 }
 
 export default function App() {
@@ -98,6 +111,7 @@ export default function App() {
         <Route path="/support"      element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
 
         {/* Admin routes */}
+        <Route path="/admin/login"          element={<AdminLoginRedirectRoute><AdminLoginPage /></AdminLoginRedirectRoute>} />
         <Route path="/admin"                element={<AdminRoute><AdminDashboardHome /></AdminRoute>} />
         <Route path="/admin/deposits"       element={<AdminRoute><AdminDepositsPage /></AdminRoute>} />
         <Route path="/admin/withdrawals"    element={<AdminRoute><AdminWithdrawalsPage /></AdminRoute>} />

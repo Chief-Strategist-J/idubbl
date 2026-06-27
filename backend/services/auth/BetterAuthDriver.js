@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from '@better-auth/mongo-adapter';
 import { MongoClient } from 'mongodb';
 import { toNodeHandler } from 'better-auth/node';
+import { APIError } from 'better-auth/api';
 import { AuthDriver } from './AuthDriver.js';
 import { sendEmail } from '../emailService.js';
 
@@ -27,6 +28,20 @@ export class BetterAuthDriver extends AuthDriver {
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        databaseHooks: {
+          user: {
+            create: {
+              before: async (user) => {
+                if (user.role === 'admin') {
+                  user.role = 'player';
+                }
+                return {
+                  data: user
+                };
+              }
+            }
+          }
+        },
         plugins: [
           // Enable role capabilities in Better Auth to natively fetch and populate user.role from the database user table
           {
@@ -41,6 +56,46 @@ export class BetterAuthDriver extends AuthDriver {
                   }
                 }
               }
+            }
+          },
+          {
+            id: 'portal-restriction',
+            hooks: {
+              before: [
+                {
+                  matcher: (ctx) => ctx.path.startsWith('/sign-in/email'),
+                  handler: async (ctx) => {
+                    const email = ctx.body?.email;
+                    if (!email) return;
+                    
+                    const user = await this.db.collection('user').findOne({ email: new RegExp(`^${email}$`, 'i') });
+                    const portal = ctx.headers ? (typeof ctx.headers.get === 'function' ? ctx.headers.get('x-portal') : ctx.headers['x-portal'] || ctx.headers['x-portal'.toLowerCase()]) : null;
+                    
+                    if (user) {
+                      if (user.role !== 'admin') {
+                        if (portal === 'admin') {
+                          throw new APIError("BAD_REQUEST", {
+                            message: "Access denied. Only administrators can log in here."
+                          });
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  matcher: (ctx) => ctx.path.startsWith('/sign-up/email'),
+                  handler: async (ctx) => {
+                    if (ctx.body && (ctx.body.role === 'admin' || ctx.body.role === 'administrator')) {
+                      throw new APIError("BAD_REQUEST", {
+                        message: "Admin accounts cannot be created."
+                      });
+                    }
+                    if (ctx.body) {
+                      ctx.body.role = 'player';
+                    }
+                  }
+                }
+              ]
             }
           }
         ],

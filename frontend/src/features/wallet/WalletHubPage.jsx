@@ -56,10 +56,10 @@ export default function WalletHubPage() {
 
         {/* Balance Card */}
         <Card style={{
-          background: 'linear-gradient(135deg, rgba(0,227,122,0.08) 0%, rgba(20,24,33,0.9) 60%)',
-          border: '1px solid rgba(0, 227, 122, 0.25)',
+          background: 'linear-gradient(135deg, rgba(0,227,122,0.08) 0%, var(--bg-card) 60%)',
+          border: '1px solid var(--border)',
           borderRadius: 16,
-          boxShadow: '0 0 40px rgba(0, 227, 122, 0.08)',
+          boxShadow: 'var(--shadow-card)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
             <div style={{
@@ -101,21 +101,22 @@ export default function WalletHubPage() {
                 Available balance
               </p>
               <p style={{
-                fontSize: '2rem',
+                fontSize: '1.8rem',
                 fontWeight: 800,
                 fontFamily: 'var(--font-display)',
                 color: 'var(--accent-green)',
                 margin: 0,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
+                lineHeight: '1.3',
+                letterSpacing: '0.02em',
+                paddingLeft: '2px'
               }}>
                 {Number(availableBalance || 0).toFixed(2)}
-                <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
               </p>
             </div>
 
             {/* Divider for desktop */}
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.07)', alignSelf: 'stretch', margin: '0.5rem 0' }} aria-hidden="true" />
+            <div style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0.5rem 0' }} aria-hidden="true" />
 
             {/* Locked balance */}
             <div style={{
@@ -130,16 +131,17 @@ export default function WalletHubPage() {
                 Locked balance
               </p>
               <p style={{
-                fontSize: '2rem',
+                fontSize: '1.8rem',
                 fontWeight: 800,
                 fontFamily: 'var(--font-display)',
                 color: 'var(--accent-warning)',
                 margin: 0,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
+                lineHeight: '1.3',
+                letterSpacing: '0.02em',
+                paddingLeft: '2px'
               }}>
                 {Number(lockedBalance || 0).toFixed(2)}
-                <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
               </p>
             </div>
           </div>

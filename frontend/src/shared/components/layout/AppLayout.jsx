@@ -98,7 +98,6 @@ export default function AppLayout({ children }) {
         </div>
       </header>
 
-      {/* Mobile overflow dropdown */}
       <div className={`mobile-overflow-drawer ${menuOpen ? 'drawer-open' : ''}`}>
         {user?.role === 'admin' && (
           <button

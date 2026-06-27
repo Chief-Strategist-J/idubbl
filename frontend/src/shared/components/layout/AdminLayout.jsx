@@ -82,7 +82,7 @@ export default function AdminLayout({ children }) {
               <button className="nav-btn" style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} onClick={() => goTo('/dashboard')}>
                 Player view
               </button>
-              <button className="nav-btn" style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} onClick={() => { logout(); navigate('/'); }}>
+              <button className="nav-btn" style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} onClick={() => { logout(); navigate('/admin/login'); }}>
                 Logout
               </button>
               <ThemeToggle style={{ fontSize: '0.8rem' }} />

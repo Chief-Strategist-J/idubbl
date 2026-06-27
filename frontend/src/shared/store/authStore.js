@@ -13,14 +13,6 @@ const useAuthStore = create((set) => ({
   sessionChecked: false,
 
   checkSession: async () => {
-    const cachedRole = localStorage.getItem('idubbl_role');
-    const currentState = useAuthStore.getState();
-    
-    if (currentState.isAuthenticated && currentState.user?.role === 'admin') {
-      set({ sessionChecked: true });
-      return;
-    }
-    
     set({ loading: true });
     try {
       const res = await fetch(`${AUTH_API}/get-session`, {
@@ -32,43 +24,32 @@ const useAuthStore = create((set) => ({
       if (res.ok) {
         const data = await res.json();
         if (data && data.user) {
-          const role = (cachedRole === 'admin' || data.user.role === 'admin') ? 'admin' : 'player';
+          const loginPortal = localStorage.getItem('idubbl_login_portal') || 'player';
+          const role = (loginPortal === 'admin' && data.user.role === 'admin') ? 'admin' : 'player';
+          localStorage.setItem('idubbl_role', role);
           set({ user: { ...data.user, role }, isAuthenticated: true, loading: false, sessionChecked: true });
           return;
         }
       }
-      if (cachedRole === 'admin') {
-        set({ 
-          user: { id: 'admin1', firstName: 'Sam', lastName: 'Admin', email: 'admin@idubbl.com', role: 'admin' }, 
-          isAuthenticated: true,
-          loading: false,
-          sessionChecked: true
-        });
-        return;
-      }
+      localStorage.removeItem('idubbl_login_portal');
+      localStorage.removeItem('idubbl_role');
       set({ user: null, isAuthenticated: false, loading: false, sessionChecked: true });
     } catch (err) {
       console.error('Check session error:', err);
-      if (cachedRole === 'admin') {
-        set({ 
-          user: { id: 'admin1', firstName: 'Sam', lastName: 'Admin', email: 'admin@idubbl.com', role: 'admin' }, 
-          isAuthenticated: true,
-          loading: false,
-          sessionChecked: true
-        });
-        return;
-      }
+      localStorage.removeItem('idubbl_login_portal');
+      localStorage.removeItem('idubbl_role');
       set({ user: null, isAuthenticated: false, loading: false, sessionChecked: true });
     }
   },
 
-  login: async (email, password) => {
+  login: async (email, password, portal = 'player') => {
     set({ loading: true });
     try {
       const res = await fetch(`${AUTH_API}/sign-in/email`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-portal': portal
         },
         credentials: 'include',
         body: JSON.stringify({ email, password })
@@ -77,8 +58,9 @@ const useAuthStore = create((set) => ({
       const data = await res.json();
       set({ loading: false });
       if (res.ok && data.user) {
-        const cachedRole = localStorage.getItem('idubbl_role');
-        const role = (cachedRole === 'admin' || data.user.role === 'admin') ? 'admin' : 'player';
+        localStorage.setItem('idubbl_login_portal', portal);
+        const role = (portal === 'admin' && data.user.role === 'admin') ? 'admin' : 'player';
+        localStorage.setItem('idubbl_role', role);
         const updatedUser = { ...data.user, role };
         set({ user: updatedUser, isAuthenticated: true, sessionChecked: true });
         return { success: true, role };
@@ -171,6 +153,7 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
+    localStorage.removeItem('idubbl_login_portal');
     localStorage.removeItem('idubbl_role');
     set({ loading: true });
     try {

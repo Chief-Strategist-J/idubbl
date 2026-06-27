@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, Button, Card } from '../../../shared/components/ui/index.js';
+import { Input, Select, Button, Card } from '../../../shared/components/ui/index.js';
 import useAuthStore from '../../../shared/store/authStore.js';
 
 const apiBase = (() => {
@@ -10,16 +10,19 @@ const apiBase = (() => {
   return base;
 })();
 
-const DEPOSIT_ADDRESS = 'TRC20_ADDRESS_FROM_BACKEND';
+const CURRENCY_OPTIONS = [
+  { value: 'USD', label: 'USD ($) - US Dollar' },
+  { value: 'NGN', label: 'NGN (₦) - Nigerian Naira' },
+  { value: 'KES', label: 'KES (KSh) - Kenyan Shilling' },
+  { value: 'GHS', label: 'GHS (₵) - Ghanaian Cedi' },
+];
 
 export default function UsdtDepositForm() {
   const { user } = useAuthStore();
-  const [form, setForm] = useState({ amount: '', txHash: '', note: '' });
+  const [form, setForm] = useState({ amount: '', currency: 'USD' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,31 +33,15 @@ export default function UsdtDepositForm() {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.amount || Number(form.amount) < 10) {
-      newErrors.amount = 'Amount must be at least 10 USDT.';
-    }
-    if (!form.txHash.trim()) {
-      newErrors.txHash = 'Please paste a valid transaction hash.';
+    const amountNum = Number(form.amount);
+    if (!form.amount || isNaN(amountNum) || amountNum <= 0) {
+      newErrors.amount = 'Please enter a valid deposit amount.';
+    } else if (form.currency === 'USD' && amountNum < 5) {
+      newErrors.amount = 'Minimum deposit is 5 USD.';
+    } else if (form.currency === 'NGN' && amountNum < 2000) {
+      newErrors.amount = 'Minimum deposit is 2,000 NGN.';
     }
     return newErrors;
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(DEPOSIT_ADDRESS);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Fallback for browsers without clipboard API
-      const el = document.createElement('textarea');
-      el.value = DEPOSIT_ADDRESS;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -66,8 +53,9 @@ export default function UsdtDepositForm() {
       return;
     }
     setLoading(true);
+
     try {
-      const response = await fetch(`${apiBase}/api/wallet/deposit`, {
+      const response = await fetch(`${apiBase}/api/payment/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,249 +64,79 @@ export default function UsdtDepositForm() {
         credentials: 'include',
         body: JSON.stringify({
           amount: Number(form.amount),
-          txHash: form.txHash.trim(),
-          note: form.note.trim(),
+          currency: form.currency,
+          customer: {
+            email: user?.email || 'guest@idubbl.com',
+            name: user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User',
+            phone: user?.phone || '',
+          },
+          description: 'iDubbl Wallet Deposit',
         }),
       });
-      const data = await response.json();
-      if (response.ok && (data.success !== false)) {
-        setSuccess(true);
-        setForm({ amount: '', txHash: '', note: '' });
+
+      const resData = await response.json();
+      if (response.ok && resData.success && resData.data?.paymentUrl) {
+        // Redirect user to Flutterwave Payment Link
+        window.location.href = resData.data.paymentUrl;
       } else {
-        throw new Error(data.message || data.error || 'Failed to submit deposit.');
+        throw new Error(resData.message || resData.error || 'Failed to initiate Flutterwave checkout.');
       }
     } catch (err) {
-      console.error('Deposit submit error:', err);
+      console.error('Flutterwave initiation error:', err);
       setSubmitError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <Card>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          padding: '2rem 1rem',
-          gap: '1rem',
-        }}>
-          <div style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'var(--accent-green-glow)',
-            border: '2px solid var(--accent-green)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2rem',
-          }}>
-            ✓
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--accent-green)', margin: 0 }}>
-            Deposit Submitted
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: 360, lineHeight: 1.6, margin: 0 }}>
-            We'll review and credit your wallet shortly.
-          </p>
-          <Button
-            variant="secondary"
-            onClick={() => setSuccess(false)}
-            style={{ marginTop: '0.5rem' }}
-          >
-            Submit Another
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <Card>
+    <Card style={{
+      background: 'linear-gradient(135deg, rgba(20,24,33,0.95) 0%, rgba(20,24,33,0.8) 100%)',
+      backdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+      borderRadius: '16px',
+    }}>
       {/* Header */}
       <div style={{ marginBottom: '1.75rem' }}>
         <h3 style={{
           fontFamily: 'var(--font-display)',
-          fontSize: '1.3rem',
+          fontSize: '1.4rem',
           fontWeight: 700,
-          marginBottom: '0.35rem',
+          marginBottom: '0.4rem',
           background: 'linear-gradient(135deg, var(--accent-green) 0%, #00c47a 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         }}>
-          Deposit USDT
+          Secure Card & Bank Deposit
         </h3>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
-          Send USDT to the address below and paste the transaction hash for review.
+          Top up your wallet securely via Flutterwave. Supports Cards, Mobile Money, and Bank Transfer.
         </p>
       </div>
 
-      {/* Network badge */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-          Network
-        </label>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
-          borderRadius: 10,
-          padding: '0.65rem 1rem',
-          cursor: 'not-allowed',
-          opacity: 0.85,
-        }}>
-          <span style={{ fontSize: '0.9rem' }}>🔒</span>
-          <span style={{
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            color: 'var(--text-primary)',
-            letterSpacing: '0.03em',
-          }}>
-            USDT · TRC-20
-          </span>
-        </div>
-      </div>
-
-      {/* Warning banner */}
-      <div style={{
-        background: 'var(--accent-warning-glow)',
-        border: '1px solid rgba(255, 176, 32, 0.35)',
-        borderLeft: '3px solid var(--accent-warning)',
-        borderRadius: 10,
-        padding: '0.75rem 1rem',
-        marginBottom: '1.25rem',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0.6rem',
-      }}>
-        <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '0.05rem' }}>⚠️</span>
-        <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', fontWeight: 500, lineHeight: 1.5, margin: 0 }}>
-          Only send USDT on the TRC-20 network. Funds sent on the wrong network cannot be recovered.
-        </p>
-      </div>
-
-      {/* Minimum notice */}
+      {/* Flutterwave logo branding */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '0.5rem',
+        background: 'rgba(255, 176, 32, 0.06)',
+        border: '1px solid rgba(255, 176, 32, 0.2)',
+        borderRadius: '10px',
+        padding: '0.65rem 1rem',
         marginBottom: '1.5rem',
-        padding: '0.5rem 0.75rem',
-        background: 'rgba(0, 227, 122, 0.06)',
-        border: '1px solid rgba(0, 227, 122, 0.15)',
-        borderRadius: 8,
       }}>
-        <span style={{ fontSize: '0.85rem' }}>ℹ️</span>
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-          Minimum deposit: <strong style={{ color: 'var(--accent-green)' }}>10 USDT</strong>
+        <span style={{ fontSize: '1.1rem' }}>💳</span>
+        <span style={{
+          fontSize: '0.85rem',
+          color: 'var(--text-primary)',
+          fontWeight: 500
+        }}>
+          Powered by <strong style={{ color: '#ffb020' }}>Flutterwave</strong> Secure Payment Gateway
         </span>
       </div>
 
-      {/* QR Code placeholder */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-        <div style={{
-          width: 200,
-          height: 200,
-          background: 'var(--bg-card)',
-          border: '2px dashed rgba(255,255,255,0.12)',
-          borderRadius: 16,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.4rem',
-        }}>
-          {/* QR Grid Pattern */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 3,
-            width: 80,
-            marginBottom: '0.5rem',
-            opacity: 0.25,
-          }}>
-            {Array.from({ length: 25 }).map((_, i) => (
-              <div key={i} style={{
-                width: 12,
-                height: 12,
-                borderRadius: 2,
-                background: [0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24].includes(i)
-                  ? 'var(--text-secondary)'
-                  : 'transparent',
-              }} />
-            ))}
-          </div>
-          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>QR Code</span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.4, maxWidth: 140 }}>
-            Scan to get deposit address
-          </span>
-        </div>
-      </div>
-
-      {/* Address block */}
-      <div style={{ marginBottom: '1.75rem' }}>
-        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-          Platform deposit address
-        </label>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0',
-          background: 'var(--bg-card)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            flex: 1,
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.8rem',
-            color: 'var(--text-primary)',
-            padding: '0.75rem 1rem',
-            overflowX: 'auto',
-            wordBreak: 'break-all',
-            letterSpacing: '0.02em',
-          }}>
-            {DEPOSIT_ADDRESS}
-          </div>
-          <button
-            type="button"
-            onClick={handleCopy}
-            style={{
-              flexShrink: 0,
-              background: copied ? 'var(--accent-green-glow)' : 'rgba(255,255,255,0.05)',
-              border: 'none',
-              borderLeft: '1px solid rgba(255,255,255,0.08)',
-              padding: '0.75rem 1rem',
-              cursor: 'pointer',
-              color: copied ? 'var(--accent-green)' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {copied ? (
-              <>✓ Address copied.</>
-            ) : (
-              <>📋 Copy</>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Form */}
       {submitError && (
         <div style={{
           background: 'rgba(239, 68, 68, 0.1)',
@@ -333,37 +151,29 @@ export default function UsdtDepositForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Select
+          label="Currency"
+          name="currency"
+          value={form.currency}
+          onChange={handleChange}
+          options={CURRENCY_OPTIONS}
+        />
+
         <Input
-          label="Amount sent (USDT)"
+          label={`Amount (${form.currency})`}
           type="number"
           name="amount"
           value={form.amount}
           onChange={handleChange}
-          placeholder="Minimum 10 USDT"
+          placeholder={form.currency === 'USD' ? 'Minimum 5 USD' : 'Minimum 2,000 NGN'}
           error={errors.amount}
-        />
-        <Input
-          label="Transaction hash"
-          type="text"
-          name="txHash"
-          value={form.txHash}
-          onChange={handleChange}
-          placeholder="Paste the transaction ID from your wallet or exchange"
-          error={errors.txHash}
-        />
-        <Input
-          label="Note (optional)"
-          type="text"
-          name="note"
-          value={form.note}
-          onChange={handleChange}
-          placeholder="Optional note for our review team"
+          required
         />
 
-        <div style={{ marginTop: '0.5rem' }}>
+        <div style={{ marginTop: '0.75rem' }}>
           <Button type="submit" loading={loading} fullWidth>
-            Submit for review
+            Proceed to Flutterwave Checkout
           </Button>
         </div>
       </form>
@@ -373,12 +183,13 @@ export default function UsdtDepositForm() {
         textAlign: 'center',
         color: 'var(--text-muted)',
         fontSize: '0.8rem',
-        marginTop: '1rem',
+        marginTop: '1.25rem',
         marginBottom: 0,
         lineHeight: 1.5,
       }}>
-        🕐 Review usually takes under 30 minutes during active hours.
+        🔒 Your payment info is encrypted and processed directly by Flutterwave.
       </p>
     </Card>
   );
 }
+

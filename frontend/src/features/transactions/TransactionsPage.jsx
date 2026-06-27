@@ -14,12 +14,12 @@ const TYPE_OPTIONS = [
 ];
 
 const COLUMNS = [
-  { key: 'refId', label: 'Ref ID', render: (v) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v}</code> },
-  { key: 'description', label: 'Description' },
-  { key: 'type', label: 'Type', render: (v) => <Badge status={v === 'winnings' || v === 'deposit' ? 'approved' : v === 'match_loss' || v === 'withdrawal' ? 'rejected' : 'pending'} label={v.replace('_', ' ')} /> },
+  { key: 'refId', label: 'Ref ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v || row.txHash || (row._id ? row._id.toString().substring(0, 10) : '—')}</code> },
+  { key: 'description', label: 'Description', render: (v, row) => v || row.note || `${row.type ? row.type.charAt(0).toUpperCase() + row.type.slice(1) : 'Transaction'} (${row.method || 'Platform'})` },
+  { key: 'type', label: 'Type', render: (v) => <Badge status={v === 'winnings' || v === 'deposit' ? 'approved' : v === 'match_loss' || v === 'withdrawal' ? 'rejected' : 'pending'} label={v ? v.replace('_', ' ') : '—'} /> },
   { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: v > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{v > 0 ? `+${v}` : v} USDT</span> },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
-  { key: 'date', label: 'Date', render: (v) => new Date(v).toLocaleString() },
+  { key: 'date', label: 'Date', render: (v, row) => new Date(v || row.createdAt).toLocaleString() },
 ];
 
 export default function TransactionsPage() {
@@ -28,7 +28,9 @@ export default function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState('');
 
   const filtered = transactions.filter((t) => {
-    const matchesSearch = !search || t.refId.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase());
+    const refIdStr = t.refId || t.txHash || (t._id ? t._id.toString() : '');
+    const descStr = t.description || t.note || `${t.type} (${t.method || 'Platform'})`;
+    const matchesSearch = !search || refIdStr.toLowerCase().includes(search.toLowerCase()) || descStr.toLowerCase().includes(search.toLowerCase());
     const matchesType = !typeFilter || t.type === typeFilter;
     return matchesSearch && matchesType;
   });
