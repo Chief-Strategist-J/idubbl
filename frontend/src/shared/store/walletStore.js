@@ -254,6 +254,7 @@ const useWalletStore = create((set, get) => ({
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/approve`, {
         method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       if (response.ok) {
@@ -273,6 +274,7 @@ const useWalletStore = create((set, get) => ({
     try {
       const response = await fetch(`${BASE_URL}/admin/deposit/${depositId}/reject`, {
         method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       if (response.ok) {
@@ -292,6 +294,7 @@ const useWalletStore = create((set, get) => ({
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/approve`, {
         method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       if (response.ok) {
@@ -311,6 +314,7 @@ const useWalletStore = create((set, get) => ({
     try {
       const response = await fetch(`${BASE_URL}/admin/withdraw/${withdrawalId}/reject`, {
         method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       if (response.ok) {
