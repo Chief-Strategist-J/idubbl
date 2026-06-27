@@ -35,7 +35,7 @@ function isPositive(type, amount) {
 export default function WalletHubPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { availableBalance, lockedBalance, transactions, fetchWalletData } = useWalletStore();
+  const { availableBalance, lockedBalance, idubbuBalance, depositBalance, winningsBalance, pendingWithdrawals, transactions, fetchWalletData } = useWalletStore();
 
   useEffect(() => {
     if (user?.id) {
@@ -85,6 +85,22 @@ export default function WalletHubPage() {
             }}>
               Your Wallet
             </h3>
+          </div>
+
+          {/* Idubbu Balance Hero */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(20,241,149,0.15), rgba(99,102,241,0.15))', border: '1px solid rgba(20,241,149,0.3)', borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.3rem' }}>💎 Idubbu Balance</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: 900, fontFamily: 'var(--font-display)', color: 'var(--secondary)', margin: 0, lineHeight: 1.2 }}>
+                {(idubbuBalance || 0).toLocaleString()}
+                <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 8 }}>Idubbu</span>
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.25rem 0 0' }}>= {((idubbuBalance || 0) / 1000).toFixed(2)} USDT · Rate: 1 USDT = 1,000 Idubbu</p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Button variant="secondary" onClick={() => navigate('/deposit')} style={{ fontSize: '0.82rem', padding: '0.4rem 1rem' }}>+ Add Funds</Button>
+              <Button variant="ghost" onClick={() => navigate('/withdraw')} style={{ fontSize: '0.82rem', padding: '0.4rem 1rem' }}>Withdraw</Button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>

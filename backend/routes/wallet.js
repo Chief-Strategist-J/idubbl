@@ -5,29 +5,34 @@ import { authService, blockchainService } from '../services/index.js';
 
 const router = express.Router();
 
-// Helper to get or create wallet for a user
+const IDUBBU_RATE = 1000; // 1 USDT = 1000 Idubbu
+
 async function getOrCreateWallet(db, userId) {
   let wallet = await db.collection('wallets').findOne({ userId });
   if (!wallet) {
     wallet = {
       userId,
-      depositBalance: 1000,   // Default signup/demo deposit balance
-      winningsBalance: 0,     // Default signup winnings balance
-      lockedBalance: 5,
-      pendingWithdrawals: 18,
+      depositBalance: 1000,
+      winningsBalance: 0,
+      idubbuBalance: 1000 * IDUBBU_RATE,
+      lockedBalance: 0,
+      pendingWithdrawals: 0,
       createdAt: new Date(),
     };
     await db.collection('wallets').insertOne(wallet);
   } else {
-    // Migrate existing wallets if they don't have the new split fields
-    let updated = false;
     const updateQuery = { $set: {} };
+    let updated = false;
     if (wallet.depositBalance === undefined) {
-      updateQuery.$set.depositBalance = wallet.availableBalance !== undefined ? wallet.availableBalance : 0;
+      updateQuery.$set.depositBalance = wallet.availableBalance ?? 0;
       updated = true;
     }
     if (wallet.winningsBalance === undefined) {
       updateQuery.$set.winningsBalance = 0;
+      updated = true;
+    }
+    if (wallet.idubbuBalance === undefined) {
+      updateQuery.$set.idubbuBalance = ((wallet.depositBalance || 0) + (wallet.winningsBalance || 0)) * IDUBBU_RATE;
       updated = true;
     }
     if (updated) {
@@ -50,9 +55,11 @@ router.get('/balance', async (req, res) => {
       data: {
         depositBalance: wallet.depositBalance,
         winningsBalance: wallet.winningsBalance,
+        idubbuBalance: wallet.idubbuBalance || 0,
         availableBalance: wallet.depositBalance + wallet.winningsBalance,
         lockedBalance: wallet.lockedBalance,
         pendingWithdrawals: wallet.pendingWithdrawals,
+        idubbuRate: IDUBBU_RATE,
       }
     });
   } catch (error) {
@@ -117,14 +124,13 @@ router.post('/deposit', async (req, res) => {
       };
 
       await db.collection('transactions').insertOne(newDeposit);
-      
-      // Update wallet balance (credit to depositBalance)
+
       await db.collection('wallets').updateOne(
         { userId },
-        { $inc: { depositBalance: newDeposit.amount } }
+        { $inc: { depositBalance: newDeposit.amount, idubbuBalance: newDeposit.amount * IDUBBU_RATE } }
       );
 
-      return res.json({ success: true, autoVerified: true, data: newDeposit });
+      return res.json({ success: true, autoVerified: true, idubbuCredited: newDeposit.amount * IDUBBU_RATE, data: newDeposit });
     } else {
       // Verification failed or pending: save as pending for manual admin review
       const newDeposit = {
@@ -245,7 +251,7 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
 
     await db.collection('wallets').updateOne(
       { userId: tx.userId },
-      { $inc: { depositBalance: tx.amount } }
+      { $inc: { depositBalance: tx.amount, idubbuBalance: tx.amount * IDUBBU_RATE } }
     );
 
     res.json({ success: true });

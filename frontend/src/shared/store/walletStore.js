@@ -12,6 +12,8 @@ const useWalletStore = create((set, get) => ({
   depositBalance: 0,
   winningsBalance: 0,
   availableBalance: 0,
+  idubbuBalance: 0,
+  idubbuRate: 1000,
   lockedBalance: 0,
   pendingWithdrawals: 0,
   transactions: [],
@@ -22,13 +24,11 @@ const useWalletStore = create((set, get) => ({
   totalFees: 0,
   loading: false,
 
-  // Fetch balance and transactions from the backend API (for normal player)
   fetchWalletData: async (userId) => {
     const currentUserId = userId || useAuthStore.getState().user?.id;
     if (!currentUserId) return;
     set({ loading: true });
     try {
-      // Fetch Balance
       const balRes = await fetch(`${BASE_URL}/balance`, {
         headers: { 'x-user-id': currentUserId },
         credentials: 'include'
@@ -36,7 +36,6 @@ const useWalletStore = create((set, get) => ({
       const balJson = await balRes.json();
       const balance = balJson.success ? balJson.data : balJson;
 
-      // Fetch Transactions
       const txRes = await fetch(`${BASE_URL}/transactions`, {
         headers: { 'x-user-id': currentUserId },
         credentials: 'include'
@@ -44,13 +43,14 @@ const useWalletStore = create((set, get) => ({
       const txJson = await txRes.json();
       const transactions = txJson.success ? (txJson.data || []) : (txJson || []);
 
-      // Separate deposits and withdrawals for compatibility with mock structure
       const deposits = transactions.filter(t => t.type === 'deposit');
       const withdrawals = transactions.filter(t => t.type === 'withdrawal');
 
       set({
         depositBalance: balance.depositBalance || 0,
         winningsBalance: balance.winningsBalance || 0,
+        idubbuBalance: balance.idubbuBalance || 0,
+        idubbuRate: balance.idubbuRate || 1000,
         availableBalance: balance.availableBalance,
         lockedBalance: balance.lockedBalance,
         pendingWithdrawals: balance.pendingWithdrawals,
