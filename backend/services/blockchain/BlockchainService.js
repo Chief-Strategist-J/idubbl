@@ -11,7 +11,7 @@ export class BlockchainService {
     this.adapters = {
       tron: new TronGridAdapter({
         apiKey: process.env.TRONGRID_API_KEY || config.blockchain?.keys?.trongrid,
-        baseUrl: process.env.TRONGRID_BASE_URL || config.blockchain?.urls?.trongrid,
+        baseUrl: process.env.TRONGRID_BASE_URL || config.blockchain?.urls?.trongrid || 'https://api.trongrid.io',
       }),
       ethereum: new EtherscanAdapter({
         apiKey: process.env.ETHERSCAN_API_KEY || config.blockchain?.keys?.etherscan,
@@ -64,12 +64,16 @@ export class BlockchainService {
       }
       try {
         const { TronWeb } = await import('tronweb');
+        const tronHost = process.env.TRONGRID_BASE_URL || 'https://api.trongrid.io';
         const tronWeb = new TronWeb({
-          fullHost: 'https://api.trongrid.io',
+          fullHost: tronHost,
           headers: { 'TRON-PRO-API-KEY': process.env.TRONGRID_API_KEY },
           privateKey
         });
-        const contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+        // Mainnet USDT contract: TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+        // Shasta testnet USDT: TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3
+        const isTestnet = tronHost.includes('shasta') || tronHost.includes('nile');
+        const contract = isTestnet ? 'TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3' : 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
         const parameter = [
           { type: 'address', value: toAddress },
           { type: 'uint256', value: (amount * 1e6).toFixed(0) }
@@ -100,7 +104,9 @@ export class BlockchainService {
       }
       try {
         const { ethers } = await import('ethers');
-        const provider = new ethers.JsonRpcProvider(process.env.ETH_PROVIDER_URL || 'https://cloudflare-eth.com');
+        const provider = new ethers.JsonRpcProvider(
+          process.env.ETH_PROVIDER_URL || 'https://eth-mainnet.g.alchemy.com/v2/c1HDBRqyS0SPMHrPLZtr9'
+        );
         const wallet = new ethers.Wallet(privateKey, provider);
         const contractAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
         const abi = ["function transfer(address to, uint256 value) returns (bool)"];
