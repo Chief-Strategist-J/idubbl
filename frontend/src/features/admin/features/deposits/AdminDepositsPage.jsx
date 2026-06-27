@@ -8,7 +8,7 @@ const COLUMNS = (onApprove, onReject) => [
   { key: 'user', label: 'User' },
   { key: 'amount', label: 'Amount', render: (v) => `${v} USDT` },
   { key: 'network', label: 'Network' },
-  { key: 'txHash', label: 'TX Hash', render: (v) => <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{v.slice(0, 18)}...</code> },
+  { key: 'txHash', label: 'TX Hash', render: (v) => <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all', maxWidth: '200px', display: 'inline-block' }}>{v}</code> },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
   { key: 'createdAt', label: 'Date', render: (v) => new Date(v).toLocaleDateString() },
   {
