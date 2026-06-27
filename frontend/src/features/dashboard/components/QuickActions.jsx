@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Plus, ArrowUpRight, History } from 'lucide-react';
+import { Zap, Plus, ArrowUpRight, History, HelpCircle } from 'lucide-react';
 
 const ACTIONS = [
   { label: 'Play Now', path: '/lobby', variant: 'primary', icon: Zap },
   { label: 'Deposit', path: '/deposit', variant: 'secondary', icon: Plus },
   { label: 'Withdraw', path: '/withdraw', variant: 'secondary', icon: ArrowUpRight },
   { label: 'History', path: '/transactions', variant: 'secondary', icon: History },
+  { label: 'User Guide', path: '/guide', variant: 'secondary', icon: HelpCircle },
 ];
 
 export default function QuickActions() {

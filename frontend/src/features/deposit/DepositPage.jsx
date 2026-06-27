@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
-import { PageHeader } from '../../shared/components/ui/index.js';
+import { PageHeader, Button } from '../../shared/components/ui/index.js';
 import DepositForm from './components/DepositForm.jsx';
 import DepositHistory from './components/DepositHistory.jsx';
 import PersonalWalletsWidget from './components/PersonalWalletsWidget.jsx';
@@ -22,6 +22,11 @@ export default function DepositPage() {
       <PageHeader
         title="Deposit Funds"
         subtitle="Top up your wallet using secure payment methods."
+        action={
+          <Button variant="secondary" onClick={() => window.location.href = '/guide'}>
+            📖 View Deposit Guide
+          </Button>
+        }
       />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <div>
