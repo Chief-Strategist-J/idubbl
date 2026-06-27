@@ -61,7 +61,7 @@ export default function HowToUsePage() {
                   <li>
                     <strong>Get Free Funds for Your Website Wallet</strong>:
                     <div style={{ paddingLeft: '0.5rem', marginTop: '0.15rem' }}>
-                      Use the testnet sandbox faucets linked below to claim free test tokens (TRX / Sepolia ETH / USDT) directly to your newly generated website address.
+                      Claim free test TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> (TRON) or get free Sepolia ETH gas from the <a href="https://sepoliafaucet.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Sepolia Faucet</a> / <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>QuickNode Faucet</a> (Ethereum) directly to your website address.
                     </div>
                   </li>
                   <li>
