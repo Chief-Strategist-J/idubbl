@@ -5,26 +5,37 @@ import useWalletStore from '../../shared/store/walletStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
 
 export default function AdminDashboardHome() {
-  const { deposits, withdrawals, fetchAdminDeposits, fetchAdminWithdrawals, loading: walletLoading } = useWalletStore();
+  const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, loading: walletLoading } = useWalletStore();
   const { matches, tiers, fetchAdminMatches, loading: matchLoading } = useMatchStore();
 
   useEffect(() => {
     fetchAdminDeposits();
     fetchAdminWithdrawals();
     fetchAdminMatches();
-  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches]);
-
-  const loading = walletLoading || matchLoading;
+    fetchAdminUsers();
+  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches, fetchAdminUsers]);
 
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
   const pendingWithdrawals = withdrawals.filter((w) => w.status === 'pending').length;
   const activeMatches = matches.filter((m) => m.status === 'active').length;
-  const completedToday = matches.filter((m) => m.status === 'completed').length;
   const revenueToday = matches.filter((m) => m.status === 'completed').reduce((acc, m) => acc + m.rake, 0);
+
+  const totalPersonalWallets = adminUsers.filter(u => u.personalWallets && (u.personalWallets.tron || u.personalWallets.ethereum)).length;
+
+  const realActivity = [...deposits, ...withdrawals]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+    .map(tx => {
+      const user = tx.user || tx.userId;
+      const statusText = tx.status === 'approved' || tx.status === 'success' ? 'confirmed' : tx.status;
+      return {
+        label: `${user} ${tx.type === 'deposit' ? 'deposited' : 'withdrew'} ${tx.amount} USDT (${statusText})`,
+        time: tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'Recent'
+      };
+    });
 
   return (
     <AdminLayout>
-      {/* Wallet reserve health bar */}
       <Card style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
           <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Hot Wallet Reserve</span>
@@ -42,8 +53,8 @@ export default function AdminDashboardHome() {
         <Stat label="Pending Deposits" value={pendingDeposits} highlight />
         <Stat label="Pending Withdrawals" value={pendingWithdrawals} highlight />
         <Stat label="Active Matches" value={activeMatches} />
-        <Stat label="Completed Today" value={completedToday} />
-        <Stat label="Revenue Today" value={`${revenueToday} USDT`} highlight />
+        <Stat label="Standard Wallets" value={adminUsers.length} />
+        <Stat label="Crypto Wallets" value={totalPersonalWallets} highlight />
       </div>
 
       {(pendingDeposits > 0 || pendingWithdrawals > 0) && (
@@ -73,19 +84,18 @@ export default function AdminDashboardHome() {
 
         <Card>
           <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Recent Activity</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Latest platform events appear here when backend is connected.</p>
-          <div style={{ marginTop: '1rem' }}>
-            {[
-              { label: 'Alex Storm deposited 50 USDT', time: '10m ago', type: 'deposit' },
-              { label: 'Match M-001 completed', time: '25m ago', type: 'match' },
-              { label: 'Withdrawal request from Alex Storm', time: '1h ago', type: 'withdrawal' },
-            ].map((e, i) => (
-              <div key={i} style={{ padding: '0.6rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{e.label}</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{e.time}</span>
-              </div>
-            ))}
-          </div>
+          {realActivity.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No recent activity logged.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {realActivity.map((e, i) => (
+                <div key={i} style={{ padding: '0.6rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{e.label}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{e.time}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </AdminLayout>
