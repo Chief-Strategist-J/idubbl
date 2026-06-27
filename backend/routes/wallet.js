@@ -567,17 +567,18 @@ router.get('/personal/balance', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Personal wallets not found.' });
     }
 
-    const [tronBalance, ethBalance, nativeTronBalance] = await Promise.all([
+    const [tronBalance, ethBalance, nativeTronBalance, nativeEthBalance] = await Promise.all([
       blockchainService.getOnchainUSDTBalance(wallet.tron.address, 'TRON'),
       blockchainService.getOnchainUSDTBalance(wallet.ethereum.address, 'ETHEREUM'),
-      blockchainService.adapters.tron.getNativeBalance(wallet.tron.address)
+      blockchainService.adapters.tron.getNativeBalance(wallet.tron.address),
+      blockchainService.adapters.ethereum.getNativeBalance(wallet.ethereum.address)
     ]);
 
     res.json({
       success: true,
       data: {
         tron: { address: wallet.tron.address, balance: tronBalance, nativeBalance: nativeTronBalance },
-        ethereum: { address: wallet.ethereum.address, balance: ethBalance }
+        ethereum: { address: wallet.ethereum.address, balance: ethBalance, nativeBalance: nativeEthBalance }
       }
     });
   } catch (error) {

@@ -226,9 +226,16 @@ export default function PersonalWalletsWidget() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT ERC-20 (Ethereum)</span>
               {balances?.ethereum && (
-                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>
-                  On-chain: {balances.ethereum.balance} USDT
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <span style={{ color: 'var(--accent-green)', fontWeight: 600, fontSize: '0.85rem' }}>
+                    USDT: {balances.ethereum.balance} USDT
+                  </span>
+                  {balances.ethereum.nativeBalance !== undefined && (
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 500 }}>
+                      Gas: {balances.ethereum.nativeBalance} ETH
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
