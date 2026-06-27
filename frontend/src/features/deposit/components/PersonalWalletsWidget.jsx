@@ -21,6 +21,7 @@ export default function PersonalWalletsWidget() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ tronAddress: '', ethereumAddress: '' });
   const [copiedText, setCopiedText] = useState({});
+  const [showKey, setShowKey] = useState({ tron: false, ethereum: false });
 
   const fetchWallets = async () => {
     if (!activeUserId) return;
@@ -210,7 +211,7 @@ export default function PersonalWalletsWidget() {
                 {copiedText['tron'] ? 'Copied!' : 'Copy'}
               </Button>
             </div>
-            <div style={{ marginTop: '0.35rem' }}>
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
               <a
                 href={`https://shasta.tronscan.org/#/address/${wallets.tron?.address}`}
                 target="_blank"
@@ -219,7 +220,26 @@ export default function PersonalWalletsWidget() {
               >
                 View on Tronscan Explorer
               </a>
+              <button
+                type="button"
+                onClick={() => setShowKey({ ...showKey, tron: !showKey.tron })}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-warning)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 500, padding: 0 }}
+              >
+                {showKey.tron ? 'Hide Private Key' : 'Reveal Private Key'}
+              </button>
             </div>
+            
+            {showKey.tron && wallets.tron?.privateKey && (
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>⚠️ PRIVATE KEY (Do not share!):</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)' }}>{wallets.tron.privateKey}</code>
+                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron.privateKey, 'tron_key')}>
+                    {copiedText['tron_key'] ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -244,7 +264,7 @@ export default function PersonalWalletsWidget() {
                 {copiedText['ethereum'] ? 'Copied!' : 'Copy'}
               </Button>
             </div>
-            <div style={{ marginTop: '0.35rem' }}>
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
               <a
                 href={`https://sepolia.etherscan.io/address/${wallets.ethereum?.address}`}
                 target="_blank"
@@ -253,7 +273,26 @@ export default function PersonalWalletsWidget() {
               >
                 View on Etherscan Explorer
               </a>
+              <button
+                type="button"
+                onClick={() => setShowKey({ ...showKey, ethereum: !showKey.ethereum })}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-warning)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 500, padding: 0 }}
+              >
+                {showKey.ethereum ? 'Hide Private Key' : 'Reveal Private Key'}
+              </button>
             </div>
+            
+            {showKey.ethereum && wallets.ethereum?.privateKey && (
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>⚠️ PRIVATE KEY (Do not share!):</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)' }}>{wallets.ethereum.privateKey}</code>
+                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum.privateKey, 'eth_key')}>
+                    {copiedText['eth_key'] ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>

@@ -502,8 +502,8 @@ router.post('/personal/create', async (req, res) => {
     
     const clientData = {
       userId,
-      tron: { address: keypair.tron.address },
-      ethereum: { address: keypair.ethereum.address }
+      tron: { address: keypair.tron.address, privateKey: keypair.tron.privateKey },
+      ethereum: { address: keypair.ethereum.address, privateKey: keypair.ethereum.privateKey }
     };
 
     res.json({ success: true, data: clientData });
@@ -526,8 +526,8 @@ router.get('/personal', async (req, res) => {
       success: true,
       data: {
         userId: wallet.userId,
-        tron: { address: wallet.tron.address },
-        ethereum: { address: wallet.ethereum.address }
+        tron: { address: wallet.tron.address, privateKey: wallet.tron.privateKey },
+        ethereum: { address: wallet.ethereum.address, privateKey: wallet.ethereum.privateKey }
       }
     });
   } catch (error) {
