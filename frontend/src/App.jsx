@@ -31,6 +31,7 @@ import AdminLedgerPage from './features/admin/features/ledger/AdminLedgerPage.js
 import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 import AdminGameSettingsPage from './features/admin/features/game-settings/AdminGameSettingsPage.jsx';
 import AdminWalletsPage from './features/admin/features/wallets/AdminWalletsPage.jsx';
+import HowToUsePage from './features/guide/HowToUsePage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
@@ -98,6 +99,7 @@ export default function App() {
         <Route path="/error" element={<ErrorPage />} />
 
         {/* Protected player routes */}
+        <Route path="/guide"        element={<ProtectedRoute><HowToUsePage /></ProtectedRoute>} />
         <Route path="/dashboard"    element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/wallet"       element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
         <Route path="/deposit"      element={<ProtectedRoute><DepositPage /></ProtectedRoute>} />
