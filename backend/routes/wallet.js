@@ -451,4 +451,16 @@ router.get('/personal/balance', async (req, res) => {
   }
 });
 
+router.delete('/personal', async (req, res) => {
+  const userId = req.headers['x-user-id'] || 'u1';
+  try {
+    const db = await getDb();
+    await db.collection('user_wallets').deleteOne({ userId });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting personal wallets:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error deleting personal wallets.');
+  }
+});
+
 export default router;

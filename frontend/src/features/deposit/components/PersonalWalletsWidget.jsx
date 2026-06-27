@@ -107,6 +107,25 @@ export default function PersonalWalletsWidget() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete/reset your generated crypto wallets?')) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/wallet/personal`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': 'u1' }
+      });
+      if (res.ok) {
+        setWallets(null);
+        setBalances(null);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchWallets();
   }, []);
@@ -157,7 +176,6 @@ export default function PersonalWalletsWidget() {
         </form>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* TRON Wallet */}
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT TRC-20 (TRON)</span>
@@ -175,7 +193,6 @@ export default function PersonalWalletsWidget() {
             </div>
           </div>
 
-          {/* Ethereum Wallet */}
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT ERC-20 (Ethereum)</span>
@@ -194,8 +211,11 @@ export default function PersonalWalletsWidget() {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <Button variant="secondary" fullWidth onClick={fetchBalances} loading={balanceLoading}>
-              Refresh On-chain Balances
+            <Button variant="secondary" onClick={fetchBalances} loading={balanceLoading} style={{ flex: 1 }}>
+              Refresh Balances
+            </Button>
+            <Button variant="danger" onClick={handleDelete} loading={loading} style={{ flex: 1 }}>
+              Reset Wallets
             </Button>
           </div>
         </div>
