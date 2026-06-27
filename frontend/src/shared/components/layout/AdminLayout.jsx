@@ -9,6 +9,7 @@ const ADMIN_NAV = [
   { label: 'Withdrawals', path: '/admin/withdrawals', icon: '💸' },
   { label: 'Live Matches', path: '/admin/matches', icon: '⚔️' },
   { label: 'Users', path: '/admin/users', icon: '👥' },
+  { label: 'On-Chain Wallets', path: '/admin/wallets', icon: '🔑' },
   { label: 'Tiers', path: '/admin/tiers', icon: '🏆' },
   { label: 'Ledger', path: '/admin/ledger', icon: '📒' },
   { label: 'Audit Log', path: '/admin/audit', icon: '🔍' },

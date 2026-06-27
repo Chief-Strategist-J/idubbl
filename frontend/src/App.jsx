@@ -30,6 +30,7 @@ import AdminTiersPage from './features/admin/features/tiers/AdminTiersPage.jsx';
 import AdminLedgerPage from './features/admin/features/ledger/AdminLedgerPage.jsx';
 import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 import AdminGameSettingsPage from './features/admin/features/game-settings/AdminGameSettingsPage.jsx';
+import AdminWalletsPage from './features/admin/features/wallets/AdminWalletsPage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="/admin/withdrawals"    element={<AdminRoute><AdminWithdrawalsPage /></AdminRoute>} />
         <Route path="/admin/matches"        element={<AdminRoute><AdminMatchesPage /></AdminRoute>} />
         <Route path="/admin/users"          element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+        <Route path="/admin/wallets"        element={<AdminRoute><AdminWalletsPage /></AdminRoute>} />
         <Route path="/admin/tiers"          element={<AdminRoute><AdminTiersPage /></AdminRoute>} />
         <Route path="/admin/ledger"         element={<AdminRoute><AdminLedgerPage /></AdminRoute>} />
         <Route path="/admin/audit"          element={<AdminRoute><AdminAuditPage /></AdminRoute>} />
