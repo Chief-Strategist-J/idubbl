@@ -160,25 +160,30 @@ router.post('/withdraw', async (req, res) => {
   const { amount, address, network } = req.body;
 
   if (!amount || !address || !network) {
-    return errorRegistry.send(res, 'MISSING_WITHDRAW_DETAILS', 'Amount, target address, and network are required to submit withdrawal.');
+    return errorRegistry.send(res, 'MISSING_WITHDRAW_DETAILS', 'Amount, target address, and network are required.');
   }
 
   try {
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
 
-    if (wallet.winningsBalance < Number(amount)) {
-      return errorRegistry.send(res, 'INSUFFICIENT_WINNINGS', 'Insufficient balance in winnings wallet to complete the requested withdrawal. Deposits cannot be withdrawn.');
+    const totalAvailable = (wallet.winningsBalance || 0) + (wallet.depositBalance || 0);
+    if (totalAvailable < Number(amount)) {
+      return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient balance to complete the withdrawal.');
     }
 
-    // Deduct winningsBalance, increase pendingWithdrawals
+    // Deduct from winnings first, then deposits
+    const fromWinnings = Math.min(wallet.winningsBalance || 0, Number(amount));
+    const fromDeposit  = Number(amount) - fromWinnings;
+
     await db.collection('wallets').updateOne(
       { userId },
-      { 
-        $inc: { 
-          winningsBalance: -Number(amount), 
-          pendingWithdrawals: Number(amount) 
-        } 
+      {
+        $inc: {
+          winningsBalance: -fromWinnings,
+          depositBalance: -fromDeposit,
+          pendingWithdrawals: Number(amount)
+        }
       }
     );
 
@@ -187,12 +192,14 @@ router.post('/withdraw', async (req, res) => {
       amount: Number(amount),
       address,
       network,
+      note: '',
       status: 'pending',
       type: 'withdrawal',
       createdAt: new Date(),
     };
-    await db.collection('transactions').insertOne(newWithdrawal);
-    res.json({ success: true, data: newWithdrawal });
+    const result = await db.collection('transactions').insertOne(newWithdrawal);
+    const id = result.insertedId.toString();
+    res.json({ success: true, data: { ...newWithdrawal, id, _id: id } });
   } catch (error) {
     console.error('Error submitting withdrawal:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error submitting withdrawal.');
