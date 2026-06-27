@@ -22,11 +22,9 @@ services:
         sync: false # User will input their MongoDB Atlas URI in the Render dashboard
       - key: RESEND_API_KEY
         sync: false # User will input their Resend API key in the Render dashboard
-      - key: FLW_PUBLIC_KEY
+      - key: TRONGRID_API_KEY
         sync: false
-      - key: FLW_SECRET_KEY
-        sync: false
-      - key: FLW_ENCRYPTION_KEY
+      - key: ETHERSCAN_API_KEY
         sync: false
 
   # Frontend Service (Static Site)
