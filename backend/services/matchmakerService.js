@@ -27,9 +27,16 @@ class MatchmakerService {
 
     const db = await getDb();
 
-    // Check if player is already in queue or matches
+    // Check if player is already in queue
     const existingInQueue = await db.collection(this.queueCollection).findOne({ userId: normUserId });
     if (existingInQueue) {
+      // Always update socketId so match notification reaches their current connection
+      if (socketId && existingInQueue.socketId !== socketId) {
+        await db.collection(this.queueCollection).updateOne(
+          { userId: normUserId },
+          { $set: { socketId } }
+        );
+      }
       return { status: 'already_queued', queue: existingInQueue };
     }
 
@@ -55,8 +62,8 @@ class MatchmakerService {
       joinedAt: new Date()
     };
 
-    // atomic check-and-match
-    const opponent = await db.collection(this.queueCollection).findOneAndDelete({ tier: normTierName });
+    // atomic check-and-match — exclude self to prevent self-matching in edge cases
+    const opponent = await db.collection(this.queueCollection).findOneAndDelete({ tier: normTierName, userId: { $ne: normUserId } });
     if (opponent) {
       // Opponent found! Both users are deducted here at match creation time to prevent front-run or lock issues
       const matchId = 'm_' + Math.random().toString(36).substring(2, 15);

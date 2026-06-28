@@ -10,7 +10,7 @@ import useAuthStore from '../../shared/store/authStore.js';
 export default function QueuePage() {
   const navigate = useNavigate();
   const { tierId } = useParams();
-  const { queueStatus, currentTier, leaveQueue, currentMatch } = useMatchStore();
+  const { queueStatus, currentTier, leaveQueue, currentMatch, matchmakingError } = useMatchStore();
   const { releaseReservation } = useWalletStore();
   const { user } = useAuthStore();
   const [elapsed, setElapsed] = useState(0);
@@ -39,23 +39,33 @@ export default function QueuePage() {
     <AppLayout>
       <div style={{ maxWidth: 520, margin: '0 auto' }}>
         <Card>
-          <QueueStatus status={queueStatus || 'searching'} tier={currentTier} />
+          {matchmakingError ? (
+            <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+              <p style={{ color: 'var(--accent-red)', fontWeight: 600, marginBottom: '0.5rem' }}>Matchmaking failed</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{matchmakingError}</p>
+              <Button variant="primary" onClick={() => navigate('/lobby')}>Back to Lobby</Button>
+            </div>
+          ) : (
+            <QueueStatus status={queueStatus || 'searching'} tier={currentTier} />
+          )}
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-              Time elapsed: <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{formatTime(elapsed)}</span>
-            </p>
-
-            {elapsed > 90 && (!queueStatus || queueStatus === 'searching') && (
-              <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                Low activity in this tier. Consider trying another tier.
+          {!matchmakingError && (
+            <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                Time elapsed: <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{formatTime(elapsed)}</span>
               </p>
-            )}
 
-            {(!queueStatus || queueStatus === 'searching') && (
-              <Button variant="secondary" onClick={() => setShowLeaveModal(true)}>Cancel and Return to Lobby</Button>
-            )}
-          </div>
+              {elapsed > 90 && (!queueStatus || queueStatus === 'searching') && (
+                <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Low activity in this tier. Consider trying another tier.
+                </p>
+              )}
+
+              {(!queueStatus || queueStatus === 'searching') && (
+                <Button variant="secondary" onClick={() => setShowLeaveModal(true)}>Cancel and Return to Lobby</Button>
+              )}
+            </div>
+          )}
         </Card>
       </div>
 
