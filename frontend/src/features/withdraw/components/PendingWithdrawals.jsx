@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge, Table, Card } from '../../../shared/components/ui/index.js';
-import useWalletStore from '../../../shared/store/walletStore.js';import useAuthStore from '../../../shared/store/authStore.js';
+import useWalletStore from '../../../shared/store/walletStore.js';
+import useAuthStore from '../../../shared/store/authStore.js';
 
 const COLUMNS = [
   { key: 'id', label: 'Ref', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{String(row._id || row.id || '').substring(0, 8).toUpperCase()}</code> },

@@ -145,9 +145,9 @@ export default function PersonalWalletsWidget() {
 
   const copyToClipboard = (address, type) => {
     navigator.clipboard.writeText(address);
-    setCopiedText({ ...copiedText, [type]: true });
+    setCopiedText(prev => ({ ...prev, [type]: true }));
     setTimeout(() => {
-      setCopiedText({ ...copiedText, [type]: false });
+      setCopiedText(prev => ({ ...prev, [type]: false }));
     }, 2000);
   };
 

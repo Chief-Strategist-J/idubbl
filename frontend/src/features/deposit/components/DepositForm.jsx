@@ -34,12 +34,15 @@ export default function DepositForm() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setSubmitting(true);
-    await submitDeposit({ amount: Number(form.amount), network: form.network, txHash: form.txHash, note: form.note });
-    setSuccess(true);
+    const result = await submitDeposit({ amount: Number(form.amount), network: form.network, txHash: form.txHash, note: form.note });
     setSubmitting(false);
-    setForm({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
-    // Navigate to wallet after 2 seconds so user can see the success message
-    setTimeout(() => navigate('/wallet'), 2000);
+    if (result?.success) {
+      setSuccess(true);
+      setForm({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
+      setTimeout(() => navigate('/wallet'), 2000);
+    } else {
+      setErrors({ txHash: result?.error || 'Deposit submission failed. Please try again.' });
+    }
   };
 
   const estimatedIdubbu = form.amount ? Number(form.amount) * IDUBBU_RATE : 0;
