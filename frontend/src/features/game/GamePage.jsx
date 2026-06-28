@@ -100,6 +100,19 @@ export default function GamePage() {
   return (
     <AppLayout>
       {showTransition && <RoundTransition round={lastRound} playerWins={playerWins} opponentWins={opponentWins} />}
+      
+      {roundWaiting && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(10,13,18,0.9)', backdropFilter: 'blur(10px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem'
+        }}>
+          <div className="spinner" style={{ width: '50px', height: '50px', border: '4px solid var(--border)', borderTop: '4px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>Waiting for Opponent...</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Your score was submitted. The round completes when both players finish.</p>
+        </div>
+      )}
+
       <MatchChatWidget
         messages={matchChat.messages}
         sendMessage={matchChat.sendMessage}
