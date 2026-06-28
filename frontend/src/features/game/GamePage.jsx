@@ -30,7 +30,7 @@ const TRANSITION_DURATION = 2500;
 export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion } = useMatchStore();
+  const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting } = useMatchStore();
 
   const matchId = currentMatch?.matchId || currentMatch?.id;
   const opponentId = currentMatch?.players?.find(p => p?.toLowerCase() !== user?.id?.toLowerCase());
@@ -42,7 +42,6 @@ export default function GamePage() {
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
   const [playerRoundScore, setPlayerRoundScore] = useState(0);
-  const [opponentRoundScore, setOpponentRoundScore] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   const [lastRound, setLastRound] = useState(null);
 
@@ -53,24 +52,10 @@ export default function GamePage() {
   const handleAnswer = useCallback((isCorrect, selectedIndex) => {
     if (answered) return;
     const pScore = isCorrect ? 100 + timeLeft * 2 : 0;
-    const oppScore = Math.floor(Math.random() * 80 + 60);
     setPlayerRoundScore(pScore);
-    setOpponentRoundScore(oppScore);
     setAnswered(true);
-  }, [answered, timeLeft]);
-
-  const finishRound = useCallback(() => {
-    const pScore = playerRoundScore;
-    const oppScore = opponentRoundScore || Math.floor(Math.random() * 80 + 60);
-    submitRoundResult(pScore, oppScore);
-  }, [playerRoundScore, opponentRoundScore, submitRoundResult]);
-
-  useEffect(() => {
-    if (answered) {
-      const t = setTimeout(finishRound, 1000);
-      return () => clearTimeout(t);
-    }
-  }, [answered, finishRound]);
+    submitRoundResult(pScore);
+  }, [answered, timeLeft, submitRoundResult]);
 
   useEffect(() => {
     if (answered) return;
@@ -94,7 +79,6 @@ export default function GamePage() {
         setTimeLeft(ROUND_TIME);
         setAnswered(false);
         setPlayerRoundScore(0);
-        setOpponentRoundScore(0);
       }, TRANSITION_DURATION);
       return () => clearTimeout(t);
     }
@@ -140,7 +124,7 @@ export default function GamePage() {
             playerName={user?.name || 'You'}
             opponentName={opponentName}
             playerScore={playerRoundScore}
-            opponentScore={answered ? opponentRoundScore : 0}
+            opponentScore={answered && rounds[currentRound - 1] ? rounds[currentRound - 1].opponentScore : 0}
           />
 
           <div style={{ padding: '0.5rem 0' }}>

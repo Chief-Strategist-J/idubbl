@@ -73,6 +73,56 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Real-time E2E score tracking cache
+  const activeScores = {};
+
+  socket.on('join_match_room', ({ matchId }) => {
+    socket.join(matchId);
+  });
+
+  socket.on('submit_score', ({ matchId, roundNo, userId, score, name }) => {
+    if (!activeScores[matchId]) {
+      activeScores[matchId] = {};
+    }
+    if (!activeScores[matchId][roundNo]) {
+      activeScores[matchId][roundNo] = [];
+    }
+
+    // Record score if not already registered for this round
+    if (!activeScores[matchId][roundNo].some(e => e.userId === userId)) {
+      activeScores[matchId][roundNo].push({ userId, score, name, socketId: socket.id });
+    }
+
+    // Once both players submit their scores, settle the round
+    const roundSubmissions = activeScores[matchId][roundNo];
+    if (roundSubmissions.length >= 2) {
+      const p1 = roundSubmissions[0];
+      const p2 = roundSubmissions[1];
+
+      let winnerId = null;
+      let winnerName = null;
+
+      if (p1.score > p2.score) {
+        winnerId = p1.userId;
+        winnerName = p1.name;
+      } else if (p2.score > p1.score) {
+        winnerId = p2.userId;
+        winnerName = p2.name;
+      } else {
+        // Tie fallback
+        winnerId = 'tie';
+        winnerName = 'tie';
+      }
+
+      io.to(matchId).emit('round_completed', {
+        roundNo,
+        winnerId,
+        winnerName,
+        submissions: roundSubmissions
+      });
+    }
+  });
+
   socket.on('disconnect', async () => {
     console.log(`Client disconnected: ${socket.id}`);
     await matchmakerService.handleDisconnect(socket.id);
