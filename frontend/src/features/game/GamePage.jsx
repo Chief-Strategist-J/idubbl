@@ -121,9 +121,12 @@ export default function GamePage() {
   const opponentWins = safeRounds.filter((r) => r.winner === opponentName).length;
 
   const GameComponent = GAME_REGISTRY[gameType] ?? WordDuel;
-  const gameProps = { key: currentRound, onAnswer: handleAnswer, answered };
-  if (gameType === 'word_duel') gameProps.question = question;
-  if (gameType === 'math_duel') gameProps.question = mathQuestion;
+  const gameProps = {
+    onAnswer: handleAnswer,
+    answered,
+    ...(gameType === 'word_duel' && { question }),
+    ...(gameType === 'math_duel' && { question: mathQuestion }),
+  };
 
   return (
     <AppLayout>
@@ -172,7 +175,7 @@ export default function GamePage() {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               Play now. Highest score wins the round. Two round wins takes the match.
             </p>
-            <GameComponent {...gameProps} />
+            <GameComponent key={currentRound} {...gameProps} />
           </div>
         </Card>
       </div>
