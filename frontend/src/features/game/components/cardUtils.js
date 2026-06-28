@@ -43,6 +43,7 @@ export function bacValue(rank) {
 }
 
 export function bacTotal(cards) {
+  if (!cards?.length) return 0;
   return cards.reduce((s, c) => s + bacValue(c.rank), 0) % 10;
 }
 
@@ -73,6 +74,7 @@ export function evaluateHand(cards) {
 
 // Three-card hand evaluator
 export function evaluateThreeCard(cards) {
+  if (!cards?.length) return { rank: -1, name: 'High Card' };
   const ranks = cards.map(c => rankOrder(c.rank)).sort((a, b) => b - a);
   const suits = cards.map(c => c.suit);
   const isFlush = suits.every(s => s === suits[0]);
