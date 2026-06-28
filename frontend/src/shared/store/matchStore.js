@@ -21,6 +21,7 @@ const useMatchStore = create((set, get) => ({
   matchResult: null,
   questions: WORD_DUEL_QUESTIONS,
   loading: false,
+  roundWaiting: false,
 
   fetchAdminMatches: async () => {
     set({ loading: true });

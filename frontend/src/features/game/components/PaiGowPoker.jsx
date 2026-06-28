@@ -81,7 +81,7 @@ export default function PaiGowPoker({ onAnswer, answered }) {
       onAnswer(false, 0);
     } else {
       setResult(`Split — each wins one hand. Push!`);
-      onAnswer(false, 2);
+      onAnswer(true, 2);
     }
     setLowHand(useLow);
     setHighHand(useHigh);

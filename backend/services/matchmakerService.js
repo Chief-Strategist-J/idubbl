@@ -83,9 +83,9 @@ class MatchmakerService {
 
       // Perform atomic balance deduction and lockedBalance additions for BOTH players
       const usersToDeduct = [opponent.userId, normUserId];
-      for (const uId of usersToDeduct) {
+      await Promise.all(usersToDeduct.map(async (uId) => {
         const uWallet = await db.collection(this.walletsCollection).findOne({ userId: uId });
-        const fromDep = Math.min(uWallet.depositBalance || 0, entryFee);
+        const fromDep = Math.min(uWallet?.depositBalance || 0, entryFee);
         const fromWin = entryFee - fromDep;
 
         await db.collection(this.walletsCollection).updateOne(
@@ -100,8 +100,7 @@ class MatchmakerService {
           }
         );
 
-        // Record the locked entry transaction
-        await db.collection(this.transactionsCollection).insertOne({
+        return db.collection(this.transactionsCollection).insertOne({
           userId: uId,
           amount: entryFee,
           type: 'match_entry',
@@ -110,7 +109,7 @@ class MatchmakerService {
           matchId,
           createdAt: new Date()
         });
-      }
+      }));
 
       await db.collection(this.matchesCollection).insertOne(matchInfo);
 

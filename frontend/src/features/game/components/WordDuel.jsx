@@ -49,7 +49,7 @@ export default function WordDuel({ question, onAnswer, answered }) {
         ))}
       </div>
 
-      {selected !== null && !answered && (
+      {selected !== null && (
         <p style={{ textAlign: 'center', marginTop: '1rem', color: selected === question.correct ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
           {selected === question.correct ? '✓ Correct!' : '✗ Wrong answer'}
         </p>

@@ -53,7 +53,7 @@ export default function HeadsUpPoker({ onAnswer, answered }) {
         : `Opponent wins with ${opHand.name} vs your ${myHand.name}`;
     setResult(msg);
     setPhase('showdown');
-    onAnswer(win, choice === 'raise' ? 2 : 1);
+    onAnswer(win || tie, choice === 'raise' ? 2 : 1);
   };
 
   const myEval = visible.length >= 3 ? bestFiveOf([...hole, ...visible]) : null;

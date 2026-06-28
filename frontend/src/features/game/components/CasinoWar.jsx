@@ -12,6 +12,7 @@ export default function CasinoWar({ onAnswer, answered }) {
   const [result, setResult] = useState('');
 
   const deal = () => {
+    if (answered) return;
     const pCard = deck[0];
     const dCard = deck[1];
     setPlayerCard(pCard);
@@ -34,6 +35,7 @@ export default function CasinoWar({ onAnswer, answered }) {
   };
 
   const goToWar = () => {
+    if (answered) return;
     const wp = deck[4];
     const wd = deck[5];
     setWarPlayer(wp);
@@ -45,6 +47,7 @@ export default function CasinoWar({ onAnswer, answered }) {
   };
 
   const surrender = () => {
+    if (answered) return;
     setResult('You surrendered — forfeit half your bet.');
     setPhase('done');
     onAnswer(false, 2);
@@ -58,7 +61,7 @@ export default function CasinoWar({ onAnswer, answered }) {
             One card each — higher card wins. Ties go to war!
           </p>
           <div className="casino-actions">
-            <button className="casino-btn casino-btn-primary" style={{ flex: 1 }} onClick={deal}>DEAL CARDS</button>
+            <button className="casino-btn casino-btn-primary" style={{ flex: 1 }} onClick={deal} disabled={answered}>DEAL CARDS</button>
           </div>
         </>
       )}
@@ -75,8 +78,8 @@ export default function CasinoWar({ onAnswer, answered }) {
             <>
               <p style={{ textAlign: 'center', color: 'var(--accent-warning)', fontWeight: 700, margin: '1rem 0 0.5rem', letterSpacing: 2 }}>⚔ TIE — GO TO WAR?</p>
               <div className="casino-actions">
-                <button className="casino-btn casino-btn-primary" onClick={goToWar}>GO TO WAR</button>
-                <button className="casino-btn casino-btn-secondary" onClick={surrender}>SURRENDER</button>
+                <button className="casino-btn casino-btn-primary" onClick={goToWar} disabled={answered}>GO TO WAR</button>
+                <button className="casino-btn casino-btn-secondary" onClick={surrender} disabled={answered}>SURRENDER</button>
               </div>
             </>
           )}

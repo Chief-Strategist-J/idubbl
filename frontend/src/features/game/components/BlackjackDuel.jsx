@@ -24,7 +24,7 @@ export default function BlackjackDuel({ onAnswer, answered }) {
     setResult(msg);
     setDealerRevealed(revealed);
     setDone(true);
-    onAnswer(win, 0);
+    onAnswer(win || push, 0);
   };
 
   // Resolve dealer draw and finish given explicit card arrays (used before state settles)

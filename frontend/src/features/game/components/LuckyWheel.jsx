@@ -42,7 +42,7 @@ export default function LuckyWheel({ onAnswer, answered }) {
       setSpinning(false);
       setResultIndex(finalIndex);
       setResult(SEGMENTS[finalIndex]);
-      onAnswer(finalIndex === targetIndex, finalIndex);
+      if (!answered) onAnswer(finalIndex === targetIndex, finalIndex);
     }, 3600);
   };
 
