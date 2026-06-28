@@ -1,11 +1,5 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
-function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  return null;
-}
 import useAuthStore from './shared/store/authStore.js';
 
 import LandingPage from './features/landing/LandingPage.jsx';
@@ -42,6 +36,12 @@ import ChatPage from './features/chat/ChatPage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, user, sessionChecked } = useAuthStore();
