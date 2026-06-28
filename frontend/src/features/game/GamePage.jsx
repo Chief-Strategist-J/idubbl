@@ -22,6 +22,7 @@ import ThreeCardPoker from './components/ThreeCardPoker.jsx';
 import VideoPoker from './components/VideoPoker.jsx';
 import RoundTransition from './components/RoundTransition.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
+import useWalletStore from '../../shared/store/walletStore.js';
 import { MATH_DUEL_QUESTIONS } from '../../shared/mock/index.js';
 
 const ROUND_TIME = 20;
@@ -47,6 +48,11 @@ export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting } = useMatchStore();
+
+  const { fetchWalletData } = useWalletStore();
+
+  // Sync balance once on game start — backend deducted entry fee when match was found
+  useEffect(() => { fetchWalletData(user?.id); }, []); // eslint-disable-line
 
   const matchId = currentMatch?.matchId ?? currentMatch?.id;
   const opponentId = currentMatch?.players?.find(p => p?.toLowerCase() !== user?.id?.toLowerCase());

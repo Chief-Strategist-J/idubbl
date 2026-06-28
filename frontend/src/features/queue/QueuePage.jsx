@@ -11,7 +11,7 @@ export default function QueuePage() {
   const navigate = useNavigate();
   const { tierId } = useParams();
   const { queueStatus, currentTier, leaveQueue, currentMatch, matchmakingError } = useMatchStore();
-  const { releaseReservation } = useWalletStore();
+  const { fetchWalletData } = useWalletStore();
   const { user } = useAuthStore();
   const [elapsed, setElapsed] = useState(0);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -23,6 +23,7 @@ export default function QueuePage() {
 
   useEffect(() => {
     if (queueStatus === 'starting' && currentMatch) {
+      fetchWalletData(user?.id); // Backend deducted entry fee when match was found
       navigate(`/game/${currentMatch.matchId || currentMatch.id}`);
     }
   }, [queueStatus, currentMatch, navigate]);

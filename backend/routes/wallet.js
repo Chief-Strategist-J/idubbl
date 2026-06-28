@@ -139,6 +139,14 @@ router.post('/match/settle', async (req, res) => {
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
+    // Idempotency guard — reject duplicate settle calls for the same match
+    const resolvedMatchId = matchId || refId;
+    if (resolvedMatchId) {
+      const existing = await db.collection('transactions').findOne({
+        matchId: resolvedMatchId, userId, type: { $in: ['win', 'loss'] }
+      });
+      if (existing) return res.json({ success: true, alreadySettled: true });
+    }
     if (isWinner && prize > 0) {
       await db.collection('wallets').updateOne(
         { userId },

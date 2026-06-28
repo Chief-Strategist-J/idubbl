@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { Card, Button, PageHeader } from '../../shared/components/ui/index.js';
@@ -12,8 +12,10 @@ export default function ResultPage() {
   const { matchResult, clearMatch } = useMatchStore();
   const { creditWinnings, availableBalance } = useWalletStore();
 
+  const settled = useRef(false);
   useEffect(() => {
-    if (matchResult) {
+    if (matchResult && !settled.current) {
+      settled.current = true;
       creditWinnings(matchResult.isWinner ? matchResult.prize : 0, {
         entryFee: matchResult.entryFee,
         refId: matchResult.refId,
