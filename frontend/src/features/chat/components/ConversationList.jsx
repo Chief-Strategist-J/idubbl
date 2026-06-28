@@ -19,14 +19,14 @@ export default function ConversationList({ onSelect }) {
     return () => clearTimeout(debounceRef.current);
   }, [query]);
 
-  async function handleSelect(conv) {
-    await openConversation(conv._id.toString());
+  function handleSelect(conv) {
+    openConversation(conv._id.toString());
     onSelect?.();
   }
 
-  async function handleConversationCreated(conv) {
+  function handleConversationCreated(conv) {
     setShowModal(false);
-    await openConversation(conv._id.toString());
+    openConversation(conv._id.toString());
     onSelect?.();
   }
 
