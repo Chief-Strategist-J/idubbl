@@ -44,8 +44,9 @@ const useMatchStore = create((set, get) => ({
     const tier = get().tiers.find((t) => t.id === tierId);
     set({ queueStatus: 'searching', currentTier: tier, currentMatch: null, rounds: [], matchResult: null, matchmakingError: null });
 
+    const playerName = useAuthStore.getState().user?.name || userId;
     const socket = connectSocket(userId);
-    socket.emit('find_match', { userId, tier: tier.name });
+    socket.emit('find_match', { userId, tier: tier.name, name: playerName });
 
     socket.off('match_created');
     socket.on('match_created', (match) => {
@@ -71,7 +72,7 @@ const useMatchStore = create((set, get) => ({
       if (get().queueStatus === 'searching') {
         const currentTier = get().currentTier;
         if (currentTier) {
-          socket.emit('find_match', { userId, tier: currentTier.name });
+          socket.emit('find_match', { userId, tier: currentTier.name, name: playerName });
         }
       }
     });
@@ -116,8 +117,12 @@ const useMatchStore = create((set, get) => ({
   submitRoundResult: (playerScore, opponentScore) => {
     const { currentRound, rounds, currentMatch } = get();
     const user = useAuthStore.getState().user;
-    const opponentName = currentMatch?.player2 ?? currentMatch?.players?.find(p => p !== user?.id) ?? 'Opponent';
+    const userId = user?.id;
     const playerName = user?.name || 'You';
+    const opponentId = currentMatch?.players?.find(p => p?.toLowerCase() !== userId?.toLowerCase());
+    const opponentName = currentMatch?.player2
+      ?? (opponentId && currentMatch?.playerNames?.[opponentId])
+      ?? 'Opponent';
 
     const roundWinner = playerScore > opponentScore ? playerName : opponentName;
     const newRound = {

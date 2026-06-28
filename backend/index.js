@@ -46,8 +46,8 @@ io.on('connection', (socket) => {
 
   socket.on('find_match', async (data) => {
     try {
-      const { userId, tier } = data;
-      const result = await matchmakerService.findMatch(userId, tier, socket.id);
+      const { userId, tier, name } = data;
+      const result = await matchmakerService.findMatch(userId, tier, socket.id, name);
       
       if (result.status === 'matched') {
         // Notify both players instantly

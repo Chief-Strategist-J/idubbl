@@ -14,7 +14,7 @@ class MatchmakerService {
     return key.trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
-  async findMatch(userId, tierName, socketId = null) {
+  async findMatch(userId, tierName, socketId = null, playerName = null) {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
       throw new Error('Valid userId is required.');
     }
@@ -30,12 +30,12 @@ class MatchmakerService {
     // Check if player is already in queue
     const existingInQueue = await db.collection(this.queueCollection).findOne({ userId: normUserId });
     if (existingInQueue) {
-      // Always update socketId so match notification reaches their current connection
-      if (socketId && existingInQueue.socketId !== socketId) {
-        await db.collection(this.queueCollection).updateOne(
-          { userId: normUserId },
-          { $set: { socketId } }
-        );
+      // Always sync socketId and name so match notification reaches their current connection
+      const updates = {};
+      if (socketId && existingInQueue.socketId !== socketId) updates.socketId = socketId;
+      if (playerName && existingInQueue.name !== playerName) updates.name = playerName;
+      if (Object.keys(updates).length > 0) {
+        await db.collection(this.queueCollection).updateOne({ userId: normUserId }, { $set: updates });
       }
       return { status: 'already_queued', queue: existingInQueue };
     }
@@ -54,9 +54,9 @@ class MatchmakerService {
       throw new Error('Insufficient balance to join matchmaking.');
     }
 
-    // Put player into queue without locking funds yet
     const queueEntry = {
       userId: normUserId,
+      name: playerName || normUserId,
       tier: normTierName,
       socketId,
       joinedAt: new Date()
@@ -71,10 +71,14 @@ class MatchmakerService {
         matchId,
         tier: tierName,
         players: [opponent.userId, normUserId],
+        playerNames: {
+          [opponent.userId]: opponent.name || opponent.userId,
+          [normUserId]: playerName || normUserId,
+        },
         status: 'in_progress',
         startedAt: new Date(),
         rounds: [],
-        rake: entryFee * 2 * 0.10 // 10% rake placeholder
+        rake: entryFee * 2 * 0.10
       };
 
       // Perform atomic balance deduction and lockedBalance additions for BOTH players

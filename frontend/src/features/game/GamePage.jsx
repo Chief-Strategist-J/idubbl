@@ -33,7 +33,10 @@ export default function GamePage() {
   const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion } = useMatchStore();
 
   const matchId = currentMatch?.matchId || currentMatch?.id;
-  const opponentName = currentMatch?.player2 ?? currentMatch?.players?.find(p => p !== user?.id) ?? 'Opponent';
+  const opponentId = currentMatch?.players?.find(p => p?.toLowerCase() !== user?.id?.toLowerCase());
+  const opponentName = currentMatch?.player2
+    ?? (opponentId && currentMatch?.playerNames?.[opponentId])
+    ?? 'Opponent';
   const matchChat = useMatchChat(matchId, user?.id, user?.name);
 
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
