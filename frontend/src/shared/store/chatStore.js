@@ -21,6 +21,21 @@ async function apiFetch(url, userId, options = {}) {
   return data.data;
 }
 
+function applyNewMessage(conv, message, isActive, userId) {
+  return {
+    ...conv,
+    lastMessage: {
+      messageId: message._id,
+      text: message.text,
+      senderId: message.senderId,
+      senderName: message.senderName,
+      timestamp: message.createdAt
+    },
+    unreadCount: isActive || message.senderId === userId ? conv.unreadCount : (conv.unreadCount || 0) + 1,
+    updatedAt: message.createdAt
+  };
+}
+
 const useChatStore = create((set, get) => ({
   conversations: [],
   activeConversationId: null,
@@ -84,8 +99,7 @@ const useChatStore = create((set, get) => ({
   loadMoreMessages: async (conversationId) => {
     const msgs = get().messages[conversationId];
     if (!msgs || msgs.length === 0) return;
-    const oldest = msgs[0];
-    await get().fetchMessages(conversationId, oldest.createdAt);
+    await get().fetchMessages(conversationId, msgs[0].createdAt);
   },
 
   sendMessage: (conversationId, text, replyTo, socket) => {
@@ -108,8 +122,8 @@ const useChatStore = create((set, get) => ({
     try {
       await apiFetch(`${API}/conversations/${conversationId}/read`, userId, { method: 'POST' });
       set(s => ({
-        conversations: s.conversations.map(c =>
-          c._id.toString() === conversationId ? { ...c, unreadCount: 0 } : c
+        conversations: (s.conversations ?? []).map(c =>
+          c._id?.toString() === conversationId ? { ...c, unreadCount: 0 } : c
         )
       }));
     } catch {
@@ -124,10 +138,10 @@ const useChatStore = create((set, get) => ({
       body: JSON.stringify({ targetUserId })
     });
     set(s => {
-      const exists = s.conversations.some(c => c._id.toString() === conv._id.toString());
+      const exists = (s.conversations ?? []).some(c => c._id?.toString() === conv._id?.toString());
       return exists
         ? { conversations: s.conversations }
-        : { conversations: [conv, ...s.conversations] };
+        : { conversations: [conv, ...(s.conversations ?? [])] };
     });
     return conv;
   },
@@ -138,7 +152,7 @@ const useChatStore = create((set, get) => ({
       method: 'POST',
       body: JSON.stringify({ name, memberIds })
     });
-    set(s => ({ conversations: [conv, ...s.conversations] }));
+    set(s => ({ conversations: [conv, ...(s.conversations ?? [])] }));
     return conv;
   },
 
@@ -149,8 +163,8 @@ const useChatStore = create((set, get) => ({
       body: JSON.stringify({ name })
     });
     set(s => ({
-      conversations: s.conversations.map(c =>
-        c._id.toString() === conversationId ? { ...c, name: data.name } : c
+      conversations: (s.conversations ?? []).map(c =>
+        c._id?.toString() === conversationId ? { ...c, name: data.name } : c
       )
     }));
     if (socket) socket.emit('chat:conversation:updated', { conversationId, name: data.name });
@@ -159,14 +173,13 @@ const useChatStore = create((set, get) => ({
 
   addMembers: async (conversationId, memberIds, socket) => {
     const { userId } = get();
+    if (!memberIds?.length) return;
     await apiFetch(`${API}/conversations/${conversationId}/members`, userId, {
       method: 'POST',
       body: JSON.stringify({ memberIds })
     });
     if (socket) {
-      for (const mid of memberIds) {
-        socket.emit('chat:join:conversation', { conversationId });
-      }
+      memberIds.forEach(() => socket.emit('chat:join:conversation', { conversationId }));
     }
     await get().fetchConversationDetails(conversationId);
   },
@@ -181,7 +194,7 @@ const useChatStore = create((set, get) => ({
     const { userId } = get();
     await apiFetch(`${API}/conversations/${conversationId}/leave`, userId, { method: 'POST' });
     set(s => ({
-      conversations: s.conversations.filter(c => c._id.toString() !== conversationId),
+      conversations: (s.conversations ?? []).filter(c => c._id?.toString() !== conversationId),
       activeConversationId: s.activeConversationId === conversationId ? null : s.activeConversationId,
       messages: Object.fromEntries(Object.entries(s.messages).filter(([k]) => k !== conversationId))
     }));
@@ -201,8 +214,8 @@ const useChatStore = create((set, get) => ({
     try {
       const conv = await apiFetch(`${API}/conversations/${conversationId}`, userId);
       set(s => ({
-        conversations: s.conversations.map(c =>
-          c._id.toString() === conversationId ? { ...c, ...conv } : c
+        conversations: (s.conversations ?? []).map(c =>
+          c._id?.toString() === conversationId ? { ...c, ...conv } : c
         )
       }));
       return conv;
@@ -241,30 +254,21 @@ const useChatStore = create((set, get) => ({
 
   handleNewMessage: (data) => {
     const { conversationId, message } = data;
+    if (!conversationId || !message) return;
     const { userId } = get();
     set(s => {
-      const msgs = s.messages[conversationId];
-      const updated = msgs ? [...msgs, message] : [message];
-      const updatedConvs = s.conversations.map(c => {
-        if (c._id.toString() !== conversationId) return c;
-        const isActive = s.activeConversationId === conversationId;
-        return {
-          ...c,
-          lastMessage: {
-            messageId: message._id,
-            text: message.text,
-            senderId: message.senderId,
-            senderName: message.senderName,
-            timestamp: message.createdAt
-          },
-          unreadCount: isActive || message.senderId === userId ? c.unreadCount : (c.unreadCount || 0) + 1,
-          updatedAt: message.createdAt
-        };
-      });
-      const sorted = [...updatedConvs].sort((a, b) =>
-        new Date(b.updatedAt) - new Date(a.updatedAt)
+      const updatedConvs = (s.conversations ?? []).map(c =>
+        c._id?.toString() === conversationId
+          ? applyNewMessage(c, message, s.activeConversationId === conversationId, userId)
+          : c
       );
-      return { messages: { ...s.messages, [conversationId]: updated }, conversations: sorted };
+      return {
+        messages: {
+          ...s.messages,
+          [conversationId]: [...(s.messages[conversationId] ?? []), message]
+        },
+        conversations: [...updatedConvs].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      };
     });
   },
 
@@ -277,7 +281,7 @@ const useChatStore = create((set, get) => ({
         messages: {
           ...s.messages,
           [conversationId]: msgs.map(m =>
-            m._id.toString() === message._id.toString() ? { ...m, text: message.text, editedAt: message.editedAt } : m
+            m._id?.toString() === message._id?.toString() ? { ...m, text: message.text, editedAt: message.editedAt } : m
           )
         }
       };
@@ -293,7 +297,7 @@ const useChatStore = create((set, get) => ({
         messages: {
           ...s.messages,
           [conversationId]: msgs.map(m =>
-            m._id.toString() === messageId ? { ...m, deletedAt: new Date(), text: '' } : m
+            m._id?.toString() === messageId ? { ...m, deletedAt: new Date(), text: '' } : m
           )
         }
       };
@@ -304,10 +308,14 @@ const useChatStore = create((set, get) => ({
     const { conversationId, userId: typerId, typing } = data;
     set(s => {
       const current = s.typing[conversationId] || {};
-      const updated = { ...current };
-      if (typing) updated[typerId] = true;
-      else delete updated[typerId];
-      return { typing: { ...s.typing, [conversationId]: updated } };
+      return {
+        typing: {
+          ...s.typing,
+          [conversationId]: typing
+            ? { ...current, [typerId]: true }
+            : Object.fromEntries(Object.entries(current).filter(([k]) => k !== typerId))
+        }
+      };
     });
   },
 
@@ -318,7 +326,7 @@ const useChatStore = create((set, get) => ({
     set(s => ({
       messages: {
         ...s.messages,
-        [conversationId]: (s.messages[conversationId] || []).map(m =>
+        [conversationId]: (s.messages[conversationId] ?? []).map(m =>
           m.senderId === userId ? { ...m, readBy: [...(m.readBy || []), readerId] } : m
         )
       }
@@ -336,13 +344,12 @@ const useChatStore = create((set, get) => ({
 
   handleConversationUpdated: (data) => {
     const { conversationId, name } = data;
-    if (name) {
-      set(s => ({
-        conversations: s.conversations.map(c =>
-          c._id.toString() === conversationId ? { ...c, name } : c
-        )
-      }));
-    }
+    if (!name) return;
+    set(s => ({
+      conversations: (s.conversations ?? []).map(c =>
+        c._id?.toString() === conversationId ? { ...c, name } : c
+      )
+    }));
   }
 }));
 

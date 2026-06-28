@@ -23,22 +23,19 @@ export default function ChatPage() {
 
     const socket = connectSocket(user.id);
 
-    socket.on('chat:message:new', handleNewMessage);
-    socket.on('chat:message:edited', handleMessageEdited);
-    socket.on('chat:message:deleted', handleMessageDeleted);
-    socket.on('chat:typing', handleTyping);
-    socket.on('chat:messages:read', handleMessagesRead);
-    socket.on('chat:user:status', handleUserStatus);
-    socket.on('chat:conversation:updated', handleConversationUpdated);
+    const socketHandlers = {
+      'chat:message:new': handleNewMessage,
+      'chat:message:edited': handleMessageEdited,
+      'chat:message:deleted': handleMessageDeleted,
+      'chat:typing': handleTyping,
+      'chat:messages:read': handleMessagesRead,
+      'chat:user:status': handleUserStatus,
+      'chat:conversation:updated': handleConversationUpdated,
+    };
+    Object.entries(socketHandlers).forEach(([event, handler]) => socket.on(event, handler));
 
     return () => {
-      socket.off('chat:message:new', handleNewMessage);
-      socket.off('chat:message:edited', handleMessageEdited);
-      socket.off('chat:message:deleted', handleMessageDeleted);
-      socket.off('chat:typing', handleTyping);
-      socket.off('chat:messages:read', handleMessagesRead);
-      socket.off('chat:user:status', handleUserStatus);
-      socket.off('chat:conversation:updated', handleConversationUpdated);
+      Object.entries(socketHandlers).forEach(([event, handler]) => socket.off(event, handler));
     };
   }, [user]);
 

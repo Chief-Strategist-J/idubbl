@@ -40,8 +40,8 @@ export default function HeadsUpPoker({ onAnswer, answered }) {
     setAction(choice);
     if (phase === 'preflop') { setPhase('flop'); return; }
     // Showdown
-    const all = [...hole, ...community];
-    const opAll = [...opHole, ...community];
+    const all = [...(hole ?? []), ...(community ?? [])];
+    const opAll = [...(opHole ?? []), ...(community ?? [])];
     const myHand = bestFiveOf(all);
     const opHand = bestFiveOf(opAll);
     const win = myHand.rank > opHand.rank;
@@ -56,7 +56,7 @@ export default function HeadsUpPoker({ onAnswer, answered }) {
     onAnswer(win || tie, choice === 'raise' ? 2 : 1);
   };
 
-  const myEval = visible.length >= 3 ? bestFiveOf([...hole, ...visible]) : null;
+  const myEval = visible.length >= 3 ? bestFiveOf([...(hole ?? []), ...visible]) : null;
 
   return (
     <div className="casino-game">

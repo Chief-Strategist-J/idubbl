@@ -45,7 +45,7 @@ const useWalletStore = create((set, get) => ({
 
       const localKey = `idubbl_wallet_${currentUserId}`;
       const localData = JSON.parse(localStorage.getItem(localKey) || '{}');
-      
+
       let depositBalance = balance.depositBalance !== undefined ? balance.depositBalance : (localData.depositBalance ?? 1000);
       let winningsBalance = balance.winningsBalance !== undefined ? balance.winningsBalance : (localData.winningsBalance ?? 0);
       let lockedBalance = balance.lockedBalance !== undefined ? balance.lockedBalance : (localData.lockedBalance ?? 0);
@@ -68,21 +68,15 @@ const useWalletStore = create((set, get) => ({
       if (localData.pendingWithdrawals !== undefined && localData.pendingWithdrawals > pendingWithdrawals) {
         pendingWithdrawals = localData.pendingWithdrawals;
       }
-      let mergedTx = [...transactions];
-      if (localData.transactions) {
-        localData.transactions.forEach(lt => {
-          if (!mergedTx.some(mt => mt._id === lt._id || mt.refId === lt.refId)) {
-            mergedTx.push(lt);
-          }
-        });
-      }
-      mergedTx.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      const localTxs = localData.transactions ?? [];
+      const mergedTx = [
+        ...transactions,
+        ...localTxs.filter(lt => !transactions.some(mt => mt._id === lt._id || mt.refId === lt.refId))
+      ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       const syncedState = { depositBalance, winningsBalance, lockedBalance, idubbuBalance, pendingWithdrawals, transactions: mergedTx };
       localStorage.setItem(localKey, JSON.stringify(syncedState));
-
-      const deposits = mergedTx.filter(t => t.type === 'deposit');
-      const withdrawals = mergedTx.filter(t => t.type === 'withdrawal');
 
       set({
         depositBalance,
@@ -93,8 +87,8 @@ const useWalletStore = create((set, get) => ({
         lockedBalance,
         pendingWithdrawals,
         transactions: mergedTx,
-        deposits,
-        withdrawals,
+        deposits: mergedTx.filter(t => t.type === 'deposit'),
+        withdrawals: mergedTx.filter(t => t.type === 'withdrawal'),
         loading: false
       });
     } catch (error) {
@@ -129,11 +123,7 @@ const useWalletStore = create((set, get) => ({
         credentials: 'include'
       });
       const json = await res.json();
-      if (json.success) {
-        set({ deposits: json.data || [], loading: false });
-      } else {
-        set({ loading: false });
-      }
+      set({ deposits: json.success ? (json.data || []) : get().deposits, loading: false });
     } catch (error) {
       console.error('Error fetching admin deposits:', error);
       set({ loading: false });
@@ -149,11 +139,7 @@ const useWalletStore = create((set, get) => ({
         credentials: 'include'
       });
       const json = await res.json();
-      if (json.success) {
-        set({ withdrawals: json.data || [], loading: false });
-      } else {
-        set({ loading: false });
-      }
+      set({ withdrawals: json.success ? (json.data || []) : get().withdrawals, loading: false });
     } catch (error) {
       console.error('Error fetching admin withdrawals:', error);
       set({ loading: false });
@@ -195,11 +181,7 @@ const useWalletStore = create((set, get) => ({
         credentials: 'include'
       });
       const json = await res.json();
-      if (json.success) {
-        set({ adminUsers: json.data || [], loading: false });
-      } else {
-        set({ loading: false });
-      }
+      set({ adminUsers: json.success ? (json.data || []) : get().adminUsers, loading: false });
     } catch (error) {
       console.error('Error fetching admin users:', error);
       set({ loading: false });
@@ -210,19 +192,17 @@ const useWalletStore = create((set, get) => ({
   reserveForMatch: async (amount, matchMeta = {}) => {
     const { availableBalance, depositBalance, winningsBalance, lockedBalance, idubbuBalance, idubbuRate, pendingWithdrawals } = get();
     if (availableBalance < amount) return false;
-    const fromDeposit  = Math.min(depositBalance, amount);
-    const fromWinnings = amount - fromDeposit;
-    const nextDeposit = depositBalance  - fromDeposit;
-    const nextWinnings = winningsBalance - fromWinnings;
-    const nextLocked = lockedBalance   + amount;
-    const nextIdubbu = (idubbuBalance  || 0) - amount * (idubbuRate || 1000);
-    // Optimistic local update
+    const fromDeposit = Math.min(depositBalance, amount);
+    const nextDeposit = depositBalance - fromDeposit;
+    const nextWinnings = winningsBalance - (amount - fromDeposit);
+    const nextLocked = lockedBalance + amount;
+    const nextIdubbu = (idubbuBalance || 0) - amount * (idubbuRate || 1000);
     set({
-      depositBalance:  nextDeposit,
+      depositBalance: nextDeposit,
       winningsBalance: nextWinnings,
       availableBalance: availableBalance - amount,
-      lockedBalance:   nextLocked,
-      idubbuBalance:   nextIdubbu,
+      lockedBalance: nextLocked,
+      idubbuBalance: nextIdubbu,
     });
     const userId = useAuthStore.getState().user?.id;
     if (userId) {
@@ -233,39 +213,36 @@ const useWalletStore = create((set, get) => ({
         idubbuBalance: nextIdubbu,
         pendingWithdrawals
       }));
-    }
-    // Persist to backend
-    try {
-      if (userId) {
+      // Persist to backend
+      try {
         await fetch(`${BASE_URL}/match/join-deduct`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
           credentials: 'include',
           body: JSON.stringify({ entryFee: amount, ...matchMeta }),
         });
-      }
-    } catch (e) { console.error('Failed to persist match join:', e); }
+      } catch (e) { console.error('Failed to persist match join:', e); }
+    }
     return true;
   },
 
   // SRP: release locked fee (on match cancel / error only)
   releaseReservation: (amount) => {
-    const { availableBalance, depositBalance, lockedBalance, idubbuBalance, idubbuRate, pendingWithdrawals } = get();
+    const { availableBalance, depositBalance, winningsBalance, lockedBalance, idubbuBalance, idubbuRate, pendingWithdrawals } = get();
     const nextDeposit = depositBalance + amount;
-    const nextWinnings = get().winningsBalance;
     const nextLocked = Math.max(0, lockedBalance - amount);
     const nextIdubbu = (idubbuBalance || 0) + amount * (idubbuRate || 1000);
     set({
-      depositBalance:   nextDeposit,
+      depositBalance: nextDeposit,
       availableBalance: availableBalance + amount,
-      lockedBalance:    nextLocked,
-      idubbuBalance:    nextIdubbu,
+      lockedBalance: nextLocked,
+      idubbuBalance: nextIdubbu,
     });
     const userId = useAuthStore.getState().user?.id;
     if (userId) {
       localStorage.setItem(`idubbl_wallet_${userId}`, JSON.stringify({
         depositBalance: nextDeposit,
-        winningsBalance: nextWinnings,
+        winningsBalance,
         lockedBalance: nextLocked,
         idubbuBalance: nextIdubbu,
         pendingWithdrawals
@@ -278,19 +255,16 @@ const useWalletStore = create((set, get) => ({
     const { winningsBalance, availableBalance, lockedBalance, idubbuBalance, idubbuRate, depositBalance, pendingWithdrawals } = get();
     const entryFee = matchMeta.entryFee || 0;
     const isWinner = prize > 0;
-    let nextWinnings = winningsBalance;
-    let nextLocked = Math.max(0, lockedBalance - entryFee);
-    let nextIdubbu = idubbuBalance || 0;
+    const nextLocked = Math.max(0, lockedBalance - entryFee);
+    const nextWinnings = isWinner ? winningsBalance + prize : winningsBalance;
+    const nextIdubbu = isWinner ? (idubbuBalance || 0) + prize * (idubbuRate || 1000) : (idubbuBalance || 0);
 
-    // Optimistic local update
     if (isWinner) {
-      nextWinnings = winningsBalance + prize;
-      nextIdubbu = (idubbuBalance || 0) + prize * (idubbuRate || 1000);
       set({
-        winningsBalance:  nextWinnings,
+        winningsBalance: nextWinnings,
         availableBalance: availableBalance + prize,
-        lockedBalance:    nextLocked,
-        idubbuBalance:    nextIdubbu,
+        lockedBalance: nextLocked,
+        idubbuBalance: nextIdubbu,
       });
     } else {
       set({
@@ -298,6 +272,7 @@ const useWalletStore = create((set, get) => ({
         availableBalance: Math.max(0, availableBalance - entryFee),
       });
     }
+
     const userId = useAuthStore.getState().user?.id;
     if (userId) {
       localStorage.setItem(`idubbl_wallet_${userId}`, JSON.stringify({
@@ -307,10 +282,8 @@ const useWalletStore = create((set, get) => ({
         idubbuBalance: nextIdubbu,
         pendingWithdrawals
       }));
-    }
-    // Persist to backend
-    try {
-      if (userId) {
+      // Persist to backend
+      try {
         await fetch(`${BASE_URL}/match/settle`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
@@ -319,8 +292,8 @@ const useWalletStore = create((set, get) => ({
         });
         // Refresh real balance from server
         await get().fetchWalletData(userId);
-      }
-    } catch (e) { console.error('Failed to persist match settle:', e); }
+      } catch (e) { console.error('Failed to persist match settle:', e); }
+    }
   },
 
   submitDeposit: async (data, userId) => {
@@ -336,7 +309,6 @@ const useWalletStore = create((set, get) => ({
         credentials: 'include',
         body: JSON.stringify(data),
       });
-      
       if (response.ok) {
         await get().fetchWalletData(currentUserId);
         return { success: true };
@@ -371,13 +343,11 @@ const useWalletStore = create((set, get) => ({
         const { winningsBalance, pendingWithdrawals, depositBalance, idubbuBalance, lockedBalance } = get();
         const nextWinnings = Math.max(0, (winningsBalance || 0) - data.amount);
         const nextPending = (pendingWithdrawals || 0) + data.amount;
-        
         set({
           winningsBalance: nextWinnings,
           pendingWithdrawals: nextPending,
           availableBalance: (depositBalance || 0) + nextWinnings
         });
-
         localStorage.setItem(`idubbl_wallet_${currentUserId}`, JSON.stringify({
           depositBalance,
           winningsBalance: nextWinnings,
@@ -385,7 +355,6 @@ const useWalletStore = create((set, get) => ({
           idubbuBalance,
           pendingWithdrawals: nextPending
         }));
-
         await get().fetchWalletData(currentUserId);
         return { success: true };
       }

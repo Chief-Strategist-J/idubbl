@@ -29,18 +29,19 @@ export default function NewConversationModal({ onClose, onConversationCreated })
   }
 
   async function handleCreate() {
+    const validationError =
+      tab === 'direct'
+        ? (selected.length !== 1 ? 'Select exactly one user.' : '')
+        : (!groupName.trim() ? 'Group name is required.' : selected.length < 1 ? 'Select at least one member.' : '');
+
+    if (validationError) { setError(validationError); return; }
+
     setError('');
     setCreating(true);
     try {
-      let conv;
-      if (tab === 'direct') {
-        if (selected.length !== 1) { setError('Select exactly one user.'); setCreating(false); return; }
-        conv = await createDirect(selected[0].id);
-      } else {
-        if (!groupName.trim()) { setError('Group name is required.'); setCreating(false); return; }
-        if (selected.length < 1) { setError('Select at least one member.'); setCreating(false); return; }
-        conv = await createGroup(groupName.trim(), selected.map(u => u.id));
-      }
+      const conv = tab === 'direct'
+        ? await createDirect(selected[0].id)
+        : await createGroup(groupName.trim(), selected.map(u => u.id));
       onConversationCreated(conv);
     } catch (err) {
       setError(err.message || 'Failed to create conversation.');

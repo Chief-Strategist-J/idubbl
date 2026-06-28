@@ -18,13 +18,13 @@ export default function GroupInfoPanel({ conversation, userId, onClose, onLeft }
   const [actionError, setActionError] = useState('');
   const { updateGroupName, addMembers, removeMember, leaveGroup, updateMemberRole, users, fetchUsers, onlineUsers } = useChatStore();
 
-  const myRole = conversation.members?.find(m => m.userId === userId)?.role;
+  const myRole = (conversation?.members ?? []).find(m => m.userId === userId)?.role;
   const canManage = myRole === 'owner' || myRole === 'admin';
   const isOwner = myRole === 'owner';
 
   useEffect(() => { if (showAddMembers) fetchUsers(addQuery); }, [addQuery, showAddMembers]);
 
-  const memberIds = new Set(conversation.members?.map(m => m.userId) || []);
+  const memberIds = new Set((conversation?.members ?? []).map(m => m.userId));
   const nonMembers = users.filter(u => !memberIds.has(u.id));
 
   async function handleSaveName() {
@@ -103,7 +103,7 @@ export default function GroupInfoPanel({ conversation, userId, onClose, onLeft }
           </div>
         )}
         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-          {conversation.members?.length || 0} members
+          {(conversation?.members ?? []).length} members
         </div>
       </div>
 
@@ -118,7 +118,7 @@ export default function GroupInfoPanel({ conversation, userId, onClose, onLeft }
         <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
           Members
         </div>
-        {(conversation.members || []).map(member => {
+        {(conversation?.members ?? []).map(member => {
           const isMe = member.userId === userId;
           const canRemoveThis = canManage && !isMe && member.role !== 'owner';
           return (

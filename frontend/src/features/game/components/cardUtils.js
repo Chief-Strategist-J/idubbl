@@ -11,8 +11,9 @@ export function createShuffledDeck() {
 }
 
 export function rankOrder(rank) {
+  if (rank == null) return 0;
   const o = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
-  return o[rank];
+  return o[rank] ?? 0;
 }
 
 export function isRed(suit) {
@@ -27,6 +28,7 @@ export function bjValue(rank) {
 }
 
 export function handTotal(cards) {
+  if (!cards?.length) return 0;
   let total = cards.reduce((s, c) => s + bjValue(c.rank), 0);
   let aces = cards.filter(c => c.rank === 'A').length;
   while (total > 21 && aces > 0) { total -= 10; aces--; }
@@ -46,6 +48,7 @@ export function bacTotal(cards) {
 
 // Five-card hand evaluator
 export function evaluateHand(cards) {
+  if (!cards?.length) return { rank: -1, name: 'High Card' };
   const ranks = cards.map(c => rankOrder(c.rank)).sort((a, b) => b - a);
   const suits = cards.map(c => c.suit);
   const counts = {};

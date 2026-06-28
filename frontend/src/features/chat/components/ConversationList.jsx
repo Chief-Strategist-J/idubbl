@@ -20,13 +20,13 @@ export default function ConversationList({ onSelect }) {
   }, [query]);
 
   function handleSelect(conv) {
-    openConversation(conv._id.toString());
+    openConversation(conv?._id?.toString());
     onSelect?.();
   }
 
   function handleConversationCreated(conv) {
     setShowModal(false);
-    openConversation(conv._id.toString());
+    openConversation(conv?._id?.toString());
     onSelect?.();
   }
 
@@ -62,19 +62,19 @@ export default function ConversationList({ onSelect }) {
             Loading…
           </div>
         )}
-        {!loadingConversations && conversations.length === 0 && (
+        {!loadingConversations && (conversations ?? []).length === 0 && (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
             <div style={{ marginBottom: '0.5rem', fontSize: '2rem' }}>💬</div>
             {query ? 'No conversations found' : 'No conversations yet. Start one!'}
           </div>
         )}
-        {conversations.map(conv => (
+        {(conversations ?? []).map(conv => (
           <ConversationItem
-            key={conv._id.toString()}
+            key={conv?._id?.toString()}
             conversation={conv}
-            isActive={activeConversationId === conv._id.toString()}
+            isActive={activeConversationId === conv?._id?.toString()}
             isOnline={conv.type === 'direct'
-              ? onlineUsers.has(conv.members?.find(m => m.userId !== userId)?.userId)
+              ? onlineUsers.has((conv?.members ?? []).find(m => m.userId !== userId)?.userId)
               : false}
             onClick={() => handleSelect(conv)}
           />

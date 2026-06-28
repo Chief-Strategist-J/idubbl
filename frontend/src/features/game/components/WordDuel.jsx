@@ -28,7 +28,7 @@ export default function WordDuel({ question, onAnswer, answered }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-        {question.options.map((opt, i) => (
+        {(question?.options ?? []).map((opt, i) => (
           <button
             key={i}
             onClick={() => handleSelect(i)}

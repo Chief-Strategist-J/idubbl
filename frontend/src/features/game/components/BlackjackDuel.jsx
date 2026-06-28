@@ -11,6 +11,7 @@ export default function BlackjackDuel({ onAnswer, answered }) {
   const [result, setResult] = useState('');
 
   const finish = (pCards, dCards, revealed) => {
+    if (!pCards?.length || !dCards?.length) return;
     const pTotal = handTotal(pCards);
     const dTotal = handTotal(dCards);
     const bust = pTotal > 21;

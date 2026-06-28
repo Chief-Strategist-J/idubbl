@@ -41,91 +41,87 @@ app.get('/health', (req, res) => {
 
 initChatSocket(io);
 
+// Real-time E2E score tracking cache — shared across all connections
+const activeScores = {};
+
+async function handleFindMatch(socket, data) {
+  const userId = String(data?.userId || '').trim();
+  const tier = String(data?.tier || '').trim();
+  const name = String(data?.name || '').trim() || null;
+  if (!userId || !tier) return socket.emit('matchmaking_error', { error: 'userId and tier are required.' });
+  try {
+    const result = await matchmakerService.findMatch(userId, tier, socket?.id, name);
+    if (result.status === 'matched') {
+      io.to(socket.id).emit('match_created', result.match);
+      if (result.opponent?.socketId) {
+        io.to(result.opponent.socketId).emit('match_created', result.match);
+      }
+    } else {
+      socket.emit('waiting_in_queue', result.queue);
+    }
+  } catch (err) {
+    socket.emit('matchmaking_error', { error: err.message });
+  }
+}
+
+async function handleCancelMatchmaking(socket, data) {
+  const userId = String(data?.userId || '').trim();
+  if (!userId) return socket.emit('matchmaking_error', { error: 'userId is required.' });
+  try {
+    const result = await matchmakerService.cancelMatchmaking(userId);
+    socket.emit('matchmaking_cancelled', result);
+  } catch (err) {
+    socket.emit('matchmaking_error', { error: err.message });
+  }
+}
+
+function handleJoinMatchRoom(socket, data) {
+  const matchId = String(data?.matchId || '').trim();
+  if (!matchId) return;
+  socket.join(matchId);
+}
+
+function handleSubmitScore(socket, data) {
+  const matchId = String(data?.matchId || '').trim();
+  const roundNo = data?.roundNo;
+  const userId = String(data?.userId || '').trim();
+  const score = data?.score;
+  const name = String(data?.name || '').trim();
+  if (!matchId || roundNo == null || !userId) return;
+
+  if (!activeScores[matchId]) activeScores[matchId] = {};
+  if (!activeScores[matchId][roundNo]) activeScores[matchId][roundNo] = [];
+
+  const roundSubmissions = activeScores[matchId][roundNo];
+  if (!roundSubmissions.some(e => e.userId === userId)) {
+    activeScores[matchId][roundNo] = [...roundSubmissions, { userId, score, name, socketId: socket?.id }];
+  }
+
+  const settled = activeScores[matchId][roundNo];
+  if (settled.length >= 2) {
+    const [p1, p2] = settled;
+    const winnerId = p1.score > p2.score ? p1.userId : p2.score > p1.score ? p2.userId : 'tie';
+    const winnerName = p1.score > p2.score ? p1.name : p2.score > p1.score ? p2.name : 'tie';
+    io.to(matchId).emit('round_completed', { roundNo, winnerId, winnerName, submissions: settled });
+  }
+}
+
+async function handleDisconnect(socket) {
+  await matchmakerService.handleDisconnect(socket?.id);
+}
+
+const matchmakingHandlers = {
+  find_match: (socket, data) => handleFindMatch(socket, data),
+  cancel_matchmaking: (socket, data) => handleCancelMatchmaking(socket, data),
+  join_match_room: (socket, data) => handleJoinMatchRoom(socket, data),
+  submit_score: (socket, data) => handleSubmitScore(socket, data),
+  disconnect: (socket) => handleDisconnect(socket),
+};
+
 io.on('connection', (socket) => {
-  console.log(`Client connected: ${socket.id}`);
-
-  socket.on('find_match', async (data) => {
-    try {
-      const { userId, tier, name } = data;
-      const result = await matchmakerService.findMatch(userId, tier, socket.id, name);
-      
-      if (result.status === 'matched') {
-        // Notify both players instantly
-        io.to(socket.id).emit('match_created', result.match);
-        if (result.opponent.socketId) {
-          io.to(result.opponent.socketId).emit('match_created', result.match);
-        }
-      } else {
-        socket.emit('waiting_in_queue', result.queue);
-      }
-    } catch (err) {
-      socket.emit('matchmaking_error', { error: err.message });
-    }
-  });
-
-  socket.on('cancel_matchmaking', async (data) => {
-    try {
-      const { userId } = data;
-      const result = await matchmakerService.cancelMatchmaking(userId);
-      socket.emit('matchmaking_cancelled', result);
-    } catch (err) {
-      socket.emit('matchmaking_error', { error: err.message });
-    }
-  });
-
-  // Real-time E2E score tracking cache
-  const activeScores = {};
-
-  socket.on('join_match_room', ({ matchId }) => {
-    socket.join(matchId);
-  });
-
-  socket.on('submit_score', ({ matchId, roundNo, userId, score, name }) => {
-    if (!activeScores[matchId]) {
-      activeScores[matchId] = {};
-    }
-    if (!activeScores[matchId][roundNo]) {
-      activeScores[matchId][roundNo] = [];
-    }
-
-    // Record score if not already registered for this round
-    if (!activeScores[matchId][roundNo].some(e => e.userId === userId)) {
-      activeScores[matchId][roundNo].push({ userId, score, name, socketId: socket.id });
-    }
-
-    // Once both players submit their scores, settle the round
-    const roundSubmissions = activeScores[matchId][roundNo];
-    if (roundSubmissions.length >= 2) {
-      const p1 = roundSubmissions[0];
-      const p2 = roundSubmissions[1];
-
-      let winnerId = null;
-      let winnerName = null;
-
-      if (p1.score > p2.score) {
-        winnerId = p1.userId;
-        winnerName = p1.name;
-      } else if (p2.score > p1.score) {
-        winnerId = p2.userId;
-        winnerName = p2.name;
-      } else {
-        // Tie fallback
-        winnerId = 'tie';
-        winnerName = 'tie';
-      }
-
-      io.to(matchId).emit('round_completed', {
-        roundNo,
-        winnerId,
-        winnerName,
-        submissions: roundSubmissions
-      });
-    }
-  });
-
-  socket.on('disconnect', async () => {
-    console.log(`Client disconnected: ${socket.id}`);
-    await matchmakerService.handleDisconnect(socket.id);
+  console.log(`Client connected: ${socket?.id}`);
+  Object.entries(matchmakingHandlers).forEach(([event, handler]) => {
+    socket.on(event, (...args) => handler(socket, ...args));
   });
 });
 

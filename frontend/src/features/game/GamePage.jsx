@@ -27,15 +27,31 @@ import { MATH_DUEL_QUESTIONS } from '../../shared/mock/index.js';
 const ROUND_TIME = 20;
 const TRANSITION_DURATION = 2500;
 
+const GAME_REGISTRY = {
+  word_duel:     WordDuel,
+  math_duel:     MathDuel,
+  reaction_race: ReactionRace,
+  lucky_wheel:   LuckyWheel,
+  lucky_balls:   LuckyBalls,
+  blackjack:     BlackjackDuel,
+  holdem_poker:  HeadsUpPoker,
+  baccarat:      BaccaratDuel,
+  casino_war:    CasinoWar,
+  red_dog:       RedDog,
+  pai_gow:       PaiGowPoker,
+  three_card:    ThreeCardPoker,
+  video_poker:   VideoPoker,
+};
+
 export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting } = useMatchStore();
 
-  const matchId = currentMatch?.matchId || currentMatch?.id;
+  const matchId = currentMatch?.matchId ?? currentMatch?.id;
   const opponentId = currentMatch?.players?.find(p => p?.toLowerCase() !== user?.id?.toLowerCase());
   const opponentName = currentMatch?.player2
-    ?? (opponentId && currentMatch?.playerNames?.[opponentId])
+    ?? (opponentId ? currentMatch?.playerNames?.[opponentId] : null)
     ?? 'Opponent';
   const matchChat = useMatchChat(matchId, user?.id, user?.name);
 
@@ -45,7 +61,7 @@ export default function GamePage() {
   const [showTransition, setShowTransition] = useState(false);
   const [lastRound, setLastRound] = useState(null);
 
-  const gameType = currentTier?.gameType || 'word_duel';
+  const gameType = currentTier?.gameType ?? 'word_duel';
   const question = getRandomQuestion((currentRound || 1) - 1);
   const mathQuestion = MATH_DUEL_QUESTIONS[((currentRound || 1) - 1) % MATH_DUEL_QUESTIONS.length];
 
@@ -64,13 +80,18 @@ export default function GamePage() {
     return () => clearTimeout(t);
   }, [timeLeft, answered, handleAnswer]);
 
+  // Navigate to result when match is decided
   useEffect(() => {
     if (matchResult) {
       navigate('/result');
-      return;
     }
-    if (rounds.length > 0 && rounds.length < 3) {
-      const lastR = rounds[rounds.length - 1];
+  }, [matchResult, navigate]);
+
+  // Show round transition overlay between rounds
+  useEffect(() => {
+    const safeRounds = rounds ?? [];
+    if (safeRounds.length > 0 && safeRounds.length < 3) {
+      const lastR = safeRounds[safeRounds.length - 1];
       setLastRound(lastR);
       setShowTransition(true);
       const t = setTimeout(() => {
@@ -82,7 +103,7 @@ export default function GamePage() {
       }, TRANSITION_DURATION);
       return () => clearTimeout(t);
     }
-  }, [rounds, matchResult, navigate]);
+  }, [rounds?.length]); // eslint-disable-line
 
   if (!currentMatch) {
     return (
@@ -94,13 +115,20 @@ export default function GamePage() {
     );
   }
 
-  const playerWins = rounds.filter((r) => r.winner === (user?.name || 'You')).length;
-  const opponentWins = rounds.filter((r) => r.winner === opponentName).length;
+  const safeRounds = rounds ?? [];
+  const playerName = user?.name ?? 'You';
+  const playerWins = safeRounds.filter((r) => r.winner === playerName).length;
+  const opponentWins = safeRounds.filter((r) => r.winner === opponentName).length;
+
+  const GameComponent = GAME_REGISTRY[gameType] ?? WordDuel;
+  const gameProps = { key: currentRound, onAnswer: handleAnswer, answered };
+  if (gameType === 'word_duel') gameProps.question = question;
+  if (gameType === 'math_duel') gameProps.question = mathQuestion;
 
   return (
     <AppLayout>
       {showTransition && <RoundTransition round={lastRound} playerWins={playerWins} opponentWins={opponentWins} />}
-      
+
       {roundWaiting && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 400,
@@ -134,29 +162,17 @@ export default function GamePage() {
           />
 
           <ScoreBoard
-            playerName={user?.name || 'You'}
+            playerName={playerName}
             opponentName={opponentName}
             playerScore={playerRoundScore}
-            opponentScore={answered && rounds[currentRound - 1] ? rounds[currentRound - 1].opponentScore : 0}
+            opponentScore={answered && safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].opponentScore : 0}
           />
 
           <div style={{ padding: '0.5rem 0' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               Play now. Highest score wins the round. Two round wins takes the match.
             </p>
-            {gameType === 'word_duel'     && <WordDuel key={currentRound} question={question} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'math_duel'     && <MathDuel key={currentRound} question={mathQuestion} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'reaction_race' && <ReactionRace key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'lucky_wheel'   && <LuckyWheel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'lucky_balls'   && <LuckyBalls key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'blackjack'     && <BlackjackDuel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'holdem_poker'  && <HeadsUpPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'baccarat'      && <BaccaratDuel key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'casino_war'    && <CasinoWar key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'red_dog'       && <RedDog key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'pai_gow'       && <PaiGowPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'three_card'    && <ThreeCardPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
-            {gameType === 'video_poker'   && <VideoPoker key={currentRound} onAnswer={handleAnswer} answered={answered} />}
+            <GameComponent {...gameProps} />
           </div>
         </Card>
       </div>

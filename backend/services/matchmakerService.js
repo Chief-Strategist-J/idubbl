@@ -1,5 +1,38 @@
 import { getDb } from './db.js';
 
+function normalizeKey(key) {
+  if (typeof key !== 'string') return '';
+  return key.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+async function deductWallet(db, walletsCollection, transactionsCollection, uId, entryFee, tierName, matchId) {
+  const uWallet = await db.collection(walletsCollection).findOne({ userId: uId });
+  const fromDep = Math.min(uWallet?.depositBalance || 0, entryFee);
+  const fromWin = entryFee - fromDep;
+
+  await db.collection(walletsCollection).updateOne(
+    { userId: uId },
+    {
+      $inc: {
+        depositBalance: -fromDep,
+        winningsBalance: -fromWin,
+        lockedBalance: entryFee,
+        idubbuBalance: -entryFee * 1000
+      }
+    }
+  );
+
+  return db.collection(transactionsCollection).insertOne({
+    userId: uId,
+    amount: entryFee,
+    type: 'match_entry',
+    status: 'locked',
+    tier: tierName,
+    matchId,
+    createdAt: new Date()
+  });
+}
+
 class MatchmakerService {
   constructor() {
     this.queueCollection = 'matchmaking_queue';
@@ -7,11 +40,6 @@ class MatchmakerService {
     this.walletsCollection = 'wallets';
     this.transactionsCollection = 'transactions';
     this.usersCollection = 'user';
-  }
-
-  normalizeKey(key) {
-    if (typeof key !== 'string') return '';
-    return key.trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
   async findMatch(userId, tierName, socketId = null, playerName = null) {
@@ -22,8 +50,8 @@ class MatchmakerService {
       throw new Error('Valid tierName is required.');
     }
 
-    const normUserId = this.normalizeKey(userId);
-    const normTierName = this.normalizeKey(tierName);
+    const normUserId = normalizeKey(userId);
+    const normTierName = normalizeKey(tierName);
 
     const db = await getDb();
 
@@ -31,9 +59,10 @@ class MatchmakerService {
     const existingInQueue = await db.collection(this.queueCollection).findOne({ userId: normUserId });
     if (existingInQueue) {
       // Always sync socketId and name so match notification reaches their current connection
-      const updates = {};
-      if (socketId && existingInQueue.socketId !== socketId) updates.socketId = socketId;
-      if (playerName && existingInQueue.name !== playerName) updates.name = playerName;
+      const updates = {
+        ...(socketId && existingInQueue.socketId !== socketId ? { socketId } : {}),
+        ...(playerName && existingInQueue.name !== playerName ? { name: playerName } : {}),
+      };
       if (Object.keys(updates).length > 0) {
         await db.collection(this.queueCollection).updateOne({ userId: normUserId }, { $set: updates });
       }
@@ -64,72 +93,48 @@ class MatchmakerService {
 
     // atomic check-and-match — exclude self to prevent self-matching in edge cases
     const opponent = await db.collection(this.queueCollection).findOneAndDelete({ tier: normTierName, userId: { $ne: normUserId } });
-    if (opponent) {
-      // Opponent found! Both users are deducted here at match creation time to prevent front-run or lock issues
-      const matchId = 'm_' + Math.random().toString(36).substring(2, 15);
-      const matchInfo = {
-        matchId,
-        tier: tierName,
-        players: [opponent.userId, normUserId],
-        playerNames: {
-          [opponent.userId]: opponent.name || opponent.userId,
-          [normUserId]: playerName || normUserId,
-        },
-        status: 'in_progress',
-        startedAt: new Date(),
-        rounds: [],
-        rake: entryFee * 2 * 0.10
-      };
 
-      // Perform atomic balance deduction and lockedBalance additions for BOTH players
-      const usersToDeduct = [opponent.userId, normUserId];
-      await Promise.all(usersToDeduct.map(async (uId) => {
-        const uWallet = await db.collection(this.walletsCollection).findOne({ userId: uId });
-        const fromDep = Math.min(uWallet?.depositBalance || 0, entryFee);
-        const fromWin = entryFee - fromDep;
-
-        await db.collection(this.walletsCollection).updateOne(
-          { userId: uId },
-          {
-            $inc: {
-              depositBalance: -fromDep,
-              winningsBalance: -fromWin,
-              lockedBalance: entryFee,
-              idubbuBalance: -entryFee * 1000
-            }
-          }
-        );
-
-        return db.collection(this.transactionsCollection).insertOne({
-          userId: uId,
-          amount: entryFee,
-          type: 'match_entry',
-          status: 'locked',
-          tier: tierName,
-          matchId,
-          createdAt: new Date()
-        });
-      }));
-
-      await db.collection(this.matchesCollection).insertOne(matchInfo);
-
-      return {
-        status: 'matched',
-        match: matchInfo,
-        opponent: { userId: opponent.userId, socketId: opponent.socketId }
-      };
-    } else {
-      // Put player into queue
+    if (!opponent) {
       await db.collection(this.queueCollection).insertOne(queueEntry);
       return { status: 'queued', queue: queueEntry };
     }
+
+    // Opponent found — deduct both players in parallel, then create match
+    const matchId = 'm_' + Math.random().toString(36).substring(2, 15);
+    const matchInfo = {
+      matchId,
+      tier: tierName,
+      players: [opponent.userId, normUserId],
+      playerNames: {
+        [opponent.userId]: opponent.name || opponent.userId,
+        [normUserId]: playerName || normUserId,
+      },
+      status: 'in_progress',
+      startedAt: new Date(),
+      rounds: [],
+      rake: entryFee * 2 * 0.10
+    };
+
+    await Promise.all(
+      [opponent.userId, normUserId].map(uId =>
+        deductWallet(db, this.walletsCollection, this.transactionsCollection, uId, entryFee, tierName, matchId)
+      )
+    );
+
+    await db.collection(this.matchesCollection).insertOne(matchInfo);
+
+    return {
+      status: 'matched',
+      match: matchInfo,
+      opponent: { userId: opponent.userId, socketId: opponent.socketId }
+    };
   }
 
   async cancelMatchmaking(userId) {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
       throw new Error('Valid userId is required.');
     }
-    const normUserId = this.normalizeKey(userId);
+    const normUserId = normalizeKey(userId);
     const db = await getDb();
 
     // Atomic pop from queue. No refund needed since funds are not locked until match creation
@@ -144,8 +149,7 @@ class MatchmakerService {
   async handleDisconnect(socketId) {
     if (!socketId || typeof socketId !== 'string') return;
     const db = await getDb();
-    
-    // Check if user is in queue
+
     const queuedUser = await db.collection(this.queueCollection).findOne({ socketId });
     if (queuedUser) {
       await this.cancelMatchmaking(queuedUser.userId);
@@ -156,8 +160,8 @@ class MatchmakerService {
     if (!matchId || typeof matchId !== 'string') throw new Error('Valid matchId is required.');
     if (!winnerId || typeof winnerId !== 'string') throw new Error('Valid winnerId is required.');
 
-    const normMatchId = this.normalizeKey(matchId);
-    const normWinnerId = this.normalizeKey(winnerId);
+    const normMatchId = normalizeKey(matchId);
+    const normWinnerId = normalizeKey(winnerId);
 
     const db = await getDb();
     const match = await db.collection(this.matchesCollection).findOne({ matchId: normMatchId, status: 'in_progress' });
@@ -165,20 +169,17 @@ class MatchmakerService {
       throw new Error('Match not found or already settled.');
     }
 
-    const players = match.players;
-    const loserId = players.find(p => p !== normWinnerId);
+    const loserId = match.players.find(p => p !== normWinnerId);
 
-    // Update match state
     await db.collection(this.matchesCollection).updateOne(
       { matchId: normMatchId },
       { $set: { status: 'completed', winner: normWinnerId, settledAt: new Date() } }
     );
 
     const tierFees = { rookie: 5, pro: 20, elite: 50 };
-    const normTierName = this.normalizeKey(match.tier);
-    const entryFee = tierFees[normTierName] || 5;
+    const entryFee = tierFees[normalizeKey(match.tier)] || 5;
 
-    // Settle winner: deduct locked, add win balance (prize money goes to winning player)
+    // Settle winner: deduct locked, add win balance
     await db.collection(this.walletsCollection).updateOne(
       { userId: normWinnerId },
       {
@@ -190,7 +191,6 @@ class MatchmakerService {
       }
     );
 
-    // Record win transaction
     await db.collection(this.transactionsCollection).insertOne({
       userId: normWinnerId,
       type: 'win',
@@ -201,14 +201,13 @@ class MatchmakerService {
       createdAt: new Date()
     });
 
-    // Settle loser: deduct locked balance (entry fee is gone)
+    // Settle loser: deduct locked balance
     if (loserId) {
       await db.collection(this.walletsCollection).updateOne(
         { userId: loserId },
         { $inc: { lockedBalance: -Number(entryFee) } }
       );
 
-      // Record loss transaction
       await db.collection(this.transactionsCollection).insertOne({
         userId: loserId,
         type: 'loss',

@@ -21,8 +21,8 @@ export default function ChatWindow({ userId, onBack }) {
   } = useChatStore();
 
   const conversationId = activeConversationId;
-  const conversation = conversations.find(c => c._id.toString() === conversationId);
-  const msgs = messages[conversationId] || [];
+  const conversation = conversations.find(c => c?._id?.toString() === conversationId);
+  const msgs = messages[conversationId] ?? [];
   const isLoading = loadingMessages[conversationId];
   const typingUsers = typing[conversationId] || {};
   const typingNames = Object.keys(typingUsers).filter(uid => uid !== userId);
@@ -104,7 +104,7 @@ export default function ChatWindow({ userId, onBack }) {
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
               {isGroup
-                ? `${conversation.members?.length || 0} members`
+                ? `${conversation?.members?.length ?? 0} members`
                 : isOnline ? 'Online' : 'Offline'}
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function ChatWindow({ userId, onBack }) {
               </div>
             )}
             {msgs.map((msg, i) => {
-              const isMine = msg.senderId === userId;
+              const isMine = (msg?.senderId ?? '') === userId;
               const prevMsg = msgs[i - 1];
               const showDate = !prevMsg || new Date(msg.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
               return (
@@ -164,7 +164,7 @@ export default function ChatWindow({ userId, onBack }) {
             })}
             {typingNames.length > 0 && (
               <div style={{ padding: '0.25rem 1.25rem', fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                {conversation.members?.find(m => m.userId === typingNames[0])?.name || 'Someone'} is typing…
+                {conversation?.members?.find(m => m.userId === typingNames[0])?.name ?? 'Someone'} is typing…
               </div>
             )}
             <div ref={messagesEndRef} />

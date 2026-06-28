@@ -44,10 +44,11 @@ function Avatar({ name, isGroup, isOnline }) {
 }
 
 export default function ConversationItem({ conversation, isActive, isOnline, onClick }) {
-  const { type, name, lastMessage, unreadCount } = conversation;
-  const preview = lastMessage
-    ? (lastMessage.text
-        ? (lastMessage.text.length > 38 ? lastMessage.text.substring(0, 38) + '…' : lastMessage.text)
+  const { type, name, unreadCount } = conversation;
+  const lastMessageText = conversation?.lastMessage?.text ?? '';
+  const preview = conversation?.lastMessage
+    ? (lastMessageText
+        ? (lastMessageText.length > 38 ? lastMessageText.substring(0, 38) + '…' : lastMessageText)
         : 'Deleted message')
     : 'No messages yet';
 
@@ -64,7 +65,7 @@ export default function ConversationItem({ conversation, isActive, isOnline, onC
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%'
           }}>{name || 'Unknown'}</span>
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0 }}>
-            {formatTime(lastMessage?.timestamp)}
+            {formatTime(conversation?.lastMessage?.timestamp)}
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CornerUpLeft, Edit2, Trash2, Check, CheckCheck } from 'lucide-react';
 import useChatStore from '../../../shared/store/chatStore.js';
 import { getSocket } from '../../../shared/services/socketService.js';
@@ -11,18 +11,22 @@ function formatTime(ts) {
 export default function MessageBubble({ message, isMine, isGroup, conversationId, onReply }) {
   const [showActions, setShowActions] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editText, setEditText] = useState(message.text);
+  const [editText, setEditText] = useState(message?.text ?? '');
   const { editMessage, deleteMessage } = useChatStore();
   const isDeleted = !!message.deletedAt;
 
+  useEffect(() => {
+    if (editing) setEditText(message?.text ?? '');
+  }, [editing]);
+
   function handleEdit() {
     setEditing(false);
-    editMessage(conversationId, message._id.toString(), editText, getSocket());
+    editMessage(conversationId, message?._id?.toString(), editText, getSocket());
   }
 
   function handleDelete() {
     if (confirm('Delete this message?')) {
-      deleteMessage(conversationId, message._id.toString(), getSocket());
+      deleteMessage(conversationId, message?._id?.toString(), getSocket());
     }
   }
 
@@ -87,7 +91,7 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
               </span>
             ) : (
               <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.45 }}>
-                {message.text}
+                {message?.text ?? ''}
               </span>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
@@ -110,7 +114,7 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
           </button>
           {isMine && (
             <>
-              <button className="chat-action-btn" title="Edit" onClick={() => { setEditing(true); setEditText(message.text); }}>
+              <button className="chat-action-btn" title="Edit" onClick={() => setEditing(true)}>
                 <Edit2 size={13} />
               </button>
               <button className="chat-action-btn danger" title="Delete" onClick={handleDelete}>
