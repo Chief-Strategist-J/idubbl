@@ -43,11 +43,26 @@ async function getOrCreateWallet(db, userId) {
   return wallet;
 }
 
+// Helper middleware or extractor to retrieve userId from session or headers
+async function getUserIdFromReq(req) {
+  try {
+    const userIdHeader = req.headers['x-user-id'];
+    if (userIdHeader) return userIdHeader;
+
+    const sessionData = await authService.getSession(req);
+    if (sessionData && sessionData.user) {
+      return sessionData.user.id || sessionData.user._id?.toString();
+    }
+  } catch (error) {
+    console.error('Error fetching userId from request session:', error);
+  }
+  return 'u1'; // Fallback for testing/demo
+}
+
 // 1. Get Wallet Balance
 router.get('/balance', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1'; // Fallback to demo user
-
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
     res.json({
@@ -70,9 +85,8 @@ router.get('/balance', async (req, res) => {
 
 // 2. Get Transactions List
 router.get('/transactions', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
-
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const transactions = await db.collection('transactions')
       .find({ userId })
@@ -87,10 +101,10 @@ router.get('/transactions', async (req, res) => {
 
 // 3a. Deduct entry fee when player joins a match
 router.post('/match/join-deduct', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   const { entryFee, matchId, tier } = req.body;
   if (!entryFee) return errorRegistry.send(res, 'MISSING_ENTRY_FEE', 'Entry fee required.');
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
     const total = (wallet.depositBalance || 0) + (wallet.winningsBalance || 0);
@@ -121,9 +135,9 @@ router.post('/match/join-deduct', async (req, res) => {
 
 // 3b. Settle match result — credit winner, record loss for loser
 router.post('/match/settle', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   const { isWinner, prize, entryFee, matchId, tier, refId } = req.body;
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     if (isWinner && prize > 0) {
       await db.collection('wallets').updateOne(
@@ -157,7 +171,6 @@ router.post('/match/settle', async (req, res) => {
 
 // 3. Submit USDT Deposit (with Auto-Verification & Manual Fallback)
 router.post('/deposit', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   const { amount, network, txHash, note } = req.body;
 
   if (!amount) {
@@ -168,6 +181,7 @@ router.post('/deposit', async (req, res) => {
   }
 
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
 
     // 1. Prevent replay/double spend attacks by checking if txHash was already submitted
@@ -232,7 +246,6 @@ router.post('/deposit', async (req, res) => {
 
 // 4. Submit Withdrawal Request
 router.post('/withdraw', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   const { amount, address, network } = req.body;
 
   if (!amount || !address || !network) {
@@ -240,6 +253,7 @@ router.post('/withdraw', async (req, res) => {
   }
 
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const wallet = await getOrCreateWallet(db, userId);
 
@@ -474,8 +488,8 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
 });
 
 router.post('/personal/create', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const keypair = blockchainService.generatePersonalWallet();
     
@@ -514,8 +528,8 @@ router.post('/personal/create', async (req, res) => {
 });
 
 router.get('/personal', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const wallet = await db.collection('user_wallets').findOne({ userId });
     if (!wallet) {
@@ -545,9 +559,9 @@ router.get('/personal', async (req, res) => {
 });
 
 router.post('/personal/edit', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   const { tronAddress, ethereumAddress } = req.body;
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const updateFields = { updatedAt: new Date() };
     if (tronAddress) updateFields['tron.address'] = tronAddress;
@@ -567,8 +581,8 @@ router.post('/personal/edit', async (req, res) => {
 });
 
 router.get('/personal/balance', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     const wallet = await db.collection('user_wallets').findOne({ userId });
     if (!wallet) {
@@ -604,8 +618,8 @@ router.get('/personal/balance', async (req, res) => {
 });
 
 router.delete('/personal', async (req, res) => {
-  const userId = req.headers['x-user-id'] || 'u1';
   try {
+    const userId = await getUserIdFromReq(req);
     const db = await getDb();
     await db.collection('user_wallets').deleteOne({ userId });
     res.json({ success: true });

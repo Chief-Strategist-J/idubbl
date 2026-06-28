@@ -2,19 +2,27 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge, Button, EmptyState } from '../../../shared/components/ui/index.js';
 import useMatchStore from '../../../shared/store/matchStore.js';
+import useAuthStore from '../../../shared/store/authStore.js';
 
 export default function RecentMatches() {
   const navigate = useNavigate();
   const { matches } = useMatchStore();
+  const { user } = useAuthStore();
+
+  const currentUserId = user?.id || 'u1';
+  const currentUserName = user?.name || 'Alex Storm';
 
   const rows = matches
     .filter((m) => m.status === 'completed')
     .slice(0, 5)
-    .map((m) => ({
-      ...m,
-      opponent: m.player1 === 'Alex Storm' ? m.player2 : m.player1,
-      entryFee: 5,
-    }));
+    .map((m) => {
+      const isP1 = m.player1 === currentUserName || m.player1 === 'You';
+      return {
+        ...m,
+        opponent: isP1 ? m.player2 : m.player1,
+        entryFee: 5,
+      };
+    });
 
   if (!rows.length) return <EmptyState message="No matches played yet. Join a tier to start." icon="⚔️" />;
 
@@ -27,25 +35,28 @@ export default function RecentMatches() {
 
       {/* Mobile card list */}
       <div className="match-card-list">
-        {rows.map((row, i) => (
-          <div key={row.id || i} className="match-card">
-            <div className="match-card-left">
-              <span className="match-card-id">#{row.refId || `M${i + 1}`}</span>
-              <span className="match-card-tier">{row.tier}</span>
+        {rows.map((row, i) => {
+          const isWinner = row.winnerId === currentUserId || row.winner === currentUserName || row.winner === 'You';
+          return (
+            <div key={row.id || i} className="match-card">
+              <div className="match-card-left">
+                <span className="match-card-id">#{row.refId || `M${i + 1}`}</span>
+                <span className="match-card-tier">{row.tier}</span>
+              </div>
+              <div className="match-card-center">
+                <span className="match-card-vs">vs</span>
+                <span className="match-card-opponent">{row.opponent}</span>
+              </div>
+              <div className="match-card-right">
+                <Badge status={isWinner ? 'win' : 'loss'} />
+                {isWinner
+                  ? <span className="match-prize win">+{row.prize} USDT</span>
+                  : <span className="match-prize loss">-{row.entryFee} USDT</span>
+                }
+              </div>
             </div>
-            <div className="match-card-center">
-              <span className="match-card-vs">vs</span>
-              <span className="match-card-opponent">{row.opponent}</span>
-            </div>
-            <div className="match-card-right">
-              <Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} />
-              {row.winnerId === 'u1'
-                ? <span className="match-prize win">+{row.prize} USDT</span>
-                : <span className="match-prize loss">-{row.entryFee} USDT</span>
-              }
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Desktop table (hidden on mobile, shown via CSS) */}
@@ -61,20 +72,23 @@ export default function RecentMatches() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.id || i}>
-                <td>#{row.refId || `M${i + 1}`}</td>
-                <td>{row.tier}</td>
-                <td>{row.opponent}</td>
-                <td><Badge status={row.winnerId === 'u1' ? 'win' : 'loss'} /></td>
-                <td>
-                  {row.winnerId === 'u1'
-                    ? <span style={{ color: 'var(--accent-green)' }}>+{row.prize} USDT</span>
-                    : <span style={{ color: 'var(--accent-red)' }}>-{row.entryFee} USDT</span>
-                  }
-                </td>
-              </tr>
-            ))}
+            {rows.map((row, i) => {
+              const isWinner = row.winnerId === currentUserId || row.winner === currentUserName || row.winner === 'You';
+              return (
+                <tr key={row.id || i}>
+                  <td>#{row.refId || `M${i + 1}`}</td>
+                  <td>{row.tier}</td>
+                  <td>{row.opponent}</td>
+                  <td><Badge status={isWinner ? 'win' : 'loss'} /></td>
+                  <td>
+                    {isWinner
+                      ? <span style={{ color: 'var(--accent-green)' }}>+{row.prize} USDT</span>
+                      : <span style={{ color: 'var(--accent-red)' }}>-{row.entryFee} USDT</span>
+                    }
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { MOCK_MATCHES, MOCK_TIERS, WORD_DUEL_QUESTIONS } from '../mock/index.js';
+import { getSocket, connectSocket } from '../services/socketService.js';
 
 let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
@@ -37,12 +38,34 @@ const useMatchStore = create((set, get) => ({
     }
   },
 
-  joinQueue: (tierId) => {
+  joinQueue: (tierId, userId) => {
     const tier = get().tiers.find((t) => t.id === tierId);
     set({ queueStatus: 'searching', currentTier: tier, currentMatch: null, rounds: [], matchResult: null });
+    
+    // Connect socket and register matchmaking request
+    const socket = connectSocket(userId);
+    socket.emit('find_match', { userId, tier: tier.name });
+
+    // Listen for match outcomes in real-time
+    socket.off('match_created');
+    socket.on('match_created', (match) => {
+      set({ queueStatus: 'matched' });
+      setTimeout(() => {
+        set({ queueStatus: 'starting', currentMatch: match, currentRound: 1 });
+      }, 2000);
+    });
+
+    socket.off('waiting_in_queue');
+    socket.on('waiting_in_queue', () => {
+      set({ queueStatus: 'searching' });
+    });
   },
 
-  leaveQueue: () => {
+  leaveQueue: (userId) => {
+    const socket = getSocket();
+    if (socket && socket.connected) {
+      socket.emit('cancel_matchmaking', { userId });
+    }
     set({ queueStatus: null, currentTier: null });
   },
 
@@ -52,11 +75,14 @@ const useMatchStore = create((set, get) => ({
   },
 
   startNewMatch: (tier) => {
+    const user = useAuthStore.getState().user;
+    const opps = ['Viper', 'Spike', 'Shadow', 'Ghost', 'Nova'];
+    const randomOpp = opps[Math.floor(Math.random() * opps.length)];
     const newMatch = {
       id: `m${Date.now()}`,
       tier: tier.name,
-      player1: 'Alex Storm',
-      player2: 'Maya Chen',
+      player1: user?.name || 'You',
+      player2: randomOpp,
       status: 'active',
       winner: null,
       winnerId: null,
@@ -73,7 +99,11 @@ const useMatchStore = create((set, get) => ({
 
   submitRoundResult: (playerScore, opponentScore) => {
     const { currentRound, rounds, currentMatch } = get();
-    const roundWinner = playerScore > opponentScore ? 'Alex Storm' : 'Maya Chen';
+    const user = useAuthStore.getState().user;
+    const opponentName = currentMatch?.player2 ?? currentMatch?.players?.find(p => p !== user?.id) ?? 'Opponent';
+    const playerName = user?.name || 'You';
+
+    const roundWinner = playerScore > opponentScore ? playerName : opponentName;
     const newRound = {
       roundNo: currentRound,
       winner: roundWinner,
@@ -82,12 +112,12 @@ const useMatchStore = create((set, get) => ({
       opponentScore,
     };
     const updatedRounds = [...rounds, newRound];
-    const playerWins = updatedRounds.filter((r) => r.winner === 'Alex Storm').length;
-    const opponentWins = updatedRounds.filter((r) => r.winner === 'Maya Chen').length;
+    const playerWins = updatedRounds.filter((r) => r.winner === playerName).length;
+    const opponentWins = updatedRounds.filter((r) => r.winner === opponentName).length;
 
     if (playerWins === 2 || opponentWins === 2 || updatedRounds.length === 3) {
-      const matchWinner = playerWins > opponentWins ? 'Alex Storm' : 'Maya Chen';
-      const isWinner = matchWinner === 'Alex Storm';
+      const matchWinner = playerWins > opponentWins ? playerName : opponentName;
+      const isWinner = matchWinner === playerName;
       const result = {
         winner: matchWinner,
         isWinner,
@@ -95,6 +125,7 @@ const useMatchStore = create((set, get) => ({
         prize: isWinner ? currentMatch.prize : 0,
         rake: currentMatch.rake,
         entryFee: get().tiers.find((t) => t.name === currentMatch.tier)?.entryFee || 0,
+        tierName: currentMatch.tier,
         refId: currentMatch.refId,
         settledAt: new Date().toISOString(),
       };

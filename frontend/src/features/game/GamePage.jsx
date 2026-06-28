@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
+import useAuthStore from '../../shared/store/authStore.js';
+import { useMatchChat } from '../../shared/hooks/useMatchChat.js';
+import MatchChatWidget from './components/MatchChatWidget.jsx';
 import { Card } from '../../shared/components/ui/index.js';
 import RoundHeader from './components/RoundHeader.jsx';
 import ScoreBoard from './components/ScoreBoard.jsx';
@@ -26,7 +29,12 @@ const TRANSITION_DURATION = 2500;
 
 export default function GamePage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion } = useMatchStore();
+
+  const matchId = currentMatch?.matchId || currentMatch?.id;
+  const opponentName = currentMatch?.player2 ?? currentMatch?.players?.find(p => p !== user?.id) ?? 'Opponent';
+  const matchChat = useMatchChat(matchId, user?.id, user?.name);
 
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
@@ -99,12 +107,21 @@ export default function GamePage() {
     );
   }
 
-  const playerWins = rounds.filter((r) => r.winner === 'Alex Storm').length;
-  const opponentWins = rounds.filter((r) => r.winner === 'Maya Chen').length;
+  const playerWins = rounds.filter((r) => r.winner === (user?.name || 'You')).length;
+  const opponentWins = rounds.filter((r) => r.winner === opponentName).length;
 
   return (
     <AppLayout>
       {showTransition && <RoundTransition round={lastRound} playerWins={playerWins} opponentWins={opponentWins} />}
+      <MatchChatWidget
+        messages={matchChat.messages}
+        sendMessage={matchChat.sendMessage}
+        isOpen={matchChat.isOpen}
+        toggle={matchChat.toggle}
+        unread={matchChat.unread}
+        userId={user?.id}
+        opponentName={opponentName}
+      />
 
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <Card>
@@ -117,8 +134,8 @@ export default function GamePage() {
           />
 
           <ScoreBoard
-            playerName="You"
-            opponentName="Maya Chen"
+            playerName={user?.name || 'You'}
+            opponentName={opponentName}
             playerScore={playerRoundScore}
             opponentScore={answered ? opponentRoundScore : 0}
           />

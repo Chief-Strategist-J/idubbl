@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Zap, Wallet, Clock, User } from 'lucide-react';
+import { Home, Zap, Wallet, Clock, User, MessageCircle } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
 import useWalletStore from '../../store/walletStore.js';
 import ThemeToggle from '../ui/ThemeToggle.jsx';
 import OfflineBanner from '../ui/OfflineBanner.jsx';
 import SessionExpiredModal from '../ui/SessionExpiredModal.jsx';
 
-// design.md §2.3: 5 items — Home · Play · Wallet · History · Profile
 const NAV_ITEMS = [
   { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home },
   { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap },
   { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet },
-  { label: 'History',   short: 'History', path: '/transactions',  icon: Clock },
+  { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle },
   { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User },
 ];
 
@@ -21,10 +20,11 @@ const HEADER_NAV = [
   { label: 'Play',      path: '/lobby' },
   { label: 'Wallet',    path: '/wallet' },
   { label: 'History',   path: '/transactions' },
+  { label: 'Chat',      path: '/chat' },
   { label: 'Profile',   path: '/profile' },
 ];
 
-export default function AppLayout({ children }) {
+export default function AppLayout({ children, noPadding = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
@@ -121,7 +121,7 @@ export default function AppLayout({ children }) {
 
       {menuOpen && <div className="nav-overlay" onClick={() => setMenuOpen(false)} />}
 
-      <main className="main-content">{children}</main>
+      <main className={noPadding ? 'main-content main-content--no-padding' : 'main-content'}>{children}</main>
 
       {/* Mobile bottom tab bar — design.md §2.3: Home · Play · Wallet · History · Profile */}
       <nav className="bottom-nav" aria-label="Main navigation">

@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../shared/components/ui/index.js';
 import useWalletStore from '../../../shared/store/walletStore.js';
 import useMatchStore from '../../../shared/store/matchStore.js';
+import useAuthStore from '../../../shared/store/authStore.js';
 
 export default function TierCard({ tier }) {
   const navigate = useNavigate();
   const { availableBalance, reserveForMatch } = useWalletStore();
   const { joinQueue, queueStatus } = useMatchStore();
+  const { user } = useAuthStore();
 
   const canAfford = availableBalance >= tier.entryFee;
   const alreadyInQueue = !!queueStatus;
@@ -15,8 +17,8 @@ export default function TierCard({ tier }) {
 
   const handleJoin = () => {
     if (!canAfford || alreadyInQueue) return;
-    reserveForMatch(tier.entryFee, { tier: tier.name });
-    joinQueue(tier.id);
+    const userId = user?.id || user?.email || 'u1';
+    joinQueue(tier.id, userId);
     navigate(`/queue/${tier.id}`);
   };
 

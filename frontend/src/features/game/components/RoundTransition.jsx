@@ -1,9 +1,11 @@
 import React from 'react';
+import useAuthStore from '../../../shared/store/authStore.js';
 
 export default function RoundTransition({ round, playerWins, opponentWins }) {
+  const { user } = useAuthStore();
   if (!round) return null;
 
-  const isPlayerWin = round.winner === 'Alex Storm';
+  const isPlayerWin = round.winner === (user?.name || 'You');
 
   return (
     <div style={{

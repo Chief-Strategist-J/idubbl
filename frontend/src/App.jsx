@@ -32,6 +32,7 @@ import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 import AdminGameSettingsPage from './features/admin/features/game-settings/AdminGameSettingsPage.jsx';
 import AdminWalletsPage from './features/admin/features/wallets/AdminWalletsPage.jsx';
 import HowToUsePage from './features/guide/HowToUsePage.jsx';
+import ChatPage from './features/chat/ChatPage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
@@ -112,6 +113,7 @@ export default function App() {
         <Route path="/profile"      element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="/support"      element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+        <Route path="/chat"         element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
 
         {/* Admin routes */}
         <Route path="/admin/login"          element={<AdminLoginRedirectRoute><AdminLoginPage /></AdminLoginRedirectRoute>} />

@@ -5,17 +5,16 @@ import { Card, Button } from '../../shared/components/ui/index.js';
 import QueueStatus from './components/QueueStatus.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import useWalletStore from '../../shared/store/walletStore.js';
+import useAuthStore from '../../shared/store/authStore.js';
 
 export default function QueuePage() {
   const navigate = useNavigate();
   const { tierId } = useParams();
-  const { queueStatus, currentTier, leaveQueue, startNewMatch } = useMatchStore();
+  const { queueStatus, currentTier, leaveQueue, currentMatch } = useMatchStore();
   const { releaseReservation } = useWalletStore();
+  const { user } = useAuthStore();
   const [elapsed, setElapsed] = useState(0);
-  const [statusIndex, setStatusIndex] = useState(0);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
-
-  const STATUS_STEPS = ['searching', 'matched', 'starting'];
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
@@ -23,19 +22,14 @@ export default function QueuePage() {
   }, []);
 
   useEffect(() => {
-    if (!currentTier) return;
-    const delay1 = setTimeout(() => setStatusIndex(1), 4000);
-    const delay2 = setTimeout(() => setStatusIndex(2), 6500);
-    const delay3 = setTimeout(() => {
-      const match = startNewMatch(currentTier);
-      navigate(`/game/${match.id}`);
-    }, 8500);
-    return () => { clearTimeout(delay1); clearTimeout(delay2); clearTimeout(delay3); };
-  }, [currentTier]);
+    if (queueStatus === 'starting' && currentMatch) {
+      navigate(`/game/${currentMatch.matchId || currentMatch.id}`);
+    }
+  }, [queueStatus, currentMatch, navigate]);
 
   const handleCancel = () => {
-    if (currentTier) releaseReservation(currentTier.entryFee);
-    leaveQueue();
+    const userId = user?.id || user?.email || 'u1';
+    leaveQueue(userId);
     navigate('/lobby');
   };
 
@@ -45,20 +39,20 @@ export default function QueuePage() {
     <AppLayout>
       <div style={{ maxWidth: 520, margin: '0 auto' }}>
         <Card>
-          <QueueStatus status={STATUS_STEPS[statusIndex]} tier={currentTier} />
+          <QueueStatus status={queueStatus || 'searching'} tier={currentTier} />
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
               Time elapsed: <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{formatTime(elapsed)}</span>
             </p>
 
-            {elapsed > 90 && statusIndex === 0 && (
+            {elapsed > 90 && (!queueStatus || queueStatus === 'searching') && (
               <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', marginBottom: '1rem' }}>
                 Low activity in this tier. Consider trying another tier.
               </p>
             )}
 
-            {statusIndex === 0 && (
+            {(!queueStatus || queueStatus === 'searching') && (
               <Button variant="secondary" onClick={() => setShowLeaveModal(true)}>Cancel and Return to Lobby</Button>
             )}
           </div>

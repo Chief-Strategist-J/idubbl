@@ -22,8 +22,9 @@ export default function DashboardPage() {
   }, [user?.id, fetchWalletData]);
 
   // Compute live win/loss stats
+  const currentUserId = user?.id || 'u1';
   const completedMatches = matches.filter((m) => m.status === 'completed');
-  const wins = completedMatches.filter((m) => m.winnerId === 'u1').length;
+  const wins = completedMatches.filter((m) => m.winnerId === currentUserId || m.winner === user?.name || m.winner === 'You').length;
   const losses = completedMatches.length - wins;
   const winRate = completedMatches.length > 0 ? Math.round((wins / completedMatches.length) * 100) : 0;
 

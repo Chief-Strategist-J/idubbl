@@ -18,7 +18,7 @@ export default function ResultPage() {
         entryFee: matchResult.entryFee,
         refId: matchResult.refId,
         matchId: matchResult.refId,
-        tier: matchResult.winner
+        tier: matchResult.tierName || 'Rookie'
       });
     }
   }, []);

@@ -315,7 +315,7 @@ const useWalletStore = create((set, get) => ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
           credentials: 'include',
-          body: JSON.stringify({ isWinner, prize, ...matchMeta }),
+          body: JSON.stringify({ isWinner, prize, ...matchMeta, tier: matchMeta.tierName || matchMeta.tier }),
         });
         // Refresh real balance from server
         await get().fetchWalletData(userId);
