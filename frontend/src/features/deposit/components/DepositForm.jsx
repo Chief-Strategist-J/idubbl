@@ -405,7 +405,12 @@ export default function DepositForm() {
           </div>
 
           <form onSubmit={handleFlutterwaveSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1rem', alignItems: 'end' }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+              gap: '1rem', 
+              alignItems: 'end' 
+            }}>
               <Input 
                 label={`Amount (${flwCurrency})`}
                 type="number" 
