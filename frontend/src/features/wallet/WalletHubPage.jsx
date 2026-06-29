@@ -122,10 +122,14 @@ export default function WalletHubPage() {
                 margin: 0,
                 lineHeight: '1.3',
                 letterSpacing: '0.02em',
-                paddingLeft: '2px'
+                paddingLeft: '2px',
+                display: 'flex',
+                alignItems: 'baseline',
+                flexWrap: 'wrap',
+                gap: '0.25rem 0.5rem'
               }}>
-                {Number(availableBalance || 0).toFixed(2)}
-                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
+                <span>{Number(availableBalance || 0).toFixed(2)}</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7 }}>USDT</span>
               </p>
             </div>
 
@@ -147,10 +151,14 @@ export default function WalletHubPage() {
                 margin: 0,
                 lineHeight: '1.3',
                 letterSpacing: '0.02em',
-                paddingLeft: '2px'
+                paddingLeft: '2px',
+                display: 'flex',
+                alignItems: 'baseline',
+                flexWrap: 'wrap',
+                gap: '0.25rem 0.5rem'
               }}>
-                {Number(lockedBalance || 0).toFixed(2)}
-                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7, marginLeft: 6 }}>USDT</span>
+                <span>{Number(lockedBalance || 0).toFixed(2)}</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7 }}>USDT</span>
               </p>
             </div>
           </div>
