@@ -3,6 +3,7 @@ import { Button, Card, Input } from '../../../shared/components/ui/index.js';
 import useWalletStore from '../../../shared/store/walletStore.js';
 import useAuthStore from '../../../shared/store/authStore.js';
 import { MIN_WITHDRAWAL } from '../../../shared/mock/index.js';
+import { Coins, CreditCard } from 'lucide-react';
 
 const IDUBBU_RATE = 1000;
 
@@ -143,24 +144,55 @@ export default function WithdrawForm() {
 
   return (
     <Card>
-      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', marginBottom: '1rem' }}>Request Withdrawal</h3>
+      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', marginBottom: '1.25rem' }}>Request Withdrawal</h3>
       
-      {/* Payment Method Selector Tab */}
-      <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.35rem', borderRadius: '10px', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
-        <button 
-          type="button" 
+      {/* Payment Method Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+        <div 
           onClick={() => { setMethod('crypto'); setErrors({}); }}
-          style={{ flex: 1, padding: '0.6rem', border: 'none', background: method === 'crypto' ? 'rgba(255,255,255,0.05)' : 'none', color: method === 'crypto' ? 'var(--accent-cyan)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s ease' }}
+          style={{ 
+            padding: '1rem', 
+            borderRadius: '12px', 
+            cursor: 'pointer', 
+            background: method === 'crypto' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
+            border: `1.5px solid ${method === 'crypto' ? 'var(--secondary)' : 'var(--border)'}`, 
+            transition: 'all 0.2s ease',
+            boxShadow: method === 'crypto' ? '0 0 10px var(--primary-glow)' : 'none'
+          }}
         >
-          🪙 USDT (Crypto)
-        </button>
-        <button 
-          type="button" 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ padding: '0.5rem', borderRadius: '8px', background: method === 'crypto' ? 'var(--secondary-glow)' : 'var(--bg-card)', color: 'var(--secondary)' }}>
+              <Coins style={{ width: '20px', height: '20px' }} />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontWeight: 700, margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Crypto USDT</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Withdraw directly to Tron or Ethereum wallets.</p>
+            </div>
+          </div>
+        </div>
+
+        <div 
           onClick={() => { setMethod('flutterwave'); setErrors({}); }}
-          style={{ flex: 1, padding: '0.6rem', border: 'none', background: method === 'flutterwave' ? 'rgba(255,255,255,0.05)' : 'none', color: method === 'flutterwave' ? 'var(--accent-cyan)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s ease' }}
+          style={{ 
+            padding: '1rem', 
+            borderRadius: '12px', 
+            cursor: 'pointer', 
+            background: method === 'flutterwave' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
+            border: `1.5px solid ${method === 'flutterwave' ? 'var(--secondary)' : 'var(--border)'}`, 
+            transition: 'all 0.2s ease',
+            boxShadow: method === 'flutterwave' ? '0 0 10px var(--primary-glow)' : 'none'
+          }}
         >
-          🏦 Bank (Flutterwave)
-        </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ padding: '0.5rem', borderRadius: '8px', background: method === 'flutterwave' ? 'var(--secondary-glow)' : 'var(--bg-card)', color: 'var(--secondary)' }}>
+              <CreditCard style={{ width: '20px', height: '20px' }} />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontWeight: 700, margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Bank & MM</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Withdraw in local currency via Flutterwave.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Balance Summary */}
