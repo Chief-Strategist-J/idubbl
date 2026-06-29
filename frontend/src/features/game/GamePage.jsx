@@ -68,20 +68,23 @@ export default function GamePage() {
   const [lastRound, setLastRound] = useState(null);
 
   const gameType = currentTier?.gameType ?? 'word_duel';
-  const question = getRandomQuestion((currentRound || 1) - 1);
-  const mathQuestion = MATH_DUEL_QUESTIONS[((currentRound || 1) - 1) % MATH_DUEL_QUESTIONS.length];
+  const questions = currentMatch?.questions || [];
+  const question = questions[(currentRound || 1) - 1] || null;
 
-  const handleAnswer = useCallback((isCorrect, selectedIndex) => {
+  const handleAnswer = useCallback((selectedIndex) => {
     if (answered) return;
-    const pScore = isCorrect ? 100 + timeLeft * 2 : 0;
-    setPlayerRoundScore(pScore);
+    
+    // Estimate score locally for fast feedback, but server is authoritative
+    const estScore = selectedIndex !== -1 ? 100 + timeLeft * 2 : 0;
+    setPlayerRoundScore(estScore);
+    
     setAnswered(true);
-    submitRoundResult(pScore);
+    submitRoundResult(selectedIndex, timeLeft);
   }, [answered, timeLeft, submitRoundResult]);
 
   useEffect(() => {
     if (answered) return;
-    if (timeLeft <= 0) { handleAnswer(false, -1); return; }
+    if (timeLeft <= 0) { handleAnswer(-1); return; }
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft, answered, handleAnswer]);
@@ -130,8 +133,8 @@ export default function GamePage() {
   const gameProps = {
     onAnswer: handleAnswer,
     answered,
-    ...(gameType === 'word_duel' && { question }),
-    ...(gameType === 'math_duel' && { question: mathQuestion }),
+    question,
+    correctIndex: safeRounds[currentRound - 1]?.correctIndex,
   };
 
   return (
@@ -173,8 +176,8 @@ export default function GamePage() {
           <ScoreBoard
             playerName={playerName}
             opponentName={opponentName}
-            playerScore={playerRoundScore}
-            opponentScore={answered && safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].opponentScore : 0}
+            playerScore={safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].playerScore : playerRoundScore}
+            opponentScore={safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].opponentScore : 0}
           />
 
           <div style={{ padding: '0.5rem 0' }}>

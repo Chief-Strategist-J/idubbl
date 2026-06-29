@@ -1,29 +1,38 @@
 import React, { useState } from 'react';
 import { Button } from '../../../shared/components/ui/index.js';
 
-export default function WordDuel({ question, onAnswer, answered }) {
+export default function WordDuel({ question, onAnswer, answered, correctIndex }) {
   const [selected, setSelected] = useState(null);
 
   const handleSelect = (index) => {
     if (answered || selected !== null) return;
     setSelected(index);
-    const isCorrect = index === question.correct;
-    onAnswer(isCorrect, index);
+    onAnswer(index);
   };
 
   const getOptionStyle = (index) => {
     if (selected === null) return {};
-    if (index === question.correct) return { borderColor: 'var(--accent-green)', background: 'rgba(16,185,129,0.12)', color: 'var(--accent-green)' };
-    if (index === selected && index !== question.correct) return { borderColor: 'var(--accent-red)', background: 'var(--accent-red-glow)', color: 'var(--accent-red)' };
+    
+    // If backend verified correctIndex is available, show green/red correctness feedback
+    if (correctIndex !== undefined && correctIndex !== null) {
+      if (index === correctIndex) return { borderColor: 'var(--accent-green)', background: 'rgba(16,185,129,0.12)', color: 'var(--accent-green)' };
+      if (index === selected && index !== correctIndex) return { borderColor: 'var(--accent-red)', background: 'var(--accent-red-glow)', color: 'var(--accent-red)' };
+      return { opacity: 0.5 };
+    }
+    
+    // Otherwise, just show selected state while waiting
+    if (index === selected) return { borderColor: 'var(--accent-cyan)', background: 'rgba(6,182,212,0.12)', color: 'var(--accent-cyan)' };
     return { opacity: 0.5 };
   };
 
   return (
     <div>
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', letterSpacing: 2, marginBottom: '0.75rem' }}>DEFINE THIS WORD</p>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: 4, color: 'var(--accent-cyan)' }}>
-          {question.word}
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', letterSpacing: 2, marginBottom: '0.75rem' }}>
+          {question?.category ? question.category.toUpperCase() : 'QUIZ DUEL'}
+        </p>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.2rem, 4vw, 1.8rem)', fontWeight: 800, color: 'var(--text-primary)', padding: '0 1rem', lineHeight: 1.4 }}>
+          {question?.question || question?.word}
         </h2>
       </div>
 
@@ -49,9 +58,9 @@ export default function WordDuel({ question, onAnswer, answered }) {
         ))}
       </div>
 
-      {selected !== null && (
-        <p style={{ textAlign: 'center', marginTop: '1rem', color: selected === question.correct ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
-          {selected === question.correct ? '✓ Correct!' : '✗ Wrong answer'}
+      {selected !== null && correctIndex !== undefined && correctIndex !== null && (
+        <p style={{ textAlign: 'center', marginTop: '1rem', color: selected === correctIndex ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
+          {selected === correctIndex ? '✓ Correct!' : '✗ Wrong answer'}
         </p>
       )}
     </div>

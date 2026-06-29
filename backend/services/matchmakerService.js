@@ -101,6 +101,15 @@ class MatchmakerService {
 
     // Opponent found — deduct both players in parallel, then create match
     const matchId = 'm_' + Math.random().toString(36).substring(2, 15);
+    
+    let questions = [];
+    try {
+      const { quizService } = await import('./quizService.js');
+      questions = await quizService.fetchQuestions(5);
+    } catch (e) {
+      console.error("Error fetching quiz questions:", e);
+    }
+
     const matchInfo = {
       matchId,
       tier: tierName,
@@ -112,7 +121,8 @@ class MatchmakerService {
       status: 'in_progress',
       startedAt: new Date(),
       rounds: [],
-      rake: entryFee * 2 * 0.10
+      rake: entryFee * 2 * 0.10,
+      questions
     };
 
     await Promise.all(

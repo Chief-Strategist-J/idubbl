@@ -12,6 +12,7 @@ import chatRouter from './routes/chat.js';
 import { matchmakerService } from './services/matchmakerService.js';
 import { initChatSocket } from './services/chat/SocketHandler.js';
 import { initIndexes as initChatIndexes } from './services/chat/ChatService.js';
+import { getDb } from './services/db.js';
 
 const app = express();
 app.use(cors({
@@ -52,9 +53,21 @@ async function handleFindMatch(socket, data) {
   try {
     const result = await matchmakerService.findMatch(userId, tier, socket?.id, name);
     if (result.status === 'matched') {
-      io.to(socket.id).emit('match_created', result.match);
+      // Strip correctIndex from the questions array sent to the clients for security
+      const clientSafeQuestions = (result.match.questions || []).map(q => ({
+        category: q.category,
+        difficulty: q.difficulty,
+        question: q.question,
+        options: q.options
+      }));
+      const clientSafeMatch = {
+        ...result.match,
+        questions: clientSafeQuestions
+      };
+      
+      io.to(socket.id).emit('match_created', clientSafeMatch);
       if (result.opponent?.socketId) {
-        io.to(result.opponent.socketId).emit('match_created', result.match);
+        io.to(result.opponent.socketId).emit('match_created', clientSafeMatch);
       }
     } else {
       socket.emit('waiting_in_queue', result.queue);
@@ -81,28 +94,130 @@ function handleJoinMatchRoom(socket, data) {
   socket.join(matchId);
 }
 
-function handleSubmitScore(socket, data) {
+async function handleSubmitScore(socket, data) {
   const matchId = String(data?.matchId || '').trim();
-  const roundNo = data?.roundNo;
+  const roundNo = Number(data?.roundNo);
   const userId = String(data?.userId || '').trim();
-  const score = data?.score;
+  const selectedIndex = data?.selectedIndex;
+  const timeLeft = Number(data?.timeLeft || 0);
   const name = String(data?.name || '').trim();
-  if (!matchId || roundNo == null || !userId) return;
+  
+  if (!matchId || roundNo == null || isNaN(roundNo) || !userId) return;
 
-  if (!activeScores[matchId]) activeScores[matchId] = {};
-  if (!activeScores[matchId][roundNo]) activeScores[matchId][roundNo] = [];
+  try {
+    const db = await getDb();
+    const match = await db.collection('matches').findOne({ matchId });
+    if (!match) {
+      console.error(`Match ${matchId} not found for score submission.`);
+      return;
+    }
 
-  const roundSubmissions = activeScores[matchId][roundNo];
-  if (!roundSubmissions.some(e => e.userId === userId)) {
-    activeScores[matchId][roundNo] = [...roundSubmissions, { userId, score, name, socketId: socket?.id }];
-  }
+    const questionIndex = roundNo - 1;
+    const questions = match.questions || [];
+    const question = questions[questionIndex];
 
-  const settled = activeScores[matchId][roundNo];
-  if (settled.length >= 2) {
-    const [p1, p2] = settled;
-    const winnerId = p1.score > p2.score ? p1.userId : p2.score > p1.score ? p2.userId : 'tie';
-    const winnerName = p1.score > p2.score ? p1.name : p2.score > p1.score ? p2.name : 'tie';
-    io.to(matchId).emit('round_completed', { roundNo, winnerId, winnerName, submissions: settled });
+    let score = 0;
+    let isCorrect = false;
+
+    if (question) {
+      isCorrect = selectedIndex !== null && selectedIndex !== undefined && Number(selectedIndex) === question.correctIndex;
+      score = isCorrect ? (100 + timeLeft * 2) : 0;
+    } else {
+      console.warn(`No question found for round ${roundNo} in match ${matchId}`);
+    }
+
+    if (!activeScores[matchId]) activeScores[matchId] = {};
+    if (!activeScores[matchId][roundNo]) activeScores[matchId][roundNo] = [];
+
+    const roundSubmissions = activeScores[matchId][roundNo];
+    if (!roundSubmissions.some(e => e.userId === userId)) {
+      activeScores[matchId][roundNo] = [
+        ...roundSubmissions,
+        { userId, score, name, selectedIndex, isCorrect, socketId: socket?.id }
+      ];
+    }
+
+    const settled = activeScores[matchId][roundNo];
+    if (settled.length >= 2) {
+      const [p1, p2] = settled;
+      
+      let winnerId = 'tie';
+      let winnerName = 'tie';
+      if (p1.score > p2.score) {
+        winnerId = p1.userId;
+        winnerName = p1.name;
+      } else if (p2.score > p1.score) {
+        winnerId = p2.userId;
+        winnerName = p2.name;
+      }
+
+      const correctIndex = question ? question.correctIndex : 0;
+
+      io.to(matchId).emit('round_completed', { 
+        roundNo, 
+        winnerId, 
+        winnerName, 
+        submissions: settled,
+        correctIndex 
+      });
+
+      await db.collection('matches').updateOne(
+        { matchId },
+        {
+          $push: {
+            rounds: {
+              roundNo,
+              winnerId,
+              winnerName,
+              submissions: settled.map(s => ({
+                userId: s.userId,
+                name: s.name,
+                score: s.score,
+                isCorrect: s.isCorrect
+              }))
+            }
+          }
+        }
+      );
+
+      const updatedMatch = await db.collection('matches').findOne({ matchId });
+      const matchRounds = updatedMatch.rounds || [];
+      const userWins = {};
+      
+      matchRounds.forEach(r => {
+        if (r.winnerId && r.winnerId !== 'tie') {
+          userWins[r.winnerId] = (userWins[r.winnerId] || 0) + 1;
+        }
+      });
+
+      const player1 = updatedMatch.players[0];
+      const player2 = updatedMatch.players[1];
+      const p1Wins = userWins[player1] || 0;
+      const p2Wins = userWins[player2] || 0;
+
+      if (p1Wins === 2 || p2Wins === 2 || matchRounds.length >= 3) {
+        let finalWinnerId = null;
+        let finalWinnerName = null;
+
+        if (p1Wins > p2Wins) {
+          finalWinnerId = player1;
+          finalWinnerName = updatedMatch.playerNames[player1];
+        } else if (p2Wins > p1Wins) {
+          finalWinnerId = player2;
+          finalWinnerName = updatedMatch.playerNames[player2];
+        } else {
+          finalWinnerId = p1Wins >= p2Wins ? player1 : player2;
+          finalWinnerName = updatedMatch.playerNames[finalWinnerId];
+        }
+
+        const entryFee = updatedMatch.tier === 'rookie' ? 5 : updatedMatch.tier === 'pro' ? 20 : 50;
+        const prize = entryFee * 2 * 0.90;
+
+        await matchmakerService.endMatch(matchId, finalWinnerId, prize);
+      }
+    }
+  } catch (err) {
+    console.error('Error handling submit score:', err);
   }
 }
 

@@ -65,7 +65,7 @@ const useMatchStore = create((set, get) => ({
         set({ queueStatus: 'error', matchmakingError: data?.error || 'Matchmaking failed. Please try again.' });
       },
 
-      round_completed: ({ roundNo, winnerId, winnerName, submissions }) => {
+      round_completed: ({ roundNo, winnerId, winnerName, submissions, correctIndex }) => {
         const { rounds, currentMatch } = get();
         const user = useAuthStore.getState().user;
         const myId = user?.id || 'u1';
@@ -79,7 +79,8 @@ const useMatchStore = create((set, get) => ({
           winner: winnerId === myId ? myName : winnerName,
           score: `${mySub?.score ?? 0}-${oppSub?.score ?? 0}`,
           playerScore: mySub?.score ?? 0,
-          opponentScore: oppSub?.score ?? 0
+          opponentScore: oppSub?.score ?? 0,
+          correctIndex
         };
 
         const updatedRounds = [...(rounds ?? []), newRound];
@@ -164,7 +165,7 @@ const useMatchStore = create((set, get) => ({
     return newMatch;
   },
 
-  submitRoundResult: (playerScore, opponentScore) => {
+  submitRoundResult: (selectedIndex, timeLeft) => {
     const { currentMatch, currentRound } = get();
     if (!currentMatch) return;
     const socket = getSocket();
@@ -177,7 +178,8 @@ const useMatchStore = create((set, get) => ({
         matchId: currentMatch?.matchId || currentMatch?.id,
         roundNo: currentRound,
         userId: user?.id || 'u1',
-        score: playerScore,
+        selectedIndex,
+        timeLeft,
         name: user?.name || 'You'
       });
     }
