@@ -45,6 +45,13 @@ if (process.env.ACTIVE_PAYMENT_GATEWAY) {
   config.payments.active = process.env.ACTIVE_PAYMENT_GATEWAY;
 }
 
+if (process.env.FLUTTERWAVE_SECRET_KEY && config.payments?.gateways?.flutterwave) {
+  config.payments.gateways.flutterwave.secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+}
+if (config.payments?.gateways?.flutterwave) {
+  config.payments.gateways.flutterwave.redirectUrl = `${paymentBackendUrl}/api/payment/callback/flutterwave`;
+}
+
 if (process.env.NOWPAYMENTS_API_KEY && config.payments?.gateways?.nowpayments) {
   config.payments.gateways.nowpayments.apiKey = process.env.NOWPAYMENTS_API_KEY;
 }

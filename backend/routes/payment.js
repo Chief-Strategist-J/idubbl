@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Route to create a payment session/order
 router.post('/create', async (req, res) => {
-  const { amount, currency, customer, description } = req.body;
+  const { amount, currency, customer, description, gateway } = req.body;
   const orderId = `ord_${Date.now()}`;
 
   if (!amount || !customer || !customer.email) {
@@ -15,7 +15,17 @@ router.post('/create', async (req, res) => {
   }
 
   try {
-    const result = await paymentService.createOrder({
+    let activeService = paymentService;
+    if (gateway) {
+      const { paymentRegistry } = await import('../services/payment/PaymentRegistry.js');
+      if (paymentRegistry.drivers.has(gateway)) {
+        const { config } = await import('../services/index.js');
+        const gatewayConfig = config.payments?.gateways?.[gateway] || {};
+        activeService = paymentRegistry.initialize(gateway, gatewayConfig);
+      }
+    }
+
+    const result = await activeService.createOrder({
       orderId,
       amount,
       currency,
@@ -32,9 +42,19 @@ router.post('/create', async (req, res) => {
 // Route to verify a transaction status
 router.get('/verify/:transactionId', async (req, res) => {
   const { transactionId } = req.params;
+  const { gateway } = req.query;
 
   try {
-    const result = await paymentService.verifyPayment(transactionId);
+    let activeService = paymentService;
+    if (gateway) {
+      const { paymentRegistry } = await import('../services/payment/PaymentRegistry.js');
+      if (paymentRegistry.drivers.has(gateway)) {
+        const { config } = await import('../services/index.js');
+        const gatewayConfig = config.payments?.gateways?.[gateway] || {};
+        activeService = paymentRegistry.initialize(gateway, gatewayConfig);
+      }
+    }
+    const result = await activeService.verifyPayment(transactionId);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Payment verification failed:', error);

@@ -108,4 +108,44 @@ export class FlutterwaveDriver extends PaymentDriver {
       rawResponse: body,
     };
   }
+
+  async initiateTransfer(data) {
+    const endpoint = `${this.baseUrl}/transfers`;
+    const body = {
+      account_bank: data.bankCode || '044',
+      account_number: data.accountNumber,
+      amount: data.amount,
+      narrative: data.narrative || 'iDubbl Payout',
+      currency: data.currency || 'NGN',
+      reference: data.reference,
+      callback_url: `${process.env.APP_URL || 'https://idubbl-backend.onrender.com'}/api/payment/webhook`
+    };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'success') {
+        return {
+          success: true,
+          transferId: resData.data.id.toString(),
+          status: 'pending',
+          rawResponse: resData
+        };
+      } else {
+        throw new Error(resData.message || 'Flutterwave transfer initiation failed');
+      }
+    } catch (error) {
+      console.error('Flutterwave initiateTransfer error:', error);
+      throw error;
+    }
+  }
 }

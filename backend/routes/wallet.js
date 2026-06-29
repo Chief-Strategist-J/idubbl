@@ -420,14 +420,47 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
       return errorRegistry.send(res, 'PENDING_TX_NOT_FOUND', 'Pending withdrawal not found.');
     }
 
-    const payout = await blockchainService.sendOnchainUSDT(tx.address, tx.amount, tx.network);
-    if (!payout.success) {
-      return res.status(400).json({ success: false, error: 'On-chain payout failed: ' + payout.error });
+    let payoutTxHash = '';
+    if (tx.network === 'FLUTTERWAVE') {
+      let bankCode = '044';
+      let accountNumber = tx.address;
+      try {
+        if (tx.address.startsWith('{')) {
+          const details = JSON.parse(tx.address);
+          bankCode = details.bankCode;
+          accountNumber = details.accountNumber;
+        }
+      } catch (e) {}
+
+      try {
+        const { paymentRegistry } = await import('../services/payment/PaymentRegistry.js');
+        const flwDriver = paymentRegistry.drivers.has('flutterwave') ? paymentRegistry.getActive() : null;
+        if (flwDriver && typeof flwDriver.initiateTransfer === 'function') {
+          const transferResult = await flwDriver.initiateTransfer({
+            bankCode,
+            accountNumber,
+            amount: tx.amount,
+            reference: `pay_${id}`
+          });
+          payoutTxHash = transferResult.transferId;
+        } else {
+          payoutTxHash = `manual_flw_${id}`;
+        }
+      } catch (err) {
+        console.error('Flutterwave transfer error:', err);
+        return res.status(400).json({ success: false, error: 'Flutterwave payout failed: ' + err.message });
+      }
+    } else {
+      const payout = await blockchainService.sendOnchainUSDT(tx.address, tx.amount, tx.network);
+      if (!payout.success) {
+        return res.status(400).json({ success: false, error: 'On-chain payout failed: ' + payout.error });
+      }
+      payoutTxHash = payout.txHash;
     }
 
     await db.collection('transactions').updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: 'approved', reviewedBy: 'admin1', paidAt: new Date(), payoutTxHash: payout.txHash } }
+      { $set: { status: 'approved', reviewedBy: 'admin1', paidAt: new Date(), payoutTxHash: payoutTxHash } }
     );
 
     await db.collection('wallets').updateOne(
