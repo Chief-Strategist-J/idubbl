@@ -271,29 +271,50 @@ export default function WithdrawForm() {
             {errors.amount && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', margin: '0.3rem 0 0' }}>{errors.amount}</p>}
           </div>
 
-          {/* Account Number */}
+          {/* Payout Type Selector */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>Withdrawal Channel</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={() => setFlwForm(prev => ({ ...prev, type: 'bank' }))}
+                style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--border)', background: (flwForm.type || 'bank') === 'bank' ? 'var(--secondary-glow)' : 'none', color: (flwForm.type || 'bank') === 'bank' ? 'var(--secondary)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.2s' }}
+              >
+                🏦 Bank Account
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFlwForm(prev => ({ ...prev, type: 'mobile_money' }))}
+                style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--border)', background: (flwForm.type || 'bank') === 'mobile_money' ? 'var(--secondary-glow)' : 'none', color: (flwForm.type || 'bank') === 'mobile_money' ? 'var(--secondary)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.2s' }}
+              >
+                📱 Mobile Money
+              </button>
+            </div>
+          </div>
+
+          {/* Account/Phone Number */}
           <Input 
-            label="Account Number" 
+            label={(flwForm.type || 'bank') === 'bank' ? 'Account Number' : 'Phone Number'} 
             value={flwForm.accountNumber} 
             onChange={e => setFlwForm({ ...flwForm, accountNumber: e.target.value })} 
-            placeholder="e.g. 0123456789" 
+            placeholder={(flwForm.type || 'bank') === 'bank' ? 'e.g. 0123456789' : 'e.g. +254712345678'} 
             error={errors.accountNumber} 
             required 
           />
 
-          {/* Bank Name/Code */}
+          {/* Bank / MM Provider */}
           <Input 
-            label="Bank Name or Code" 
+            label={(flwForm.type || 'bank') === 'bank' ? 'Bank Name or Code' : 'Mobile Money Provider (e.g. M-Pesa, MTN)'} 
             value={flwForm.bankCode} 
             onChange={e => setFlwForm({ ...flwForm, bankCode: e.target.value })} 
-            placeholder="e.g. 044 (Access Bank)" 
+            placeholder={(flwForm.type || 'bank') === 'bank' ? 'e.g. 044 (Access Bank)' : 'e.g. M-Pesa (MPS) or MTN (MTN)'} 
             error={errors.bankCode} 
             required 
           />
 
-          {/* Account Name */}
+          {/* Account/Registered Name */}
           <Input 
-            label="Account Name" 
+            label={(flwForm.type || 'bank') === 'bank' ? 'Account Name' : 'Registered Full Name'} 
             value={flwForm.accountName} 
             onChange={e => setFlwForm({ ...flwForm, accountName: e.target.value })} 
             placeholder="e.g. John Doe" 
@@ -308,12 +329,12 @@ export default function WithdrawForm() {
               type="text" name="note" value={form.note}
               onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               placeholder="Optional note"
-              style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }}
             />
           </div>
 
           <Button type="submit" fullWidth loading={submitting} disabled={totalAvailable <= 0}>
-            Submit Bank Withdrawal
+            Submit {(flwForm.type || 'bank') === 'bank' ? 'Bank' : 'Mobile Money'} Withdrawal
           </Button>
           {totalAvailable <= 0 && <p style={{ color: 'var(--accent-warning)', fontSize: '0.85rem', textAlign: 'center', marginTop: '0.5rem' }}>No balance available to withdraw.</p>}
         </form>
