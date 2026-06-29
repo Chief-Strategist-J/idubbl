@@ -205,13 +205,15 @@ export default function PersonalWalletsWidget() {
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.85rem' }}>{wallets.tron?.address}</code>
-              <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron?.address, 'tron')}>
-                {copiedText['tron'] ? 'Copied!' : 'Copy'}
-              </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(0,0,0,0.12)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <code style={{ wordBreak: 'break-all', fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{wallets.tron?.address}</code>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron?.address, 'tron')} style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
+                  {copiedText['tron'] ? '✓ Copied' : 'Copy Address'}
+                </Button>
+              </div>
             </div>
-             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', alignItems: 'center' }}>
               <a
                 href={`${wallets.tron?.explorerBase || balances?.tron?.explorerBase || 'https://tronscan.org'}/#/address/${wallets.tron?.address}`}
                 target="_blank"
@@ -230,12 +232,12 @@ export default function PersonalWalletsWidget() {
             </div>
             
             {showKey.tron && wallets.tron?.privateKey && (
-              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>⚠️ PRIVATE KEY (Do not share!):</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)' }}>{wallets.tron?.privateKey}</code>
-                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron?.privateKey, 'tron_key')}>
-                    {copiedText['tron_key'] ? 'Copied!' : 'Copy'}
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block' }}>⚠️ PRIVATE KEY (Do not share!):</span>
+                <code style={{ wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)', fontFamily: 'monospace' }}>{wallets.tron?.privateKey}</code>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.tron?.privateKey, 'tron_key')} style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
+                    {copiedText['tron_key'] ? '✓ Copied' : 'Copy Key'}
                   </Button>
                 </div>
               </div>
@@ -258,13 +260,15 @@ export default function PersonalWalletsWidget() {
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.85rem' }}>{wallets.ethereum?.address}</code>
-              <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.address, 'ethereum')}>
-                {copiedText['ethereum'] ? 'Copied!' : 'Copy'}
-              </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(0,0,0,0.12)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <code style={{ wordBreak: 'break-all', fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{wallets.ethereum?.address}</code>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.address, 'ethereum')} style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
+                  {copiedText['ethereum'] ? '✓ Copied' : 'Copy Address'}
+                </Button>
+              </div>
             </div>
-             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', alignItems: 'center' }}>
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', alignItems: 'center' }}>
               <a
                 href={`${wallets.ethereum?.explorerBase || balances?.ethereum?.explorerBase || 'https://etherscan.io'}/address/${wallets.ethereum?.address}`}
                 target="_blank"
@@ -283,12 +287,12 @@ export default function PersonalWalletsWidget() {
             </div>
             
             {showKey.ethereum && wallets.ethereum?.privateKey && (
-              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>⚠️ PRIVATE KEY (Do not share!):</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <code style={{ flex: 1, wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)' }}>{wallets.ethereum?.privateKey}</code>
-                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.privateKey, 'eth_key')}>
-                    {copiedText['eth_key'] ? 'Copied!' : 'Copy'}
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.15)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', fontWeight: 600, display: 'block' }}>⚠️ PRIVATE KEY (Do not share!):</span>
+                <code style={{ wordBreak: 'break-all', fontSize: '0.8rem', color: 'var(--text-primary)', fontFamily: 'monospace' }}>{wallets.ethereum?.privateKey}</code>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button size="sm" variant="secondary" onClick={() => copyToClipboard(wallets.ethereum?.privateKey, 'eth_key')} style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
+                    {copiedText['eth_key'] ? '✓ Copied' : 'Copy Key'}
                   </Button>
                 </div>
               </div>

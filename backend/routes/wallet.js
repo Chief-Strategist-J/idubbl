@@ -72,7 +72,7 @@ router.get('/balance', async (req, res) => {
         winningsBalance: wallet.winningsBalance,
         idubbuBalance: wallet.idubbuBalance || 0,
         availableBalance: wallet.depositBalance + wallet.winningsBalance,
-        lockedBalance: wallet.lockedBalance,
+        lockedBalance: Math.max(0, wallet.lockedBalance || 0),
         pendingWithdrawals: wallet.pendingWithdrawals,
         idubbuRate: IDUBBU_RATE,
       }
