@@ -201,22 +201,12 @@ export default function DepositForm() {
   const selectedCurrencyObj = CURRENCY_LIST.find(curr => curr.value === flwCurrency) || CURRENCY_LIST[0];
 
   return (
-    <Card style={{ 
-      background: 'rgba(15, 23, 42, 0.65)', 
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255, 255, 255, 0.08)', 
-      boxShadow: '0 20px 40px 0 rgba(0, 0, 0, 0.45)',
-      borderRadius: '24px',
-      padding: '2.5rem',
-      maxWidth: '650px',
-      margin: '0 auto'
-    }}>
+    <Card hover={false}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-        <Coins style={{ color: 'var(--secondary)', width: '28px', height: '28px' }} />
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 800, margin: 0, letterSpacing: '-0.5px' }}>Fund Wallet</h3>
+        <Coins style={{ color: 'var(--secondary)', width: '24px', height: '24px' }} />
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Fund Wallet</h3>
       </div>
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '2rem', lineHeight: 1.6 }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
         Fund your wallet with credit to participate in challenges and game duels. Select your preferred method below:
       </p>
       
@@ -224,67 +214,45 @@ export default function DepositForm() {
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: '1fr 1fr',
-        gap: '1rem', 
-        marginBottom: '2rem' 
+        gap: '0.75rem', 
+        marginBottom: '1.5rem' 
       }}>
         <div 
           onClick={() => { setMethod('crypto'); setErrors({}); setForm({ ...form, amount: '' }); }}
           style={{ 
-            padding: '1.25rem', 
-            borderRadius: '16px', 
+            padding: '1rem', 
+            borderRadius: '12px', 
             cursor: 'pointer', 
-            background: method === 'crypto' ? 'linear-gradient(135deg, rgba(20,241,149,0.08) 0%, rgba(99,102,241,0.02) 100%)' : 'rgba(255,255,255,0.02)', 
-            border: `2px solid ${method === 'crypto' ? 'var(--secondary)' : 'rgba(255,255,255,0.05)'}`, 
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: method === 'crypto' ? '0 8px 24px rgba(20,241,149,0.1)' : 'none',
-            transform: method === 'crypto' ? 'translateY(-2px)' : 'none'
+            background: method === 'crypto' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
+            border: `1.5px solid ${method === 'crypto' ? 'var(--secondary)' : 'var(--border)'}`, 
+            transition: 'all 0.2s ease',
+            boxShadow: method === 'crypto' ? '0 0 10px var(--primary-glow)' : 'none'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <div style={{ 
-              background: method === 'crypto' ? 'rgba(20,241,149,0.15)' : 'rgba(255,255,255,0.05)', 
-              padding: '0.5rem', 
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Coins style={{ width: '20px', height: '20px', color: method === 'crypto' ? 'var(--secondary)' : 'var(--text-muted)' }} />
-            </div>
-            {method === 'crypto' && <span style={{ background: 'var(--secondary)', width: '8px', height: '8px', borderRadius: '50%' }}></span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Coins style={{ width: '18px', height: '18px', color: method === 'crypto' ? 'var(--secondary)' : 'var(--text-muted)' }} />
+            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>Crypto USDT</h4>
           </div>
-          <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Crypto USDT</h4>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>Pay manually via Tron or Ethereum network.</p>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pay manually via TRC20/ERC20 network.</p>
         </div>
 
         <div 
           onClick={() => { setMethod('flutterwave'); setErrors({}); setForm({ ...form, amount: '' }); }}
           style={{ 
-            padding: '1.25rem', 
-            borderRadius: '16px', 
+            padding: '1rem', 
+            borderRadius: '12px', 
             cursor: 'pointer', 
-            background: method === 'flutterwave' ? 'linear-gradient(135deg, rgba(20,241,149,0.08) 0%, rgba(99,102,241,0.02) 100%)' : 'rgba(255,255,255,0.02)', 
-            border: `2px solid ${method === 'flutterwave' ? 'var(--secondary)' : 'rgba(255,255,255,0.05)'}`, 
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: method === 'flutterwave' ? '0 8px 24px rgba(20,241,149,0.1)' : 'none',
-            transform: method === 'flutterwave' ? 'translateY(-2px)' : 'none'
+            background: method === 'flutterwave' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
+            border: `1.5px solid ${method === 'flutterwave' ? 'var(--secondary)' : 'var(--border)'}`, 
+            transition: 'all 0.2s ease',
+            boxShadow: method === 'flutterwave' ? '0 0 10px var(--primary-glow)' : 'none'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <div style={{ 
-              background: method === 'flutterwave' ? 'rgba(20,241,149,0.15)' : 'rgba(255,255,255,0.05)', 
-              padding: '0.5rem', 
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <CreditCard style={{ width: '20px', height: '20px', color: method === 'flutterwave' ? 'var(--secondary)' : 'var(--text-muted)' }} />
-            </div>
-            {method === 'flutterwave' && <span style={{ background: 'var(--secondary)', width: '8px', height: '8px', borderRadius: '50%' }}></span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <CreditCard style={{ width: '18px', height: '18px', color: method === 'flutterwave' ? 'var(--secondary)' : 'var(--text-muted)' }} />
+            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>Cards & Pay</h4>
           </div>
-          <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Cards & Mobile Money</h4>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>Instant deposits with local currencies via Flutterwave.</p>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Instant deposits via Flutterwave checkout.</p>
         </div>
       </div>
 
@@ -292,25 +260,25 @@ export default function DepositForm() {
         <>
           {/* Rate Summary Card */}
           <div style={{ 
-            background: 'linear-gradient(135deg, rgba(20,241,149,0.06) 0%, rgba(99,102,241,0.06) 100%)', 
-            border: '1px solid rgba(20,241,149,0.15)', 
-            borderRadius: '16px', 
-            padding: '1.25rem 1.5rem', 
-            marginBottom: '1.75rem',
+            background: 'linear-gradient(135deg, rgba(20,241,149,0.06), rgba(99,102,241,0.06))', 
+            border: '1px solid var(--border)', 
+            borderRadius: '12px', 
+            padding: '1rem 1.25rem', 
+            marginBottom: '1.5rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
             <div>
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>Rate conversion</p>
-              <p style={{ margin: '0.25rem 0 0', fontWeight: 800, color: 'var(--secondary)', fontSize: '1.3rem', fontFamily: 'var(--font-display)' }}>1 USDT = 1,000 Idubbu</p>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>Conversion Rate</p>
+              <p style={{ margin: '0.2rem 0 0', fontWeight: 700, color: 'var(--secondary)', fontSize: '1.15rem' }}>1 USDT = 1,000 Idubbu</p>
             </div>
             {estimatedIdubbu > 0 && (
               <div style={{ textAlign: 'right' }}>
                 <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>Estimated Credit</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
-                  <Sparkles style={{ width: '16px', height: '16px', color: 'var(--accent-cyan)' }} />
-                  <p style={{ margin: 0, fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '1.3rem', fontFamily: 'var(--font-display)' }}>
+                  <Sparkles style={{ width: '15px', height: '15px', color: 'var(--accent-cyan)' }} />
+                  <p style={{ margin: 0, fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '1.15rem' }}>
                     {estimatedIdubbu.toLocaleString()}
                   </p>
                 </div>
@@ -320,134 +288,115 @@ export default function DepositForm() {
 
           {/* Copy Address Widget */}
           <div style={{ 
-            background: 'rgba(0, 0, 0, 0.3)', 
-            border: '1px solid rgba(255, 255, 255, 0.05)', 
-            borderRadius: '16px', 
-            padding: '1.25rem', 
-            marginBottom: '1.75rem'
+            background: 'var(--bg-darker)', 
+            border: '1px solid var(--border)', 
+            borderRadius: '12px', 
+            padding: '1rem', 
+            marginBottom: '1.5rem'
           }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, margin: '0 0 0.6rem 0' }}>Platform USDT Wallet Address</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'nowrap' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '0 0 0.5rem 0' }}>Platform USDT Wallet Address</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <code style={{ 
                 flex: 1, 
                 color: 'var(--accent-cyan)', 
                 fontFamily: 'monospace', 
                 fontSize: '0.85rem', 
-                wordBreak: 'break-all',
-                background: 'rgba(255,255,255,0.01)',
-                padding: '0.65rem 0.85rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.05)',
-                userSelect: 'all'
+                wordBreak: 'break-all'
               }}>{PLATFORM_WALLET}</code>
               <button 
                 type="button" 
                 onClick={copyAddress}
                 style={{ 
                   flexShrink: 0, 
-                  background: copied ? 'rgba(20,241,149,0.12)' : 'rgba(255,255,255,0.03)', 
-                  border: `1px solid ${copied ? 'var(--secondary)' : 'rgba(255,255,255,0.08)'}`, 
+                  background: copied ? 'rgba(20,241,149,0.1)' : 'var(--bg-dark)', 
+                  border: `1px solid ${copied ? 'var(--secondary)' : 'var(--border)'}`, 
                   color: copied ? 'var(--secondary)' : 'var(--text-primary)',
-                  padding: '0.7rem 1.25rem', 
+                  padding: '0.5rem 1rem', 
                   fontSize: '0.85rem',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 700,
-                  transition: 'all 0.2s ease',
-                  boxShadow: copied ? '0 0 12px rgba(20,241,149,0.15)' : 'none'
+                  gap: '0.4rem',
+                  fontWeight: 600,
+                  transition: 'all 0.15s ease'
                 }}
               >
-                {copied ? <Check style={{ width: '15px', height: '15px' }} /> : <Copy style={{ width: '15px', height: '15px' }} />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? <Check style={{ width: '14px', height: '14px' }} /> : <Copy style={{ width: '14px', height: '14px' }} />}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
           </div>
 
           <div style={{ 
-            background: 'rgba(245,158,11,0.04)', 
-            border: '1px solid rgba(245,158,11,0.15)', 
-            borderRadius: '12px', 
-            padding: '1rem 1.25rem', 
-            marginBottom: '1.75rem', 
+            background: 'var(--accent-warning-glow)', 
+            border: '1px solid var(--accent-warning-glow)', 
+            borderRadius: '10px', 
+            padding: '0.85rem 1rem', 
+            marginBottom: '1.5rem', 
             fontSize: '0.85rem', 
-            color: '#f59e0b',
+            color: 'var(--accent-warning)',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '0.75rem',
-            lineHeight: 1.5
+            gap: '0.6rem'
           }}>
-            <AlertTriangle style={{ width: '18px', height: '18px', flexShrink: 0, marginTop: '2px' }} />
-            <span><strong>Notice:</strong> Minimum deposit is {MIN_DEPOSIT} USDT. Sending less or using non-supported networks (e.g. BSC, Polygon) will result in permanent loss.</span>
+            <AlertTriangle style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }} />
+            <span>Minimum deposit: {MIN_DEPOSIT} USDT · Supported networks: TRC20, ERC20 only</span>
           </div>
 
           {success && (
             <div style={{ 
-              background: 'rgba(16,185,129,0.08)', 
-              border: '1px solid rgba(16,185,129,0.25)', 
-              borderRadius: '12px', 
-              padding: '1rem 1.25rem', 
-              marginBottom: '1.75rem', 
+              background: 'var(--accent-green-glow)', 
+              border: '1px solid var(--accent-green-glow)', 
+              borderRadius: '10px', 
+              padding: '0.85rem 1rem', 
+              marginBottom: '1.5rem', 
               color: 'var(--accent-green)', 
               fontSize: '0.9rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.6rem'
+              gap: '0.5rem'
             }}>
-              <Check style={{ width: '20px', height: '20px' }} />
-              <span>Deposit request successfully submitted! Redirecting to dashboard...</span>
+              <Check style={{ width: '18px', height: '18px' }} />
+              <span>Deposit request submitted! Redirecting in a moment...</span>
             </div>
           )}
 
-          <form onSubmit={handleCryptoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form onSubmit={handleCryptoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <Input label="Amount (USDT)" type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`Min. ${MIN_DEPOSIT}`} error={errors.amount} required />
             <Select label="Network" name="network" value={form.network} onChange={handleChange} options={NETWORK_OPTIONS} />
-            <Input label="Transaction Hash" name="txHash" value={form.txHash} onChange={handleChange} placeholder="Paste your blockchain transaction hash (txID)" error={errors.txHash} required />
+            <Input label="Transaction Hash" name="txHash" value={form.txHash} onChange={handleChange} placeholder="0x..." error={errors.txHash} required />
             <Input label="Note (optional)" name="note" value={form.note} onChange={handleChange} placeholder="Optional reference note" />
-            
-            <div style={{ marginTop: '0.75rem' }}>
-              <Button type="submit" fullWidth loading={submitting} style={{
-                background: 'var(--secondary)',
-                color: '#04130d',
-                fontWeight: 700,
-                fontSize: '1rem',
-                padding: '0.9rem',
-                borderRadius: '12px'
-              }}>
-                Submit Deposit Request
-              </Button>
-            </div>
+            <Button type="submit" fullWidth loading={submitting}>Submit Deposit Request</Button>
           </form>
         </>
       ) : (
         <>
           {/* Rate Summary Card */}
           <div style={{ 
-            background: 'linear-gradient(135deg, rgba(20,241,149,0.06) 0%, rgba(99,102,241,0.06) 100%)', 
-            border: '1px solid rgba(20,241,149,0.15)', 
-            borderRadius: '16px', 
-            padding: '1.25rem 1.5rem', 
-            marginBottom: '1.75rem',
+            background: 'linear-gradient(135deg, rgba(20,241,149,0.06), rgba(99,102,241,0.06))', 
+            border: '1px solid var(--border)', 
+            borderRadius: '12px', 
+            padding: '1rem 1.25rem', 
+            marginBottom: '1.5rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
             <div>
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>Rate conversion</p>
-              <p style={{ margin: '0.25rem 0 0', fontWeight: 800, color: 'var(--secondary)', fontSize: '1.3rem', fontFamily: 'var(--font-display)' }}>1 USD = 1,000 Idubbu</p>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem' }}>
-                <TrendingUp style={{ width: '13px', height: '13px' }} />
-                1 USD ≈ {loadingRates ? '...' : `${rate.toFixed(4)} ${flwCurrency}`}
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>Conversion Rate</p>
+              <p style={{ margin: '0.2rem 0 0', fontWeight: 700, color: 'var(--secondary)', fontSize: '1.15rem' }}>1 USD = 1,000 Idubbu</p>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
+                <TrendingUp style={{ width: '12px', height: '12px' }} />
+                1 USD ≈ {loadingRates ? '...' : `${rate.toFixed(2)} ${flwCurrency}`}
               </span>
             </div>
             {estimatedIdubbu > 0 && (
               <div style={{ textAlign: 'right' }}>
                 <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>Estimated Credit</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
-                  <Sparkles style={{ width: '16px', height: '16px', color: 'var(--accent-cyan)' }} />
-                  <p style={{ margin: 0, fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '1.3rem', fontFamily: 'var(--font-display)' }}>
+                  <Sparkles style={{ width: '15px', height: '15px', color: 'var(--accent-cyan)' }} />
+                  <p style={{ margin: 0, fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '1.15rem' }}>
                     {Math.floor(estimatedIdubbu).toLocaleString()}
                   </p>
                 </div>
@@ -470,29 +419,23 @@ export default function DepositForm() {
               
               {/* Premium Custom Searchable Dropdown */}
               <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
+                <label className="form-label" style={{ fontWeight: 600 }}>
                   Currency
                 </label>
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="form-input"
                   style={{
-                    width: '100%',
-                    padding: '0.7rem 1rem',
-                    borderRadius: '8px',
-                    border: '1.5px solid var(--border)',
-                    background: 'var(--input-bg)',
-                    color: 'var(--text-primary)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     cursor: 'pointer',
-                    fontSize: '0.95rem',
-                    fontFamily: 'var(--font-sans)',
                     boxSizing: 'border-box',
                     textAlign: 'left',
-                    outline: 'none',
-                    height: '42.5px'
+                    height: '46px',
+                    borderColor: dropdownOpen ? 'var(--border-focus)' : 'var(--border)',
+                    boxShadow: dropdownOpen ? '0 0 10px var(--primary-glow)' : 'none'
                   }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -509,11 +452,10 @@ export default function DepositForm() {
                     left: 0,
                     right: 0,
                     zIndex: 9999,
-                    background: 'rgba(15, 23, 42, 0.98)',
-                    backdropFilter: 'blur(12px)',
-                    border: '1.5px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '12px',
-                    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.55)',
+                    background: 'var(--bg-darker)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
                     padding: '0.5rem',
                     minWidth: '200px',
                     maxHeight: '260px',
@@ -529,15 +471,11 @@ export default function DepositForm() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search..."
+                        className="form-input"
                         style={{
-                          width: '100%',
-                          padding: '0.45rem 0.5rem 0.45rem 1.85rem',
-                          background: 'rgba(255, 255, 255, 0.04)',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
-                          borderRadius: '6px',
-                          color: 'var(--text-primary)',
+                          padding: '0.4rem 0.5rem 0.4rem 1.85rem',
                           fontSize: '0.8rem',
-                          outline: 'none',
+                          height: '34px',
                           boxSizing: 'border-box'
                         }}
                       />
@@ -569,7 +507,7 @@ export default function DepositForm() {
                               width: '100%',
                               padding: '0.55rem 0.65rem',
                               border: 'none',
-                              background: flwCurrency === curr.value ? 'rgba(20, 241, 149, 0.12)' : 'transparent',
+                              background: flwCurrency === curr.value ? 'var(--accent-cyan-glow)' : 'transparent',
                               color: flwCurrency === curr.value ? 'var(--secondary)' : 'var(--text-primary)',
                               borderRadius: '6px',
                               textAlign: 'left',
@@ -581,7 +519,7 @@ export default function DepositForm() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            <span style={{ fontSize: '1.1rem' }}>{curr.flag}</span>
+                            <span style={{ fontSize: '1.15rem' }}>{curr.flag}</span>
                             <span style={{ fontWeight: flwCurrency === curr.value ? 700 : 500 }}>{curr.label}</span>
                           </button>
                         ))
@@ -595,14 +533,13 @@ export default function DepositForm() {
             {/* Dynamic Checkout Invoice Breakdown */}
             {form.amount && Number(form.amount) > 0 && (
               <div style={{ 
-                background: 'rgba(0, 0, 0, 0.2)', 
-                border: '1px solid rgba(255,255,255,0.04)', 
-                borderRadius: '16px', 
-                padding: '1.25rem',
+                background: 'var(--bg-darker)', 
+                border: '1px solid var(--border)', 
+                borderRadius: '12px', 
+                padding: '1rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.75rem',
-                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)'
+                gap: '0.65rem'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Payment Amount</span>
@@ -616,7 +553,7 @@ export default function DepositForm() {
                   <span style={{ color: 'var(--text-muted)' }}>Transaction Fee</span>
                   <span style={{ color: 'var(--accent-green)', fontWeight: 700 }}>FREE (0%)</span>
                 </div>
-                <div style={{ borderTop: '1px dashed rgba(255,255,255,0.08)', margin: '0.25rem 0' }}></div>
+                <div style={{ borderTop: '1px dashed var(--border)', margin: '0.25rem 0' }}></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', fontWeight: 800 }}>
                   <span style={{ color: 'var(--text-primary)' }}>You will receive</span>
                   <span style={{ color: 'var(--secondary)' }}>{Math.floor(estimatedIdubbu).toLocaleString()} Idubbu Credits</span>
@@ -637,26 +574,19 @@ export default function DepositForm() {
               lineHeight: 1.5
             }}>
               <ShieldCheck style={{ width: '18px', height: '18px', color: 'var(--secondary)', flexShrink: 0, marginTop: '2px' }} />
-              <span>Secure Payment Gateway. All information is encrypted using 256-bit SSL protocols. Local currency deposits are settled instantly.</span>
+              <span>Secure Checkout. Payments are processed encrypted using SSL protocols. Deposits are settled instantly.</span>
             </div>
 
-            <div style={{ marginTop: '0.5rem' }}>
-              <Button type="submit" fullWidth loading={submitting} style={{
-                background: 'var(--secondary)',
-                color: '#04130d',
-                fontWeight: 700,
-                fontSize: '1rem',
-                padding: '0.9rem',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}>
-                💳 Pay with Flutterwave
-                <ChevronRight style={{ width: '18px', height: '18px' }} />
-              </Button>
-            </div>
+            <Button type="submit" fullWidth loading={submitting} style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              height: '46px'
+            }}>
+              💳 Pay with Flutterwave
+              <ChevronRight style={{ width: '18px', height: '18px' }} />
+            </Button>
           </form>
         </>
       )}
