@@ -15,6 +15,7 @@ export class FlutterwaveDriver extends PaymentDriver {
       tx_ref: data.orderId,
       amount: data.amount,
       currency: data.currency || 'USD',
+      payment_options: 'card, banktransfer, mobilemoney, ussd, account, voucher',
       redirect_url: this.redirectUrl || `${process.env.APP_URL || 'https://idubbl-backend.onrender.com'}/api/payment/callback/flutterwave`,
       customer: {
         email: data.customer.email,
