@@ -32,11 +32,11 @@ export default function PersonalWalletsWidget() {
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.data) {
           setWallets(json.data);
           setEditForm({
-            tronAddress: json.data.tron?.address || '',
-            ethereumAddress: json.data.ethereum?.address || ''
+            tronAddress: json.data?.tron?.address || '',
+            ethereumAddress: json.data?.ethereum?.address || ''
           });
         }
       }
@@ -57,11 +57,11 @@ export default function PersonalWalletsWidget() {
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.data) {
           setWallets(json.data);
           setEditForm({
-            tronAddress: json.data.tron?.address || '',
-            ethereumAddress: json.data.ethereum?.address || ''
+            tronAddress: json.data?.tron?.address || '',
+            ethereumAddress: json.data?.ethereum?.address || ''
           });
         }
       }
