@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Coins, 
@@ -11,8 +11,10 @@ import {
   DollarSign,
   AlertTriangle,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Search
 } from 'lucide-react';
 import { Input, Select, Button, Card } from '../../../shared/components/ui/index.js';
 import useWalletStore from '../../../shared/store/walletStore.js';
@@ -22,36 +24,36 @@ import { PLATFORM_WALLET, SUPPORTED_NETWORKS, MIN_DEPOSIT } from '../../../share
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
 const IDUBBU_RATE = 1000;
 
-// Full list of currencies officially supported by Flutterwave
-const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD - US Dollar' },
-  { value: 'NGN', label: 'NGN - Nigerian Naira' },
-  { value: 'GHS', label: 'GHS - Ghanaian Cedi' },
-  { value: 'KES', label: 'KES - Kenyan Shilling' },
-  { value: 'ZAR', label: 'ZAR - South African Rand' },
-  { value: 'EUR', label: 'EUR - Euro' },
-  { value: 'GBP', label: 'GBP - British Pound' },
-  { value: 'TZS', label: 'TZS - Tanzanian Shilling' },
-  { value: 'UGX', label: 'UGX - Ugandan Shilling' },
-  { value: 'RWF', label: 'RWF - Rwandan Franc' },
-  { value: 'ZMW', label: 'ZMW - Zambian Kwacha' },
-  { value: 'XOF', label: 'XOF - West African CFA' },
-  { value: 'XAF', label: 'XAF - Central African CFA' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar' },
-  { value: 'AUD', label: 'AUD - Australian Dollar' },
-  { value: 'INR', label: 'INR - Indian Rupee' },
-  { value: 'AED', label: 'AED - UAE Dirham' },
-  { value: 'CNY', label: 'CNY - Chinese Yuan' },
-  { value: 'SLL', label: 'SLL - Sierra Leonean Leone' },
-  { value: 'LRD', label: 'LRD - Liberian Dollar' },
-  { value: 'MWK', label: 'MWK - Malawian Kwacha' },
-  { value: 'MAD', label: 'MAD - Moroccan Dirham' },
-  { value: 'EGP', label: 'EGP - Egyptian Pound' },
-  { value: 'CVE', label: 'CVE - Cape Verdean Escudo' },
-  { value: 'MUR', label: 'MUR - Mauritian Rupee' },
-  { value: 'GMD', label: 'GMD - Gambian Dalasi' },
-  { value: 'BIF', label: 'BIF - Burundian Franc' },
-  { value: 'CDF', label: 'CDF - Congolese Franc' }
+// Full list of currencies officially supported by Flutterwave with custom flag emojis
+const CURRENCY_LIST = [
+  { value: 'USD', label: 'USD - US Dollar', flag: '🇺🇸' },
+  { value: 'NGN', label: 'NGN - Nigerian Naira', flag: '🇳🇬' },
+  { value: 'GHS', label: 'GHS - Ghanaian Cedi', flag: '🇬🇭' },
+  { value: 'KES', label: 'KES - Kenyan Shilling', flag: '🇰🇪' },
+  { value: 'ZAR', label: 'ZAR - South African Rand', flag: '🇿🇦' },
+  { value: 'EUR', label: 'EUR - Euro', flag: '🇪🇺' },
+  { value: 'GBP', label: 'GBP - British Pound', flag: '🇬🇧' },
+  { value: 'TZS', label: 'TZS - Tanzanian Shilling', flag: '🇹🇿' },
+  { value: 'UGX', label: 'UGX - Ugandan Shilling', flag: '🇺🇬' },
+  { value: 'RWF', label: 'RWF - Rwandan Franc', flag: '🇷🇼' },
+  { value: 'ZMW', label: 'ZMW - Zambian Kwacha', flag: '🇿🇲' },
+  { value: 'XOF', label: 'XOF - West African CFA', flag: '🇨🇮' },
+  { value: 'XAF', label: 'XAF - Central African CFA', flag: '🇨🇲' },
+  { value: 'CAD', label: 'CAD - Canadian Dollar', flag: '🇨🇦' },
+  { value: 'AUD', label: 'AUD - Australian Dollar', flag: '🇦🇺' },
+  { value: 'INR', label: 'INR - Indian Rupee', flag: '🇮🇳' },
+  { value: 'AED', label: 'AED - UAE Dirham', flag: '🇦🇪' },
+  { value: 'CNY', label: 'CNY - Chinese Yuan', flag: '🇨🇳' },
+  { value: 'SLL', label: 'SLL - Sierra Leonean Leone', flag: '🇸🇱' },
+  { value: 'LRD', label: 'LRD - Liberian Dollar', flag: '🇱🇷' },
+  { value: 'MWK', label: 'MWK - Malawian Kwacha', flag: '🇲🇼' },
+  { value: 'MAD', label: 'MAD - Moroccan Dirham', flag: '🇲🇦' },
+  { value: 'EGP', label: 'EGP - Egyptian Pound', flag: '🇪🇬' },
+  { value: 'CVE', label: 'CVE - Cape Verdean Escudo', flag: '🇨🇻' },
+  { value: 'MUR', label: 'MUR - Mauritian Rupee', flag: '🇲🇺' },
+  { value: 'GMD', label: 'GMD - Gambian Dalasi', flag: '🇬🇲' },
+  { value: 'BIF', label: 'BIF - Burundian Franc', flag: '🇧🇮' },
+  { value: 'CDF', label: 'CDF - Congolese Franc', flag: '🇨🇩' }
 ];
 
 export default function DepositForm() {
@@ -69,6 +71,11 @@ export default function DepositForm() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [loadingRates, setLoadingRates] = useState(true);
+  
+  // Custom Dropdown States
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     setLoadingRates(true);
@@ -84,6 +91,17 @@ export default function DepositForm() {
       })
       .catch(err => console.warn('Using fallback local exchange rates:', err))
       .finally(() => setLoadingRates(false));
+  }, []);
+
+  // Handle clicking outside the dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -173,6 +191,14 @@ export default function DepositForm() {
   const estimatedIdubbu = method === 'crypto' 
     ? (form.amount ? Number(form.amount) * IDUBBU_RATE : 0)
     : (form.amount ? (Number(form.amount) / rate) * IDUBBU_RATE : 0);
+
+  // Filter currency options based on search query
+  const filteredCurrencies = CURRENCY_LIST.filter(curr => 
+    curr.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    curr.value.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const selectedCurrencyObj = CURRENCY_LIST.find(curr => curr.value === flwCurrency) || CURRENCY_LIST[0];
 
   return (
     <Card style={{ 
@@ -430,7 +456,7 @@ export default function DepositForm() {
           </div>
 
           <form onSubmit={handleFlutterwaveSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1rem', alignItems: 'end' }}>
               <Input 
                 label={`Amount (${flwCurrency})`}
                 type="number" 
@@ -441,13 +467,129 @@ export default function DepositForm() {
                 error={errors.amount} 
                 required 
               />
-              <Select
-                label="Currency"
-                name="flwCurrency"
-                value={flwCurrency}
-                onChange={(e) => { setFlwCurrency(e.target.value); setErrors({}); }}
-                options={CURRENCY_OPTIONS}
-              />
+              
+              {/* Premium Custom Searchable Dropdown */}
+              <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
+                  Currency
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '0.7rem 1rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--input-bg)',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontFamily: 'var(--font-sans)',
+                    boxSizing: 'border-box',
+                    textAlign: 'left',
+                    outline: 'none',
+                    height: '42.5px'
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '1.2rem', lineHeight: '1' }}>{selectedCurrencyObj.flag}</span>
+                    <span>{selectedCurrencyObj.value}</span>
+                  </span>
+                  <ChevronDown style={{ width: '15px', height: '15px', color: 'var(--text-muted)', transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                </button>
+
+                {dropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '110%',
+                    left: 0,
+                    right: 0,
+                    zIndex: 9999,
+                    background: 'rgba(15, 23, 42, 0.98)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1.5px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '12px',
+                    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.55)',
+                    padding: '0.5rem',
+                    minWidth: '200px',
+                    maxHeight: '260px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                  }}>
+                    {/* Search Field */}
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Search style={{ width: '14px', height: '14px', color: 'var(--text-muted)', position: 'absolute', left: '0.65rem' }} />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        style={{
+                          width: '100%',
+                          padding: '0.45rem 0.5rem 0.45rem 1.85rem',
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '6px',
+                          color: 'var(--text-primary)',
+                          fontSize: '0.8rem',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                    {/* List Items */}
+                    <div style={{ 
+                      overflowY: 'auto', 
+                      flex: 1, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '3px',
+                      paddingRight: '2px'
+                    }}>
+                      {filteredCurrencies.length === 0 ? (
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', padding: '0.75rem' }}>
+                          No currencies found
+                        </div>
+                      ) : (
+                        filteredCurrencies.map(curr => (
+                          <button
+                            key={curr.value}
+                            type="button"
+                            onClick={() => {
+                              setFlwCurrency(curr.value);
+                              setDropdownOpen(false);
+                              setSearchQuery('');
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '0.55rem 0.65rem',
+                              border: 'none',
+                              background: flwCurrency === curr.value ? 'rgba(20, 241, 149, 0.12)' : 'transparent',
+                              color: flwCurrency === curr.value ? 'var(--secondary)' : 'var(--text-primary)',
+                              borderRadius: '6px',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              fontSize: '0.82rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span style={{ fontSize: '1.1rem' }}>{curr.flag}</span>
+                            <span style={{ fontWeight: flwCurrency === curr.value ? 700 : 500 }}>{curr.label}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Dynamic Checkout Invoice Breakdown */}
