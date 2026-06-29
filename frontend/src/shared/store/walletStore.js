@@ -46,28 +46,13 @@ const useWalletStore = create((set, get) => ({
       const localKey = `idubbl_wallet_${currentUserId}`;
       const localData = JSON.parse(localStorage.getItem(localKey) || '{}');
 
-      let depositBalance = balance.depositBalance !== undefined ? balance.depositBalance : (localData.depositBalance ?? 1000);
-      let winningsBalance = balance.winningsBalance !== undefined ? balance.winningsBalance : (localData.winningsBalance ?? 0);
-      let lockedBalance = balance.lockedBalance !== undefined ? balance.lockedBalance : (localData.lockedBalance ?? 0);
-      let pendingWithdrawals = balance.pendingWithdrawals !== undefined ? balance.pendingWithdrawals : (localData.pendingWithdrawals ?? 0);
-      let idubbuBalance = balance.idubbuBalance !== undefined ? balance.idubbuBalance : (localData.idubbuBalance ?? 1000000);
+      // Server is the single source of truth. Safeguard all values so they are never negative.
+      const depositBalance = Math.max(0, balance.depositBalance !== undefined ? balance.depositBalance : (localData.depositBalance ?? 1000));
+      const winningsBalance = Math.max(0, balance.winningsBalance !== undefined ? balance.winningsBalance : (localData.winningsBalance ?? 0));
+      const lockedBalance = Math.max(0, balance.lockedBalance !== undefined ? balance.lockedBalance : (localData.lockedBalance ?? 0));
+      const pendingWithdrawals = Math.max(0, balance.pendingWithdrawals !== undefined ? balance.pendingWithdrawals : (localData.pendingWithdrawals ?? 0));
+      const idubbuBalance = Math.max(0, balance.idubbuBalance !== undefined ? balance.idubbuBalance : (localData.idubbuBalance ?? 1000000));
       const idubbuRate = balance.idubbuRate || 1000;
-
-      if (localData.winningsBalance !== undefined && localData.winningsBalance > winningsBalance) {
-        winningsBalance = localData.winningsBalance;
-      }
-      if (localData.lockedBalance !== undefined) {
-        lockedBalance = localData.lockedBalance;
-      }
-      if (localData.depositBalance !== undefined && localData.depositBalance < depositBalance) {
-        depositBalance = localData.depositBalance;
-      }
-      if (localData.idubbuBalance !== undefined) {
-        idubbuBalance = localData.idubbuBalance;
-      }
-      if (localData.pendingWithdrawals !== undefined && localData.pendingWithdrawals > pendingWithdrawals) {
-        pendingWithdrawals = localData.pendingWithdrawals;
-      }
 
       const localTxs = localData.transactions ?? [];
       const mergedTx = [
