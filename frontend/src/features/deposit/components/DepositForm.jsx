@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Select, Button, Card } from '../../../shared/components/ui/index.js';
 import useWalletStore from '../../../shared/store/walletStore.js';
@@ -8,6 +8,16 @@ import { PLATFORM_WALLET, SUPPORTED_NETWORKS, MIN_DEPOSIT } from '../../../share
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
 const IDUBBU_RATE = 1000;
 
+const CURRENCY_OPTIONS = [
+  { value: 'USD', label: 'USD (US Dollar)' },
+  { value: 'NGN', label: 'NGN (Nigerian Naira)' },
+  { value: 'GHS', label: 'GHS (Ghanaian Cedi)' },
+  { value: 'KES', label: 'KES (Kenyan Shilling)' },
+  { value: 'ZAR', label: 'ZAR (South African Rand)' },
+  { value: 'EUR', label: 'EUR (Euro)' },
+  { value: 'GBP', label: 'GBP (British Pound)' }
+];
+
 export default function DepositForm() {
   const { submitDeposit } = useWalletStore();
   const { user } = useAuthStore();
@@ -15,10 +25,28 @@ export default function DepositForm() {
   
   const [method, setMethod] = useState('crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
+  const [flwCurrency, setFlwCurrency] = useState('USD');
+  const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92, GBP: 0.79 });
+  
   const [copied, setCopied] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Fetch live exchange rates to provide dynamic and accurate conversions
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setExchangeRates(prev => ({
+            ...prev,
+            ...data.rates
+          }));
+        }
+      })
+      .catch(err => console.warn('Using fallback local exchange rates:', err));
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -57,12 +85,19 @@ export default function DepositForm() {
     }
   };
 
+  const rate = exchangeRates[flwCurrency] || 1;
+  const currentMinDepositLocal = Math.ceil(MIN_DEPOSIT * rate);
+
   const handleFlutterwaveSubmit = async (e) => {
     e.preventDefault();
-    if (!form.amount || Number(form.amount) < MIN_DEPOSIT) {
-      setErrors({ amount: `Minimum deposit is ${MIN_DEPOSIT} USD` });
+    if (!form.amount || Number(form.amount) < currentMinDepositLocal) {
+      setErrors({ amount: `Minimum deposit is ${currentMinDepositLocal} ${flwCurrency}` });
       return;
     }
+    
+    // Calculate USD equivalent securely
+    const usdAmount = Number(form.amount) / rate;
+    
     setSubmitting(true);
     setErrors({});
     try {
@@ -72,20 +107,20 @@ export default function DepositForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: Number(form.amount),
-          currency: 'USD',
+          currency: flwCurrency,
+          usdAmount: Number(usdAmount.toFixed(2)), // pass USD equivalent for crediting
           customer: {
             email: user?.email || 'player@idubbl.com',
             name: user?.name || user?.email?.split('@')[0] || 'Player',
             phone: user?.phone || ''
           },
-          description: 'iDubbl Wallet Deposit via Flutterwave',
+          description: `iDubbl Wallet Deposit (${form.amount} ${flwCurrency})`,
           gateway: 'flutterwave'
         })
       });
 
       const json = await res.json();
       if (res.ok && json.success && json.data?.paymentUrl) {
-        // Redirect to Flutterwave Hosted Checkout Page
         window.location.href = json.data.paymentUrl;
       } else {
         setErrors({ amount: json.error || 'Failed to initiate payment. Please verify configuration.' });
@@ -98,7 +133,9 @@ export default function DepositForm() {
     }
   };
 
-  const estimatedIdubbu = form.amount ? Number(form.amount) * IDUBBU_RATE : 0;
+  const estimatedIdubbu = method === 'crypto' 
+    ? (form.amount ? Number(form.amount) * IDUBBU_RATE : 0)
+    : (form.amount ? (Number(form.amount) / rate) * IDUBBU_RATE : 0);
 
   return (
     <Card>
@@ -108,14 +145,14 @@ export default function DepositForm() {
       <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.35rem', borderRadius: '10px', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
         <button 
           type="button" 
-          onClick={() => { setMethod('crypto'); setErrors({}); }}
+          onClick={() => { setMethod('crypto'); setErrors({}); setForm({ ...form, amount: '' }); }}
           style={{ flex: 1, padding: '0.6rem', border: 'none', background: method === 'crypto' ? 'rgba(255,255,255,0.05)' : 'none', color: method === 'crypto' ? 'var(--accent-cyan)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s ease' }}
         >
           🪙 USDT (Crypto)
         </button>
         <button 
           type="button" 
-          onClick={() => { setMethod('flutterwave'); setErrors({}); }}
+          onClick={() => { setMethod('flutterwave'); setErrors({}); setForm({ ...form, amount: '' }); }}
           style={{ flex: 1, padding: '0.6rem', border: 'none', background: method === 'flutterwave' ? 'rgba(255,255,255,0.05)' : 'none', color: method === 'flutterwave' ? 'var(--accent-cyan)' : 'var(--text-muted)', cursor: 'pointer', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s ease' }}
         >
           💳 Card / Flutterwave
@@ -180,26 +217,41 @@ export default function DepositForm() {
           <div style={{ background: 'linear-gradient(135deg, rgba(20,241,149,0.12), rgba(99,102,241,0.12))', border: '1px solid rgba(20,241,149,0.25)', borderRadius: 12, padding: '0.85rem 1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ fontSize: '1.5rem' }}>💎</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 700, color: 'var(--secondary)', fontSize: '0.95rem' }}>1 USD = 1,000 Idubbu</p>
+              <p style={{ margin: 0, fontWeight: 700, color: 'var(--secondary)', fontSize: '0.95rem' }}>
+                1 USD = 1,000 Idubbu
+              </p>
+              <p style={{ margin: '2px 0 0', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                Exchange Rate: 1 USD ≈ {rate.toFixed(2)} {flwCurrency}
+              </p>
               {estimatedIdubbu > 0 && (
-                <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-                  You will receive <strong style={{ color: 'var(--secondary)' }}>{estimatedIdubbu.toLocaleString()} Idubbu</strong>
+                <p style={{ margin: '4px 0 0', color: 'var(--secondary)', fontSize: '0.85rem', fontWeight: 600 }}>
+                  You will receive <strong style={{ color: 'var(--secondary)' }}>{Math.floor(estimatedIdubbu).toLocaleString()} Idubbu</strong>
                 </p>
               )}
             </div>
           </div>
 
           <form onSubmit={handleFlutterwaveSubmit}>
-            <Input 
-              label="Amount (USD)" 
-              type="number" 
-              name="amount" 
-              value={form.amount} 
-              onChange={handleChange} 
-              placeholder={`Min. ${MIN_DEPOSIT}`} 
-              error={errors.amount} 
-              required 
-            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <Input 
+                label={`Amount (${flwCurrency})`}
+                type="number" 
+                name="amount" 
+                value={form.amount} 
+                onChange={handleChange} 
+                placeholder={`Min. ${currentMinDepositLocal}`} 
+                error={errors.amount} 
+                required 
+              />
+              <Select
+                label="Currency"
+                name="flwCurrency"
+                value={flwCurrency}
+                onChange={(e) => { setFlwCurrency(e.target.value); setErrors({}); }}
+                options={CURRENCY_OPTIONS}
+              />
+            </div>
+            
             <div style={{ marginTop: '1.5rem' }}>
               <Button type="submit" fullWidth loading={submitting}>
                 💳 Pay with Flutterwave

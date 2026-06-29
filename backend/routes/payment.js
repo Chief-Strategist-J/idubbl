@@ -24,7 +24,7 @@ async function getUserIdFromReq(req) {
 
 // Route to create a payment session/order
 router.post('/create', async (req, res) => {
-  const { amount, currency, customer, description, gateway } = req.body;
+  const { amount, currency, customer, description, gateway, usdAmount } = req.body;
   const orderId = `ord_${Date.now()}`;
 
   if (!amount || !customer || !customer.email) {
@@ -58,6 +58,7 @@ router.post('/create', async (req, res) => {
       userId,
       amount: Number(amount),
       currency: currency || 'USD',
+      usdAmount: usdAmount ? Number(usdAmount) : Number(amount),
       refId: orderId, // Flutterwave tx_ref
       status: 'pending',
       type: 'deposit',
@@ -122,9 +123,10 @@ router.post('/webhook', async (req, res) => {
           { refId: event.orderId },
           { $set: { status: 'approved', verifiedAt: new Date() } }
         );
+        const creditAmount = tx.usdAmount || tx.amount;
         await db.collection('wallets').updateOne(
           { userId: tx.userId },
-          { $inc: { depositBalance: tx.amount, idubbuBalance: tx.amount * IDUBBU_RATE } }
+          { $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE } }
         );
       }
     }
@@ -177,9 +179,10 @@ router.get('/callback/flutterwave', async (req, res) => {
           { refId: verification.orderId },
           { $set: { status: 'approved', verifiedAt: new Date() } }
         );
+        const creditAmount = tx.usdAmount || tx.amount;
         await db.collection('wallets').updateOne(
           { userId: tx.userId },
-          { $inc: { depositBalance: tx.amount, idubbuBalance: tx.amount * IDUBBU_RATE } }
+          { $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE } }
         );
       }
       
