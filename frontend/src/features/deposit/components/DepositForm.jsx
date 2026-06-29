@@ -536,10 +536,10 @@ export default function DepositForm() {
                 background: 'var(--bg-darker)', 
                 border: '1px solid var(--border)', 
                 borderRadius: '12px', 
-                padding: '1rem',
+                padding: '1.25rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.65rem'
+                gap: '0.75rem'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Payment Amount</span>
@@ -562,8 +562,8 @@ export default function DepositForm() {
             )}
 
             <div style={{ 
-              background: 'rgba(20,241,149,0.02)', 
-              border: '1px solid rgba(20,241,149,0.12)', 
+              background: 'var(--accent-green-glow)', 
+              border: '1px solid var(--accent-green-glow)', 
               borderRadius: '12px', 
               padding: '1rem', 
               fontSize: '0.85rem', 
