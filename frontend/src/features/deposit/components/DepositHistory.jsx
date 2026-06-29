@@ -13,9 +13,9 @@ const COLUMNS = [
 ];
 
 export default function DepositHistory() {
-  const { deposits } = useWalletStore();
+  const { deposits = [] } = useWalletStore();
   const { user } = useAuthStore();
-  const myDeposits = deposits.filter((d) => d.userId === user?.id);
+  const myDeposits = Array.isArray(deposits) ? deposits.filter((d) => d && d.userId === user?.id) : [];
 
   return (
     <Card>
