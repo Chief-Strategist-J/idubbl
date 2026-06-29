@@ -153,7 +153,7 @@ export default function PersonalWalletsWidget() {
 
   return (
     <Card style={{ marginTop: '1.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', margin: 0 }}>My Personal Crypto Addresses</h3>
         {wallets && (
           <Button variant="secondary" size="sm" onClick={() => setEditing(!editing)}>
@@ -190,7 +190,7 @@ export default function PersonalWalletsWidget() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT TRC-20 (TRON)</span>
               {balances?.tron && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
@@ -245,7 +245,7 @@ export default function PersonalWalletsWidget() {
           </div>
 
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
               <span style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>USDT ERC-20 (Ethereum)</span>
               {balances?.ethereum && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
@@ -308,7 +308,7 @@ export default function PersonalWalletsWidget() {
             </Button>
           </div>
 
-          <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255, 171, 0, 0.05)', border: '1px solid rgba(255, 171, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--accent-warning)', fontWeight: 600 }}>⚠️ Testnet Sandbox Faucets:</span>
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               <strong>TRON (Shasta)</strong>: Get test TRX/USDT from the <a href="https://shasta.tronex.io/join/getJoinPage" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Shasta Faucet</a> or <a href="https://faucet.triangleplatform.com/tron/shasta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', fontWeight: 600 }}>Triangle Faucet</a>.
