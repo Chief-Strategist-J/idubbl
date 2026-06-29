@@ -423,8 +423,8 @@ export default function DepositForm() {
               />
               
               {/* Premium Custom Searchable Dropdown */}
-              <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
-                <label className="form-label" style={{ fontWeight: 600 }}>
+              <div ref={dropdownRef} className="form-group" style={{ position: 'relative', width: '100%' }}>
+                <label className="form-label">
                   Currency
                 </label>
                 <button
@@ -438,7 +438,7 @@ export default function DepositForm() {
                     cursor: 'pointer',
                     boxSizing: 'border-box',
                     textAlign: 'left',
-                    height: '46px',
+                    padding: '0.75rem 1rem',
                     borderColor: dropdownOpen ? 'var(--border-focus)' : 'var(--border)',
                     boxShadow: dropdownOpen ? '0 0 10px var(--primary-glow)' : 'none'
                   }}
