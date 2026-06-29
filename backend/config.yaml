@@ -22,6 +22,10 @@ payments:
       merchantId: "your-juspay-merchant-id"
       baseUrl: "https://sandbox.juspay.in"
       returnUrl: "http://localhost:5000/api/payment/callback/juspay"
+    flutterwave:
+      secretKey: "your-flutterwave-secret-key"
+      baseUrl: "https://api.flutterwave.com/v3"
+      redirectUrl: "http://localhost:5000/api/payment/callback/flutterwave"
 
 blockchain:
   wallets:

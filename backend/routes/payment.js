@@ -67,4 +67,18 @@ router.get('/callback/juspay', async (req, res) => {
   }
 });
 
+// Callback redirect route for Flutterwave
+router.get('/callback/flutterwave', async (req, res) => {
+  const { status, tx_ref, transaction_id } = req.query;
+  console.log(`Flutterwave callback: Status=${status}, TxRef=${tx_ref}, TransactionID=${transaction_id}`);
+  
+  try {
+    // Verify using either the transaction ID or the reference
+    const verification = await paymentService.verifyPayment(transaction_id || tx_ref);
+    return res.send(`Payment status: ${verification.status}. Reference: ${verification.orderId}`);
+  } catch (err) {
+    return res.send(`Payment verification failed: ${err.message}`);
+  }
+});
+
 export default router;
