@@ -37,7 +37,21 @@ const CURRENCY_OPTIONS = [
   { value: 'ZMW', label: 'ZMW - Zambian Kwacha' },
   { value: 'XOF', label: 'XOF - West African CFA' },
   { value: 'XAF', label: 'XAF - Central African CFA' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar' }
+  { value: 'CAD', label: 'CAD - Canadian Dollar' },
+  { value: 'AUD', label: 'AUD - Australian Dollar' },
+  { value: 'INR', label: 'INR - Indian Rupee' },
+  { value: 'AED', label: 'AED - UAE Dirham' },
+  { value: 'CNY', label: 'CNY - Chinese Yuan' },
+  { value: 'SLL', label: 'SLL - Sierra Leonean Leone' },
+  { value: 'LRD', label: 'LRD - Liberian Dollar' },
+  { value: 'MWK', label: 'MWK - Malawian Kwacha' },
+  { value: 'MAD', label: 'MAD - Moroccan Dirham' },
+  { value: 'EGP', label: 'EGP - Egyptian Pound' },
+  { value: 'CVE', label: 'CVE - Cape Verdean Escudo' },
+  { value: 'MUR', label: 'MUR - Mauritian Rupee' },
+  { value: 'GMD', label: 'GMD - Gambian Dalasi' },
+  { value: 'BIF', label: 'BIF - Burundian Franc' },
+  { value: 'CDF', label: 'CDF - Congolese Franc' }
 ];
 
 export default function DepositForm() {
