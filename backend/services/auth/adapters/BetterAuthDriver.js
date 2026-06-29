@@ -28,6 +28,12 @@ export class BetterAuthDriver extends AuthDriver {
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        advanced: {
+          cookie: {
+            sameSite: "none",
+            secure: true
+          }
+        },
         databaseHooks: {
           user: {
             create: {
