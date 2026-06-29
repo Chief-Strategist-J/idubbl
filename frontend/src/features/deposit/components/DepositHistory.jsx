@@ -4,7 +4,7 @@ import useWalletStore from '../../../shared/store/walletStore.js';
 import useAuthStore from '../../../shared/store/authStore.js';
 
 const COLUMNS = [
-  { key: 'id', label: 'Ref ID', render: (v) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{v.toUpperCase()}</code> },
+  { key: 'id', label: 'Ref ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{String(row?._id || row?.id || v || '').substring(0, 8).toUpperCase()}</code> },
   { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontWeight: 600 }}>{v} USDT</span> },
   { key: 'network', label: 'Network' },
   { key: 'txHash', label: 'TX Hash', render: (v) => <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{v?.slice(0, 16)}...</code> },
