@@ -103,11 +103,9 @@ export default function WalletHubPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
             {/* Available balance */}
             <div style={{
-              flex: 1,
-              minWidth: 140,
               background: 'rgba(0, 227, 122, 0.06)',
               border: '1px solid rgba(0, 227, 122, 0.15)',
               borderRadius: 12,
@@ -131,13 +129,8 @@ export default function WalletHubPage() {
               </p>
             </div>
 
-            {/* Divider for desktop */}
-            <div style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0.5rem 0' }} aria-hidden="true" />
-
             {/* Locked balance */}
             <div style={{
-              flex: 1,
-              minWidth: 140,
               background: 'var(--accent-warning-glow)',
               border: '1px solid rgba(255, 176, 32, 0.18)',
               borderRadius: 12,
