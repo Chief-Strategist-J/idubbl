@@ -341,7 +341,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   onClick={() => setShowAllSelectedName(true)}
                   style={{
                     background: 'rgba(0, 227, 122, 0.14)',
-                    color: 'var(--primary)',
+                    color: 'var(--bg-darker)',
                     border: '1px solid rgba(0, 227, 122, 0.22)',
                     borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                     cursor: 'pointer', flexShrink: 0
