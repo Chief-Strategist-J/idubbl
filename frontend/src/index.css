@@ -2599,13 +2599,15 @@ body {
 }
 
 .chat-modal {
-  background: var(--bg-card);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem;
-  width: 100%;
-  max-width: 420px;
-  max-height: 90vh;
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 92%;
+  max-width: 440px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-card);
@@ -2616,13 +2618,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .chat-modal-user-list {
   flex: 1;
   overflow-y: auto;
-  max-height: 260px;
+  max-height: 320px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -2633,14 +2635,15 @@ body {
 .chat-modal-user-item {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   width: 100%;
-  padding: 0.55rem 0.5rem;
+  padding: 0.65rem 0.75rem;
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background 0.15s;
+  margin-bottom: 0.4rem;
 }
 
 .chat-modal-user-item:hover { background: var(--glass-bg-hover); }
@@ -2658,13 +2661,17 @@ body {
   flex-shrink: 0;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .chat-page {
     position: relative;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 135px - env(safe-area-inset-bottom, 0px));
     border-radius: 0;
     border-left: none;
     border-right: none;
+  }
+
+  .chat-page.hide-bottom-nav {
+    height: calc(100vh - 75px - env(safe-area-inset-bottom, 0px));
   }
 
   .chat-sidebar {

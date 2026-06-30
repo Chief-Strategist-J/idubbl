@@ -2,6 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Search, Users, User, CheckCircle2, ArrowRight, ArrowLeft, Camera } from 'lucide-react';
 import useChatStore from '../../../shared/store/chatStore.js';
 
+const getAvatarStyle = (name = '') => {
+  const colors = [
+    { bg: 'rgba(0, 227, 122, 0.12)', text: 'var(--primary)' },
+    { bg: 'rgba(91, 141, 239, 0.12)', text: 'var(--secondary)' },
+    { bg: 'rgba(255, 77, 79, 0.12)', text: 'var(--accent-red)' },
+    { bg: 'rgba(255, 176, 32, 0.12)', text: 'var(--accent-warning)' },
+    { bg: 'rgba(91, 141, 239, 0.12)', text: 'var(--accent-cyan)' }
+  ];
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+  return colors[sum % colors.length];
+};
+
 export default function NewConversationModal({ onClose, onConversationCreated }) {
   const [tab, setTab] = useState('direct');
   const [step, setStep] = useState('select'); // 'select' -> 'name' (group only)
@@ -91,7 +104,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
         {/* ---------------- STEP 1: pick a direct user OR pick group members ---------------- */}
         {!isNameStep && (
           <>
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', background: 'var(--glass-bg)', padding: '4px', borderRadius: '12px', marginBottom: '1.25rem', border: '1px solid var(--border)' }}>
               {[
                 { key: 'direct', label: 'Direct', icon: User },
                 { key: 'group', label: 'Group', icon: Users }
@@ -100,11 +113,12 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   key={key}
                   onClick={() => switchTab(key)}
                   style={{
-                    flex: 1, padding: '0.65rem', background: 'none', border: 'none', cursor: 'pointer',
-                    borderBottom: tab === key ? '2px solid var(--primary)' : '2px solid transparent',
-                    color: tab === key ? 'var(--primary)' : 'var(--text-secondary)',
-                    fontWeight: tab === key ? 600 : 400, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: '0.4rem', fontSize: '0.9rem', transition: 'all 0.2s'
+                    flex: 1, padding: '0.55rem', background: tab === key ? 'var(--primary)' : 'none', border: 'none', cursor: 'pointer',
+                    borderRadius: '8px',
+                    color: tab === key ? 'var(--text-on-primary)' : 'var(--text-secondary)',
+                    fontWeight: tab === key ? 600 : 500, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '0.4rem', fontSize: '0.88rem', transition: 'all 0.2s',
+                    boxShadow: tab === key ? '0 2px 8px var(--primary-glow)' : 'none'
                   }}
                 >
                   <Icon size={15} /> {label}
@@ -112,12 +126,24 @@ export default function NewConversationModal({ onClose, onConversationCreated })
               ))}
             </div>
 
-            <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
-              <Search size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', marginBottom: '1rem' }}>
+              <Search size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input
                 className="chat-search-input"
-                style={{ paddingLeft: '2.2rem', marginBottom: 0 }}
-                placeholder="Search users…"
+                style={{
+                  paddingLeft: '2.4rem',
+                  paddingRight: '1rem',
+                  height: '42px',
+                  marginBottom: 0,
+                  borderRadius: '10px',
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--border)',
+                  width: '100%',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                placeholder="Search users by name or email…"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
               />
@@ -142,9 +168,10 @@ export default function NewConversationModal({ onClose, onConversationCreated })
               >
                 {(showAllSelected ? selected : selected.slice(0, 3)).map(u => (
                   <span key={getUserId(u)} style={{
-                    background: 'var(--primary)', color: 'var(--text-on-primary)',
-                    borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0
+                    background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
+                    border: '1px solid rgba(0, 227, 122, 0.25)',
+                    borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0
                   }}>
                     {u.name || u.email}
                     <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />
@@ -186,6 +213,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
               )}
               {users.map(user => {
                 const isSelected = selected.some(u => getUserId(u) === getUserId(user));
+                const avatarStyle = getAvatarStyle(user.name || user.email);
                 return (
                   <button
                     key={getUserId(user)}
@@ -194,9 +222,10 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   >
                     <div style={{
                       width: 36, height: 36, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                      background: avatarStyle.bg,
+                      border: `1px solid ${avatarStyle.text}25`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--text-on-primary)', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
+                      color: avatarStyle.text, fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
                     }}>
                       {(user.name || user.email || '?')[0].toUpperCase()}
                     </div>
@@ -298,9 +327,10 @@ export default function NewConversationModal({ onClose, onConversationCreated })
             >
               {(showAllSelectedName ? selected : selected.slice(0, 4)).map(u => (
                 <span key={getUserId(u)} style={{
-                  background: 'var(--primary)', color: 'var(--text-on-primary)',
-                  borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
-                  display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0
+                  background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
+                  border: '1px solid rgba(0, 227, 122, 0.25)',
+                  borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0
                 }}>
                   {u.name || u.email}
                   <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />

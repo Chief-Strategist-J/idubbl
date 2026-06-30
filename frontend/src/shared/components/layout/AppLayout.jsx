@@ -24,7 +24,7 @@ const HEADER_NAV = [
   { label: 'Profile',   path: '/profile' },
 ];
 
-export default function AppLayout({ children, noPadding = false }) {
+export default function AppLayout({ children, noPadding = false, hideBottomNav = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
@@ -124,23 +124,25 @@ export default function AppLayout({ children, noPadding = false }) {
       <main className={noPadding ? 'main-content main-content--no-padding' : 'main-content'}>{children}</main>
 
       {/* Mobile bottom tab bar — design.md §2.3: Home · Play · Wallet · History · Profile */}
-      <nav className="bottom-nav" aria-label="Main navigation">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <button
-              key={item.path}
-              className={`bottom-nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => navigate(item.path)}
-              aria-label={item.label}
-            >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} />
-              <span>{item.short}</span>
-            </button>
-          );
-        })}
-      </nav>
+      {!hideBottomNav && (
+        <nav className="bottom-nav" aria-label="Main navigation">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.path}
+                className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+                aria-label={item.label}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} />
+                <span>{item.short}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }
