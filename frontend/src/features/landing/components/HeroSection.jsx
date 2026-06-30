@@ -28,9 +28,6 @@ export default function HeroSection() {
 
       <div className="hero-actions-container">
         <Button variant="primary" onClick={() => navigate('/signup')}>Play and Win with Skill</Button>
-        <Button variant="secondary" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>
-          View How It Works
-        </Button>
       </div>
     </section>
   );
