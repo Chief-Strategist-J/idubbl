@@ -2601,7 +2601,7 @@ body {
   padding: 1.25rem;
   width: 100%;
   max-width: 420px;
-  max-height: 80vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-card);
@@ -2619,6 +2619,11 @@ body {
   flex: 1;
   overflow-y: auto;
   max-height: 260px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chat-modal-user-list::-webkit-scrollbar {
+  display: none;
 }
 
 .chat-modal-user-item {
