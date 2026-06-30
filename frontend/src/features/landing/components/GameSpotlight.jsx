@@ -126,9 +126,17 @@ const CATEGORIES = ['All', 'Skill Duels', 'Card Games', 'Chance'];
 export default function GameSpotlight() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('All');
+  const scrollRef = React.useRef(null);
 
   const handlePlayGame = (gameId) => {
     navigate(`/login?redirect=/lobby&game=${gameId}`);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
   };
 
   const filteredGames = GAMES.filter((game) => activeTab === 'All' || game.category === activeTab);
@@ -137,16 +145,22 @@ export default function GameSpotlight() {
     <section
       id="game-spotlight"
       style={{
-        padding: '3rem 0.25rem 4rem',
-        background: 'linear-gradient(180deg, rgba(20,24,33,0) 0%, rgba(26,33,48,0.5) 100%)',
+        padding: '3rem 0.25rem 3rem',
+        background: 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-darker) 100%)',
         borderTop: '1px solid var(--border)',
         borderBottom: '1px solid var(--border)',
       }}
     >
+      <style>{`
+        .games-scroll-row::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+      
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '0 0.5rem' }}>
           <span style={{
             display: 'inline-block',
             background: 'rgba(0,227,122,0.1)',
@@ -192,7 +206,7 @@ export default function GameSpotlight() {
             return (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabChange(tab)}
                 style={{
                   padding: '0.4rem 0.9rem',
                   borderRadius: '20px',
@@ -212,17 +226,28 @@ export default function GameSpotlight() {
           })}
         </div>
 
-        {/* Stake grid: 2 columns on mobile */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-          gap: '1rem',
-        }}>
+        {/* Swipeable Horizontal Scroll Row */}
+        <div 
+          ref={scrollRef}
+          className="games-scroll-row"
+          style={{
+            display: 'flex',
+            overflowX: 'auto',
+            gap: '0.85rem',
+            padding: '0.5rem 0.75rem 1.5rem',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            scrollSnapType: 'x mandatory'
+          }}
+        >
           {filteredGames.map((game) => (
             <div
               key={game.id}
               onClick={() => handlePlayGame(game.id)}
               style={{
+                flex: '0 0 145px',
+                scrollSnapAlign: 'start',
                 background: 'var(--bg-card)',
                 borderRadius: '12px',
                 border: '1px solid var(--border)',
