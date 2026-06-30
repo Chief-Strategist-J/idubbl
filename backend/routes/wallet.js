@@ -263,6 +263,20 @@ router.post('/withdraw', async (req, res) => {
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
+
+    // Check user KYC status before allowing withdrawal
+    const { ObjectId } = await import('mongodb');
+    let dbUser = await db.collection('user').findOne({ id: userId });
+    if (!dbUser && userId.length === 24) {
+      try {
+        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+      } catch (err) {}
+    }
+
+    if (!dbUser || dbUser.kycStatus !== 'verified') {
+      return errorRegistry.send(res, 'KYC_REQUIRED', 'KYC verification is required before withdrawing funds.');
+    }
+
     const wallet = await getOrCreateWallet(db, userId);
 
     const totalAvailable = wallet.winningsBalance || 0;

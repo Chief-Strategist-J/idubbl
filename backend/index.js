@@ -9,6 +9,7 @@ import walletRouter from './routes/wallet.js';
 import adminRouter from './routes/admin.js';
 import matchRouter from './routes/match.js';
 import chatRouter from './routes/chat.js';
+import kycRouter from './routes/kyc.js';
 import { matchmakerService } from './services/matchmakerService.js';
 import { initChatSocket } from './services/chat/SocketHandler.js';
 import { initIndexes as initChatIndexes } from './services/chat/ChatService.js';
@@ -27,6 +28,7 @@ app.use('/api/wallet', walletRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/match', matchRouter);
 app.use('/api/chat', chatRouter);
+app.use('/api/kyc', kycRouter);
 
 const server = createServer(app);
 const io = new Server(server, {

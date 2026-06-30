@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@qore-id/web-sdk": "^2.0.0",
     "lucide-react": "^1.18.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

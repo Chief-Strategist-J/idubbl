@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Input, Card, Modal } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
+import QoreID from '@qore-id/web-sdk';
+import { ShieldCheck, ShieldAlert, Shield, XCircle, RefreshCw } from 'lucide-react';
 
 import PersonalWalletsWidget from '../deposit/components/PersonalWalletsWidget.jsx';
 
@@ -101,6 +103,12 @@ function SuccessBanner({ message }) {
 export default function ProfilePage() {
   const { user } = useAuthStore();
 
+  // KYC States
+  const [kycStatus, setKycStatus] = useState('loading'); // 'loading' | 'unverified' | 'pending' | 'verified' | 'failed'
+  const [kycDetails, setKycDetails] = useState(null);
+  const [kycActionLoading, setKycActionLoading] = useState(false);
+  const [simulationModalOpen, setSimulationModalOpen] = useState(false);
+
   /* — Account Info — */
   const [account, setAccount] = useState({
     firstName: '',
@@ -109,6 +117,135 @@ export default function ProfilePage() {
     phone: '',
   });
   const [accountSuccess, setAccountSuccess] = useState('');
+
+  let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+  if (!apiBase.startsWith('http')) apiBase = `https://${apiBase}`;
+
+  // Fetch KYC status on mount
+  const fetchKycStatus = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`${apiBase}/api/kyc/status`, {
+        headers: { 'x-user-id': user.id },
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setKycStatus(json.kycStatus || 'unverified');
+          setKycDetails(json.kycDetails);
+        }
+      } else {
+        setKycStatus('unverified');
+      }
+    } catch (err) {
+      console.error('Error fetching KYC status in Profile:', err);
+      setKycStatus('unverified');
+    }
+  };
+
+  useEffect(() => {
+    fetchKycStatus();
+  }, [user?.id]);
+
+  // Set up QoreID Web SDK event listeners
+  useEffect(() => {
+    try {
+      QoreID.on('success', async (data) => {
+        console.log('QoreID SDK success (Profile):', data);
+        await fetch(`${apiBase}/api/kyc/simulate`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': user?.id
+          },
+          body: JSON.stringify({ status: 'verified' })
+        });
+        fetchKycStatus();
+      });
+
+      QoreID.on('error', async (err) => {
+        console.error('QoreID SDK error (Profile):', err);
+        await fetch(`${apiBase}/api/kyc/simulate`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': user?.id
+          },
+          body: JSON.stringify({ status: 'failed' })
+        });
+        fetchKycStatus();
+      });
+
+      QoreID.on('close', () => {
+        console.log('QoreID SDK closed (Profile)');
+      });
+    } catch (e) {
+      console.warn('QoreID event subscription failed in Profile:', e);
+    }
+  }, [user?.id]);
+
+  const handleStartKyc = async () => {
+    setKycActionLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/kyc/session`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id
+        },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      setKycActionLoading(false);
+
+      if (data.success) {
+        if (data.simulation) {
+          setSimulationModalOpen(true);
+        } else {
+          await QoreID.start({
+            token: data.sdkSessionToken,
+            customerReference: `idubbl-${user?.id}`,
+            applicantData: {
+              firstname: user?.name?.split(' ')[0] || 'User',
+              lastname: user?.name?.split(' ')?.slice(1)?.join(' ') || 'Player',
+              email: user?.email
+            }
+          });
+        }
+      } else {
+        alert(data.error || 'Failed to initialize KYC. Falling back to simulation...');
+        setSimulationModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Error starting QoreID flow in Profile:', err);
+      setKycActionLoading(false);
+      setSimulationModalOpen(true);
+    }
+  };
+
+  const handleSimulateStatus = async (status) => {
+    setKycActionLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/kyc/simulate`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id
+        },
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setKycStatus(data.kycStatus);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setKycActionLoading(false);
+      setSimulationModalOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -229,6 +366,49 @@ export default function ProfilePage() {
           </div>
 
           <SuccessBanner message={accountSuccess} />
+        </Card>
+
+        {/* ── KYC Identity Verification ─────────────────────────────────── */}
+        <Card style={{ position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '120%', height: '120%', background: 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 60%)', zIndex: 0, pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <SectionTitle>Identity Verification (KYC)</SectionTitle>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '1.25rem' }}>
+              <div style={{ padding: '0.75rem', borderRadius: '50%', background: kycStatus === 'verified' ? 'var(--accent-green-glow)' : kycStatus === 'pending' ? 'rgba(245,158,11,0.1)' : kycStatus === 'failed' ? 'var(--accent-red-glow)' : 'rgba(255,255,255,0.03)', color: kycStatus === 'verified' ? 'var(--accent-green)' : kycStatus === 'pending' ? 'var(--accent-warning)' : kycStatus === 'failed' ? 'var(--accent-red)' : 'var(--text-muted)' }}>
+                {kycStatus === 'verified' ? <ShieldCheck style={{ width: '28px', height: '28px' }} /> : kycStatus === 'failed' ? <XCircle style={{ width: '28px', height: '28px' }} /> : kycStatus === 'pending' ? <RefreshCw style={{ width: '28px', height: '28px', animation: 'spin 3s linear infinite' }} /> : <Shield style={{ width: '28px', height: '28px' }} />}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Identity Verification Status</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', padding: '0.15rem 0.45rem', borderRadius: '6px', background: kycStatus === 'verified' ? 'var(--accent-green-glow)' : kycStatus === 'pending' ? 'rgba(245,158,11,0.15)' : kycStatus === 'failed' ? 'var(--accent-red-glow)' : 'var(--bg-darker)', color: kycStatus === 'verified' ? 'var(--accent-green)' : kycStatus === 'pending' ? 'var(--accent-warning)' : kycStatus === 'failed' ? 'var(--accent-red)' : 'var(--text-muted)', border: `1px solid ${kycStatus === 'verified' ? 'rgba(20,241,149,0.2)' : kycStatus === 'pending' ? 'rgba(245,158,11,0.2)' : kycStatus === 'failed' ? 'rgba(239,68,68,0.2)' : 'var(--border)'}` }}>
+                    {kycStatus}
+                  </span>
+                </div>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                  {kycStatus === 'verified' ? 'Your identity is fully verified. You can withdraw your winnings at any time.' : kycStatus === 'pending' ? 'Your documents are being reviewed. Verification typically takes a few minutes.' : kycStatus === 'failed' ? 'Your verification was rejected. Please check your credentials and try again.' : 'Verification is required before you can request any fund withdrawals.'}
+                </p>
+              </div>
+            </div>
+
+            {kycStatus !== 'verified' && (
+              <Button onClick={handleStartKyc} loading={kycActionLoading} variant="primary">
+                {kycStatus === 'failed' ? 'Retry Identity Verification' : kycStatus === 'pending' ? 'Verify Again' : 'Start Identity Verification'}
+              </Button>
+            )}
+
+            {/* Simulation controls */}
+            <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
+              <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                🛠️ Simulator Options
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button onClick={() => handleSimulateStatus('verified')} style={{ padding: '0.3rem 0.5rem', fontSize: '0.7rem', background: 'var(--accent-green-glow)', border: '1px solid rgba(20,241,149,0.3)', color: 'var(--accent-green)', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Verify Profile</button>
+                <button onClick={() => handleSimulateStatus('failed')} style={{ padding: '0.3rem 0.5rem', fontSize: '0.7rem', background: 'var(--accent-red-glow)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--accent-red)', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Fail Profile</button>
+                <button onClick={() => handleSimulateStatus('unverified')} style={{ padding: '0.3rem 0.5rem', fontSize: '0.7rem', background: 'var(--bg-darker)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reset Status</button>
+              </div>
+            </div>
+          </div>
         </Card>
 
         {/* ── Security ─────────────────────────────────────────────────── */}
@@ -391,6 +571,56 @@ export default function ProfilePage() {
           </Button>
         </div>
       </Modal>
+
+      {/* QoreID Mock UI Modal */}
+      {simulationModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '90%', maxWidth: '440px', background: '#111827', border: '1.5px solid #374151', borderRadius: '16px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', textAlign: 'center', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setSimulationModalOpen(false)}>✕</div>
+            
+            {/* QoreID Mock Branding */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ width: '28px', height: '28px', background: '#3b82f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.85rem' }}>Q</div>
+              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f3f4f6', letterSpacing: '0.5px' }}>qore<span style={{ color: '#3b82f6' }}>ID</span></span>
+              <span style={{ fontSize: '0.65rem', background: '#1e3a8a', color: '#60a5fa', padding: '0.15rem 0.35rem', borderRadius: '4px', fontWeight: 700 }}>SANDBOX SIMULATOR</span>
+            </div>
+
+            <h4 style={{ color: '#f9fafb', fontSize: '1.1rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>Verify Your Identity</h4>
+            <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+              You are about to test the QoreID identity verification SDK integration. Please choose a simulated result below.
+            </p>
+
+            {/* Mock Applicant Data Preview */}
+            <div style={{ background: '#1f2937', padding: '1rem', borderRadius: '10px', textAlign: 'left', marginBottom: '1.5rem', border: '1px solid #374151' }}>
+              <span style={{ display: 'block', fontSize: '0.65rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Applicant Details</span>
+              <div style={{ fontSize: '0.8rem', color: '#e5e7eb', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div><strong>Name:</strong> {user?.name || 'User Player'}</div>
+                <div><strong>Email:</strong> {user?.email || 'user@example.com'}</div>
+                <div><strong>Ref:</strong> idubbl-{user?.id}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button 
+                onClick={() => handleSimulateStatus('verified')}
+                style={{ width: '100%', padding: '0.75rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', transition: 'all 0.2s' }}
+              >
+                ✓ Pass Verification (Simulate Success)
+              </button>
+              <button 
+                onClick={() => handleSimulateStatus('failed')}
+                style={{ width: '100%', padding: '0.75rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', transition: 'all 0.2s' }}
+              >
+                ✕ Reject Verification (Simulate Failure)
+              </button>
+            </div>
+
+            <p style={{ color: '#6b7280', fontSize: '0.7rem', marginTop: '1.25rem' }}>
+              Real production integrations will prompt users for document upload (NIN, Drivers License, BVN, Voter Card) or liveness detection.
+            </p>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
