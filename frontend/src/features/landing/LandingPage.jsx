@@ -3,21 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import HeroSection from './components/HeroSection.jsx';
 import TrustPoints from './components/TrustPoints.jsx';
 import GameSpotlight from './components/GameSpotlight.jsx';
-import TierPreview from './components/TierPreview.jsx';
 import WhyIdubbl from './components/WhyIdubbl.jsx';
 import FaqAccordion from './components/FaqAccordion.jsx';
 import ThemeToggle from '../../shared/components/ui/ThemeToggle.jsx';
 
-// design.md §2.1 — Header (logged out): Logo · "Tiers" / "Support" · Log in + Sign up
+// design.md §2.1 — Header (logged out): Logo · "Support" · Log in + Sign up
 const PUBLIC_NAV = [
   { label: 'Games', href: '/games' },
-  { label: 'Tiers', href: '#tiers' },
   { label: 'Support', href: '/support' },
 ];
 
 // design.md §3.1 footer links
 const FOOTER_LINKS = [
-  'About', 'Tiers', 'Support', 'Terms', 'Privacy', 'Responsible Play',
+  'About', 'Support', 'Terms', 'Privacy', 'Responsible Play',
 ];
 
 function scrollTo(href) {
@@ -51,7 +49,7 @@ export default function LandingPage() {
             />
           </div>
 
-          {/* Nav links — §2.1: "Tiers" / "Support" */}
+          {/* Nav links — §2.1: "Support" */}
           <nav className="nav-links" aria-label="Public navigation">
             {PUBLIC_NAV.map((item) => (
               <button
@@ -89,13 +87,10 @@ export default function LandingPage() {
         {/* 3. Trust strip */}
         <TrustPoints />
 
-        {/* 4. Tier preview cards */}
-        <TierPreview />
-
-        {/* 5. "Why iDubbl" reassurance */}
+        {/* 4. "Why iDubbl" reassurance */}
         <WhyIdubbl />
 
-        {/* 6. FAQ accordion */}
+        {/* 5. FAQ accordion */}
         <FaqAccordion />
       </main>
 
