@@ -2550,6 +2550,12 @@ body {
   transition: border-color 0.2s;
   max-height: 120px;
   line-height: 1.45;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chat-text-input::-webkit-scrollbar {
+  display: none;
 }
 
 .chat-text-input:focus { border-color: var(--border-focus); }
