@@ -153,13 +153,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                 {!showAllSelected && selected.length > 3 && (
                   <span
                     onClick={() => setShowAllSelected(true)}
-                    style={{
-                      background: 'rgba(0, 227, 122, 0.14)',
-                      color: 'var(--bg-darker)',
-                      border: '1px solid rgba(0, 227, 122, 0.22)',
-                      borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
-                      cursor: 'pointer', flexShrink: 0
-                    }}
+                    className="chat-selected-more-pill"
                   >
                     +{selected.length - 3} more
                   </span>
@@ -309,13 +303,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
               {!showAllSelectedName && selected.length > 4 && (
                 <span
                   onClick={() => setShowAllSelectedName(true)}
-                  style={{
-                    background: 'rgba(0, 227, 122, 0.14)',
-                    color: 'var(--bg-darker)',
-                    border: '1px solid rgba(0, 227, 122, 0.22)',
-                    borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
-                    cursor: 'pointer', flexShrink: 0
-                  }}
+                  className="chat-selected-more-pill"
                 >
                   +{selected.length - 4} more
                 </span>
