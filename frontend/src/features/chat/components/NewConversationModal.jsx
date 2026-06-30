@@ -171,10 +171,12 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                     background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
                     border: '1px solid rgba(0, 227, 122, 0.25)',
                     borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0
+                    display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '140px'
                   }}>
-                    {u.name || u.email}
-                    <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {u.name || u.email}
+                    </span>
+                    <X size={12} style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => toggleUser(u)} />
                   </span>
                 ))}
                 {!showAllSelected && selected.length > 3 && (
@@ -330,10 +332,12 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
                   border: '1px solid rgba(0, 227, 122, 0.25)',
                   borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
-                  display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0
+                  display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '140px'
                 }}>
-                  {u.name || u.email}
-                  <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {u.name || u.email}
+                  </span>
+                  <X size={12} style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => toggleUser(u)} />
                 </span>
               ))}
               {!showAllSelectedName && selected.length > 4 && (
@@ -341,7 +345,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   onClick={() => setShowAllSelectedName(true)}
                   style={{
                     background: 'rgba(0, 227, 122, 0.14)',
-                    color: 'var(--bg-darker)',
+                    color: 'var(--primary)',
                     border: '1px solid rgba(0, 227, 122, 0.22)',
                     borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                     cursor: 'pointer', flexShrink: 0
