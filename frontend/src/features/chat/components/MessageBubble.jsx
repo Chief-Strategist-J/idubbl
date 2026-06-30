@@ -90,17 +90,17 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
                 This message was deleted
               </span>
             ) : (
-              <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.45 }}>
+              <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.45, fontWeight: 600 }}>
                 {message?.text ?? ''}
               </span>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: '0.6rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
+              <span style={{ fontSize: '0.55rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
                 {formatTime(message.createdAt)}
                 {message.editedAt && !isDeleted && <span style={{ marginLeft: '0.3rem' }}>· edited</span>}
               </span>
               {isMine && !isDeleted && (
-                <CheckCheck size={13} style={{ color: 'rgba(255,255,255,0.6)' }} />
+                <CheckCheck size={11} style={{ color: 'rgba(255,255,255,0.6)' }} />
               )}
             </div>
           </>
