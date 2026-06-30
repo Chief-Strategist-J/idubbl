@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Search, Users, User, Check } from 'lucide-react';
+import { X, Search, Users, User, CheckCircle2 } from 'lucide-react';
 import useChatStore from '../../../shared/store/chatStore.js';
 
 export default function NewConversationModal({ onClose, onConversationCreated }) {
@@ -19,11 +19,12 @@ export default function NewConversationModal({ onClose, onConversationCreated })
     debounceRef.current = setTimeout(() => fetchUsers(query), 300);
     return () => clearTimeout(debounceRef.current);
   }, [query]);
+  const getUserId = (user) => user.id ?? user._id;
 
   function toggleUser(user) {
     setSelected(s =>
-      s.some(u => u.id === user.id)
-        ? s.filter(u => u.id !== user.id)
+      s.some(u => getUserId(u) === getUserId(user))
+        ? s.filter(u => getUserId(u) !== getUserId(user))
         : [...s, user]
     );
   }
@@ -40,8 +41,8 @@ export default function NewConversationModal({ onClose, onConversationCreated })
     setCreating(true);
     try {
       const conv = tab === 'direct'
-        ? await createDirect(selected[0].id)
-        : await createGroup(groupName.trim(), selected.map(u => u.id));
+        ? await createDirect(getUserId(selected[0]))
+        : await createGroup(groupName.trim(), selected.map(getUserId));
       onConversationCreated(conv);
     } catch (err) {
       setError(err.message || 'Failed to create conversation.');
@@ -102,7 +103,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
         </div>
 
         {selected.length > 0 && tab === 'group' && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottomt: '0.75rem' }}>
             {selected.map(u => (
               <span key={u.id} style={{
                 background: 'var(--primary)', color: 'var(--bg-darker)',
@@ -123,10 +124,10 @@ export default function NewConversationModal({ onClose, onConversationCreated })
             </div>
           )}
           {users.map(user => {
-            const isSelected = selected.some(u => u.id === user.id);
+            const isSelected = selected.some(u => getUserId(u) === getUserId(user));
             return (
               <button
-                key={user.id}
+                key={getUserId(user)}
                 className={`chat-modal-user-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => tab === 'direct' ? setSelected([user]) : toggleUser(user)}
               >
@@ -142,7 +143,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-primary)' }}>{user.name || 'Unknown'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
                 </div>
-                {isSelected && <Check size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
+                {isSelected && <CheckCircle2 size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
               </button>
             );
           })}
