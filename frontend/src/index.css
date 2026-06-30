@@ -2656,6 +2656,10 @@ body {
     border-right: none;
   }
 
+  .chat-page.hide-bottom-nav {
+    height: calc(100vh - 75px - env(safe-area-inset-bottom, 0px));
+  }
+
   .chat-sidebar {
     width: 100%;
     border-right: none;

@@ -49,8 +49,8 @@ export default function ChatPage() {
   }
 
   return (
-    <AppLayout noPadding>
-      <div className="chat-page">
+    <AppLayout noPadding hideBottomNav={mobileView === 'chat'}>
+      <div className={`chat-page ${mobileView === 'chat' ? 'hide-bottom-nav' : ''}`}>
         <div className={`chat-sidebar ${mobileView === 'chat' ? 'chat-sidebar--hidden' : ''}`}>
           <ConversationList onSelect={handleConversationSelect} />
         </div>
