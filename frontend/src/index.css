@@ -118,6 +118,7 @@
   --hologram-card-footer-border: rgba(255, 255, 255, 0.05);
   --hologram-card-pill-bg: rgba(255, 255, 255, 0.03);
   --hologram-card-pill-border: rgba(255, 255, 255, 0.04);
+  --text-on-primary: #0A0D12;
 }
 
 .light {
@@ -163,6 +164,7 @@
   --hologram-card-footer-border: rgba(0, 0, 0, 0.06);
   --hologram-card-pill-bg: rgba(0, 0, 0, 0.02);
   --hologram-card-pill-border: rgba(0, 0, 0, 0.04);
+  --text-on-primary: #0A0D12;
 }
 
 * {
@@ -333,7 +335,7 @@ body {
 /* Button variants */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   border: none;
   padding: 0.75rem 1.5rem;
   min-height: 48px;
@@ -1375,7 +1377,7 @@ body {
 
 .card-action-btn.primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   box-shadow: 0 4px 14px var(--primary-glow);
 }
 
@@ -1431,7 +1433,7 @@ body {
 
 .quick-action-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   box-shadow: 0 4px 15px var(--primary-glow);
 }
 
@@ -2016,7 +2018,7 @@ body {
 
 .casino-btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   box-shadow: 0 4px 16px var(--primary-glow);
 }
 
@@ -2470,7 +2472,7 @@ body {
 
 .chat-msg-bubble.mine {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   border-bottom-right-radius: 4px;
 }
 
@@ -2569,7 +2571,7 @@ body {
 
 .chat-send-btn.active {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  color: var(--text-on-primary);
   box-shadow: 0 2px 10px var(--primary-glow);
 }
 

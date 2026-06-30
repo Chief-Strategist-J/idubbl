@@ -142,7 +142,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
               >
                 {(showAllSelected ? selected : selected.slice(0, 3)).map(u => (
                   <span key={getUserId(u)} style={{
-                    background: 'var(--primary)', color: 'var(--bg-darker)',
+                    background: 'var(--primary)', color: 'var(--text-on-primary)',
                     borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                     display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0
                   }}>
@@ -155,7 +155,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                     onClick={() => setShowAllSelected(true)}
                     style={{
                       background: 'rgba(0, 227, 122, 0.14)',
-                      color: 'var(--bg-darker)',
+                      color: 'var(--primary)',
                       border: '1px solid rgba(0, 227, 122, 0.22)',
                       borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                       cursor: 'pointer', flexShrink: 0
@@ -196,7 +196,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                       width: 36, height: 36, borderRadius: '50%',
                       background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--bg-darker)', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
+                      color: 'var(--text-on-primary)', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0
                     }}>
                       {(user.name || user.email || '?')[0].toUpperCase()}
                     </div>
@@ -229,7 +229,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   style={{
                     width: 48, height: 48, borderRadius: '50%', border: 'none',
                     background: selected.length === 0 ? 'var(--border)' : 'var(--primary)',
-                    color: 'var(--bg-darker)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--text-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
                     boxShadow: selected.length === 0 ? 'none' : '0 2px 10px rgba(0, 227, 122, 0.35)',
                     transition: 'all 0.2s'
@@ -252,7 +252,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                 width: 84, height: 84, borderRadius: '50%',
                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--bg-darker)', position: 'relative'
+                color: 'var(--text-on-primary)', position: 'relative'
               }}>
                 <Camera size={26} />
                 <div style={{
@@ -298,7 +298,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
             >
               {(showAllSelectedName ? selected : selected.slice(0, 4)).map(u => (
                 <span key={getUserId(u)} style={{
-                  background: 'var(--primary)', color: 'var(--bg-darker)',
+                  background: 'var(--primary)', color: 'var(--text-on-primary)',
                   borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                   display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0
                 }}>
@@ -311,7 +311,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   onClick={() => setShowAllSelectedName(true)}
                   style={{
                     background: 'rgba(0, 227, 122, 0.14)',
-                    color: 'var(--bg-darker)',
+                    color: 'var(--primary)',
                     border: '1px solid rgba(0, 227, 122, 0.22)',
                     borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
                     cursor: 'pointer', flexShrink: 0
