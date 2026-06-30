@@ -90,22 +90,29 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
                 This message was deleted
               </span>
             ) : (
-              <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.45, fontWeight: 600 }}>
+              <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.45, fontWeight: 600, display: 'inline-block', width: '100%' }}>
                 {message?.text ?? ''}
-              </span>
-            )}
-            {(!isDeleted && (isMine || message.editedAt)) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
-                {message.editedAt && (
-                  <span style={{ fontSize: '0.55rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
-                    edited
+                {(!isDeleted && (isMine || message.editedAt)) && (
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.2rem',
+                    marginLeft: '0.5rem',
+                    verticalAlign: 'bottom',
+                    float: 'right',
+                    marginTop: '0.2rem'
+                  }}>
+                    {message.editedAt && (
+                      <span style={{ fontSize: '0.55rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)', fontWeight: 400 }}>
+                        edited
+                      </span>
+                    )}
+                    {isMine && (
+                      <CheckCheck size={11} style={{ color: 'rgba(255,255,255,0.6)', display: 'block' }} />
+                    )}
                   </span>
                 )}
-                {isMine && (
-                  <CheckCheck size={11} style={{ color: 'rgba(255,255,255,0.6)' }} />
-                )}
-              </div>
-            )}
+              </span>
           </>
         )}
       </div>
