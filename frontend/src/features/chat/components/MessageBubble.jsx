@@ -95,7 +95,7 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
               </span>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: '0.68rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
+              <span style={{ fontSize: '0.6rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
                 {formatTime(message.createdAt)}
                 {message.editedAt && !isDeleted && <span style={{ marginLeft: '0.3rem' }}>· edited</span>}
               </span>
