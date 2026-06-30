@@ -94,15 +94,18 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
                 {message?.text ?? ''}
               </span>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: '0.55rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
-                {formatTime(message.createdAt)}
-                {message.editedAt && !isDeleted && <span style={{ marginLeft: '0.3rem' }}>· edited</span>}
-              </span>
-              {isMine && !isDeleted && (
-                <CheckCheck size={11} style={{ color: 'rgba(255,255,255,0.6)' }} />
-              )}
-            </div>
+            {(!isDeleted && (isMine || message.editedAt)) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', justifyContent: 'flex-end' }}>
+                {message.editedAt && (
+                  <span style={{ fontSize: '0.55rem', color: isMine ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)' }}>
+                    edited
+                  </span>
+                )}
+                {isMine && (
+                  <CheckCheck size={11} style={{ color: 'rgba(255,255,255,0.6)' }} />
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
