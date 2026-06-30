@@ -2477,8 +2477,8 @@ body {
 }
 
 .chat-msg-bubble.mine {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: var(--bg-darker);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: var(--text-on-primary);
   border-bottom-right-radius: 4px;
 }
 
