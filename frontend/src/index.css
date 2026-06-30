@@ -2597,13 +2597,15 @@ body {
 }
 
 .chat-modal {
-  background: var(--bg-card);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem;
-  width: 100%;
-  max-width: 420px;
-  max-height: 90vh;
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 92%;
+  max-width: 440px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-card);
@@ -2614,13 +2616,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .chat-modal-user-list {
   flex: 1;
   overflow-y: auto;
-  max-height: 260px;
+  max-height: 320px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
