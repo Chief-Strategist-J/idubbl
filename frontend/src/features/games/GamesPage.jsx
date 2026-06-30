@@ -174,9 +174,9 @@ export default function GamesPage() {
   });
 
   const pageContent = (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '0.5rem 0.5rem 5rem' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: '0.5rem 0.25rem 5rem' }}>
       
-      <div style={{ padding: '1rem 0.5rem', textAlign: 'left' }}>
+      <div style={{ padding: '1rem 0.25rem', textAlign: 'left' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           🎮 iDubbl Casino Lobby
         </h1>
@@ -186,7 +186,7 @@ export default function GamesPage() {
       </div>
 
       {/* Search & Categories Bar (Stake Lobby Interface) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0 0.5rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0 0.25rem', marginBottom: '1.25rem' }}>
         
         {/* Search */}
         <div style={{ position: 'relative', width: '100%' }}>
@@ -251,8 +251,8 @@ export default function GamesPage() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))',
-        gap: '1rem',
-        padding: '0 0.5rem'
+        gap: '0.75rem',
+        padding: '0 0.25rem'
       }}>
         {filteredGames.map((game) => (
           <div
@@ -403,7 +403,7 @@ export default function GamesPage() {
         </div>
       </header>
 
-      <main style={{ padding: '1rem 0.5rem', minHeight: 'calc(100vh - 200px)' }}>
+      <main style={{ padding: '1rem 0.25rem', minHeight: 'calc(100vh - 200px)' }}>
         {pageContent}
       </main>
 

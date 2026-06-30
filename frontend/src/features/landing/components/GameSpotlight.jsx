@@ -150,7 +150,7 @@ export default function GameSpotlight() {
     <section
       id="game-spotlight"
       style={{
-        padding: '3rem 1rem 4rem',
+        padding: '3rem 0.25rem 4rem',
         background: 'linear-gradient(180deg, rgba(20,24,33,0) 0%, rgba(26,33,48,0.5) 100%)',
         borderTop: '1px solid var(--border)',
         borderBottom: '1px solid var(--border)',
