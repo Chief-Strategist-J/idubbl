@@ -123,23 +123,14 @@ const GAMES = [
 
 const CATEGORIES = ['All', 'Skill Duels', 'Card Games', 'Chance'];
 
+const ACTIVE_CATEGORIES = ['Skill Duels', 'Card Games', 'Chance'];
+
 export default function GameSpotlight() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('All');
-  const scrollRef = React.useRef(null);
 
   const handlePlayGame = (gameId) => {
     navigate(`/login?redirect=/lobby&game=${gameId}`);
   };
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
-  };
-
-  const filteredGames = GAMES.filter((game) => activeTab === 'All' || game.category === activeTab);
 
   return (
     <section
@@ -160,7 +151,7 @@ export default function GameSpotlight() {
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '0 0.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem', padding: '0 0.5rem' }}>
           <span style={{
             display: 'inline-block',
             background: 'rgba(0,227,122,0.1)',
@@ -190,167 +181,154 @@ export default function GameSpotlight() {
           </p>
         </div>
 
-        {/* Categories navigation */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.4rem', 
-          overflowX: 'auto', 
-          paddingBottom: '0.75rem',
-          marginBottom: '1.5rem',
-          justifyContent: 'center',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
-        }}>
-          {CATEGORIES.map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
-                style={{
-                  padding: '0.4rem 0.9rem',
-                  borderRadius: '20px',
-                  background: isActive ? 'var(--primary-glow)' : 'var(--bg-card)',
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {tab}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Swipeable Horizontal Scroll Row */}
-        <div 
-          ref={scrollRef}
-          className="games-scroll-row"
-          style={{
-            display: 'flex',
-            overflowX: 'auto',
-            gap: '0.85rem',
-            padding: '0.5rem 0.75rem 1.5rem',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch',
-            scrollSnapType: 'x mandatory'
-          }}
-        >
-          {filteredGames.map((game) => (
-            <div
-              key={game.id}
-              onClick={() => handlePlayGame(game.id)}
-              style={{
-                flex: '0 0 145px',
-                scrollSnapAlign: 'start',
-                background: 'var(--bg-card)',
-                borderRadius: '12px',
-                border: '1px solid var(--border)',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.borderColor = game.color;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.borderColor = 'var(--border)';
-              }}
-            >
-              {/* Visual Icon Section (Full Card Background Image) */}
-              <div style={{
-                height: '115px',
-                backgroundImage: `url(${game.imageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                position: 'relative',
-                borderBottom: '1px solid var(--border)',
-              }}>
-                {/* Subtle glass overlay for top-right badge contrast */}
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)'
-                }} />
-
-                {/* Difficulty badge */}
-                <span style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
-                  fontSize: '0.55rem',
+        {/* Categories Stacked Vertically */}
+        {ACTIVE_CATEGORIES.map((category) => {
+          const categoryGames = GAMES.filter((game) => game.category === category);
+          return (
+            <div key={category} style={{ marginBottom: '2.5rem' }}>
+              {/* Category Sub-Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0.75rem', marginBottom: '0.75rem' }}>
+                <h3 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.05rem',
                   fontWeight: 800,
-                  letterSpacing: '0.5px',
-                  padding: '0.15rem 0.4rem',
-                  borderRadius: '4px',
-                  background: 'rgba(10, 13, 18, 0.85)',
-                  backdropFilter: 'blur(4px)',
-                  color: game.color,
-                  border: `1px solid ${game.color}40`,
-                  textTransform: 'uppercase'
+                  color: 'var(--text-primary)',
+                  margin: 0
                 }}>
-                  {game.difficulty}
+                  {category === 'Skill Duels' ? '🏆 Skill Duels' : category === 'Card Games' ? '🃏 Card Games' : '🎡 Chance Games'}
+                </h3>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                  {categoryGames.length} Available
                 </span>
               </div>
 
-              {/* Info Section */}
-              <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', gap: '0.5rem' }}>
-                <div>
-                  <p style={{
-                    fontSize: '0.8rem',
-                    fontWeight: 800,
-                    color: 'var(--text-primary)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    margin: 0
-                  }}>
-                    {game.name}
-                  </p>
-                  <p style={{
-                    fontSize: '0.65rem',
-                    color: 'var(--text-secondary)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    marginTop: '0.15rem',
-                    margin: 0
-                  }}>
-                    {game.subtitle}
-                  </p>
-                </div>
-
-                {/* Play trigger indicator */}
-                <div style={{
+              {/* Horizontal Scroll Row */}
+              <div 
+                className="games-scroll-row"
+                style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '0.5rem',
-                  borderTop: '1.5px solid var(--border)',
-                  fontSize: '0.65rem',
-                  color: game.color,
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}>
-                  <span>Play Duel</span>
-                  <span style={{ fontSize: '0.75rem', transition: 'transform 0.2s' }}>➔</span>
-                </div>
+                  overflowX: 'auto',
+                  gap: '0.85rem',
+                  padding: '0.25rem 0.75rem 1rem',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollSnapType: 'x mandatory'
+                }}
+              >
+                {categoryGames.map((game) => (
+                  <div
+                    key={game.id}
+                    onClick={() => handlePlayGame(game.id)}
+                    style={{
+                      flex: '0 0 145px',
+                      scrollSnapAlign: 'start',
+                      background: 'var(--bg-card)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      cursor: 'pointer',
+                      boxShadow: 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))',
+                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.borderColor = game.color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                    }}
+                  >
+                    {/* Visual Icon Section (Full Card Background Image) */}
+                    <div style={{
+                      height: '115px',
+                      backgroundImage: `url(${game.imageUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      position: 'relative',
+                      borderBottom: '1px solid var(--border)',
+                    }}>
+                      {/* Subtle glass overlay */}
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)'
+                      }} />
+
+                      {/* Difficulty badge */}
+                      <span style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        fontSize: '0.55rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.5px',
+                        padding: '0.15rem 0.4rem',
+                        borderRadius: '4px',
+                        background: 'rgba(10, 13, 18, 0.85)',
+                        backdropFilter: 'blur(4px)',
+                        color: game.color,
+                        border: `1px solid ${game.color}40`,
+                        textTransform: 'uppercase'
+                      }}>
+                        {game.difficulty}
+                      </span>
+                    </div>
+
+                    {/* Info Section */}
+                    <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', gap: '0.5rem' }}>
+                      <div>
+                        <p style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          color: 'var(--text-primary)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          margin: 0
+                        }}>
+                          {game.name}
+                        </p>
+                        <p style={{
+                          fontSize: '0.65rem',
+                          color: 'var(--text-secondary)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          marginTop: '0.15rem',
+                          margin: 0
+                        }}>
+                          {game.subtitle}
+                        </p>
+                      </div>
+
+                      {/* Play trigger indicator */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingTop: '0.5rem',
+                        borderTop: '1.5px solid var(--border)',
+                        fontSize: '0.65rem',
+                        color: game.color,
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        <span>Play Duel</span>
+                        <span style={{ fontSize: '0.75rem', transition: 'transform 0.2s' }}>➔</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
 
       </div>
     </section>
