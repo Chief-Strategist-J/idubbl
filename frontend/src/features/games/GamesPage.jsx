@@ -14,7 +14,7 @@ const GAMES = [
     icon: '🔤',
     difficulty: 'Medium',
     color: '#00E37A',
-    bgGradient: 'linear-gradient(135deg, rgba(0, 227, 122, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(0, 227, 122, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'math_duel',
@@ -25,7 +25,7 @@ const GAMES = [
     icon: '🔢',
     difficulty: 'Hard',
     color: '#5B8DEF',
-    bgGradient: 'linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'reaction_race',
@@ -36,7 +36,7 @@ const GAMES = [
     icon: '⚡',
     difficulty: 'Easy',
     color: '#fbbf24',
-    bgGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'lucky_wheel',
@@ -47,7 +47,7 @@ const GAMES = [
     icon: '🎡',
     difficulty: 'Easy',
     color: '#8b5cf6',
-    bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'lucky_balls',
@@ -58,7 +58,7 @@ const GAMES = [
     icon: '🎱',
     difficulty: 'Easy',
     color: '#f97316',
-    bgGradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'blackjack',
@@ -69,7 +69,7 @@ const GAMES = [
     icon: '🃏',
     difficulty: 'Medium',
     color: '#ef4444',
-    bgGradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'holdem_poker',
@@ -80,7 +80,7 @@ const GAMES = [
     icon: '💵',
     difficulty: 'Hard',
     color: '#10b981',
-    bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'baccarat',
@@ -91,7 +91,7 @@ const GAMES = [
     icon: '💎',
     difficulty: 'Medium',
     color: '#a855f7',
-    bgGradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'casino_war',
@@ -102,7 +102,7 @@ const GAMES = [
     icon: '⚔️',
     difficulty: 'Easy',
     color: '#ec4899',
-    bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'red_dog',
@@ -113,7 +113,7 @@ const GAMES = [
     icon: '🐕',
     difficulty: 'Medium',
     color: '#f43f5e',
-    bgGradient: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'pai_gow',
@@ -124,7 +124,7 @@ const GAMES = [
     icon: '🧧',
     difficulty: 'Hard',
     color: '#e11d48',
-    bgGradient: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'three_card',
@@ -135,7 +135,7 @@ const GAMES = [
     icon: '🔺',
     difficulty: 'Medium',
     color: '#d97706',
-    bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, transparent 100%)'
   },
   {
     id: 'video_poker',
@@ -146,7 +146,7 @@ const GAMES = [
     icon: '📺',
     difficulty: 'Medium',
     color: '#2563eb',
-    bgGradient: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+    bgGradient: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, transparent 100%)'
   }
 ];
 
@@ -294,7 +294,7 @@ export default function GamesPage() {
                 width: '60px',
                 height: '60px',
                 borderRadius: '50%',
-                background: 'var(--bg-dark)',
+                background: 'var(--bg-darker)',
                 border: '1.5px solid var(--border)',
                 display: 'flex',
                 alignItems: 'center',
