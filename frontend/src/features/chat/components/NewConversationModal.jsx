@@ -11,6 +11,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
   const [error, setError] = useState('');
   const { users, fetchUsers, createDirect, createGroup } = useChatStore();
   const debounceRef = useRef(null);
+  const [showAllSelected, setShowAllSelected] = useState(false);
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -101,21 +102,34 @@ export default function NewConversationModal({ onClose, onConversationCreated })
             onChange={e => setQuery(e.target.value)}
           />
         </div>
-
-        {selected.length > 0 && tab === 'group' && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottomt: '0.75rem' }}>
-            {selected.map(u => (
-              <span key={u.id} style={{
-                background: 'var(--primary)', color: 'var(--bg-darker)',
-                borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
-                display: 'flex', alignItems: 'center', gap: '0.3rem'
-              }}>
-                {u.name || u.email}
-                <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />
-              </span>
-            ))}
-          </div>
-        )}
+{selected.length > 0 && tab === 'group' && (
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
+    {(showAllSelected ? selected : selected.slice(0, 3)).map(u => (
+      <span key={getUserId(u)} style={{
+        background: 'var(--primary)', color: 'var(--bg-darker)',
+        borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
+        display: 'flex', alignItems: 'center', gap: '0.3rem'
+      }}>
+        {u.name || u.email}
+        <X size={12} style={{ cursor: 'pointer' }} onClick={() => toggleUser(u)} />
+      </span>
+    ))}
+    {selected.length > 3 && (
+      <span
+        onClick={() => setShowAllSelected(s => !s)}
+        style={{
+          background: 'rgba(0, 227, 122, 0.14)',
+          color: 'var(--bg-darker)',
+          border: '1px solid rgba(0, 227, 122, 0.22)',
+          borderRadius: '999px', padding: '2px 10px', fontSize: '0.78rem', fontWeight: 600,
+          cursor: 'pointer'
+        }}
+      >
+        {showAllSelected ? 'Show less' : `+${selected.length - 3} more`}
+      </span>
+    )}
+  </div>
+)}
 
         <div className="chat-modal-user-list">
           {users.length === 0 && (
