@@ -7,130 +7,117 @@ const GAMES = [
     name: 'Word Duel',
     subtitle: 'Anagram Sprint',
     category: 'Skill Duels',
-    icon: '🔤',
     difficulty: 'Medium',
     color: '#00E37A',
-    bgGradient: 'linear-gradient(135deg, rgba(0, 227, 122, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'math_duel',
     name: 'Math Duel',
     subtitle: 'Arithmetic Blitz',
     category: 'Skill Duels',
-    icon: '🔢',
     difficulty: 'Hard',
     color: '#5B8DEF',
-    bgGradient: 'linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'reaction_race',
     name: 'Reaction Race',
     subtitle: 'Speed Reflex',
     category: 'Skill Duels',
-    icon: '⚡',
     difficulty: 'Easy',
     color: '#fbbf24',
-    bgGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'lucky_wheel',
     name: 'Lucky Wheel',
     subtitle: 'Spin & Win',
     category: 'Chance',
-    icon: '🎡',
     difficulty: 'Easy',
     color: '#8b5cf6',
-    bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'lucky_balls',
     name: 'Lucky Balls',
     subtitle: 'Lotto Draw',
     category: 'Chance',
-    icon: '🎱',
     difficulty: 'Easy',
     color: '#f97316',
-    bgGradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'blackjack',
     name: 'Blackjack',
     subtitle: '21 Battle',
     category: 'Card Games',
-    icon: '🃏',
     difficulty: 'Medium',
     color: '#ef4444',
-    bgGradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'holdem_poker',
     name: 'Heads-Up Poker',
     subtitle: 'Texas Hold\'em',
     category: 'Card Games',
-    icon: '💵',
     difficulty: 'Hard',
     color: '#10b981',
-    bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'baccarat',
     name: 'Baccarat',
     subtitle: 'Player vs Banker',
     category: 'Card Games',
-    icon: '💎',
     difficulty: 'Medium',
     color: '#a855f7',
-    bgGradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'casino_war',
     name: 'Casino War',
     subtitle: 'High Card Duel',
     category: 'Card Games',
-    icon: '⚔️',
     difficulty: 'Easy',
     color: '#ec4899',
-    bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'red_dog',
     name: 'Red Dog',
     subtitle: 'In-Between Bet',
     category: 'Card Games',
-    icon: '🐕',
     difficulty: 'Medium',
     color: '#f43f5e',
-    bgGradient: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'pai_gow',
     name: 'Pai Gow Poker',
     subtitle: 'Two-Hand Strategy',
     category: 'Card Games',
-    icon: '🧧',
     difficulty: 'Hard',
     color: '#e11d48',
-    bgGradient: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'three_card',
     name: 'Three Card Poker',
     subtitle: 'Fast Tri-Card',
     category: 'Card Games',
-    icon: '🔺',
     difficulty: 'Medium',
     color: '#d97706',
-    bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1533078420084-28ab16c873df?auto=format&fit=crop&w=300&q=80'
   },
   {
     id: 'video_poker',
     name: 'Video Poker',
     subtitle: 'Draw Poker',
     category: 'Card Games',
-    icon: '📺',
     difficulty: 'Medium',
     color: '#2563eb',
-    bgGradient: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, transparent 100%)'
+    imageUrl: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=300&q=80'
   }
 ];
 
@@ -256,32 +243,22 @@ export default function GameSpotlight() {
                 e.currentTarget.style.borderColor = 'var(--border)';
               }}
             >
-              {/* Visual Icon Section (Glassmorphic thumbnail container) */}
+              {/* Visual Icon Section (Full Card Background Image) */}
               <div style={{
                 height: '115px',
-                background: game.bgGradient || 'var(--glass-bg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                backgroundImage: `url(${game.imageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 position: 'relative',
                 borderBottom: '1px solid var(--border)',
               }}>
-                {/* Floating Game Icon with shadow */}
+                {/* Subtle glass overlay for top-right badge contrast */}
                 <div style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-darker)',
-                  border: '1.5px solid var(--border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                  fontSize: '2rem',
-                }}>
-                  {game.icon}
-                </div>
-                
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)'
+                }} />
+
                 {/* Difficulty badge */}
                 <span style={{
                   position: 'absolute',
@@ -292,7 +269,8 @@ export default function GameSpotlight() {
                   letterSpacing: '0.5px',
                   padding: '0.15rem 0.4rem',
                   borderRadius: '4px',
-                  background: 'var(--bg-darker)',
+                  background: 'rgba(10, 13, 18, 0.85)',
+                  backdropFilter: 'blur(4px)',
                   color: game.color,
                   border: `1px solid ${game.color}40`,
                   textTransform: 'uppercase'
