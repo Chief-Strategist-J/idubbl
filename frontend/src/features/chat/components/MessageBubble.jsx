@@ -113,6 +113,7 @@ export default function MessageBubble({ message, isMine, isGroup, conversationId
                   </span>
                 )}
               </span>
+            )}
           </>
         )}
       </div>
