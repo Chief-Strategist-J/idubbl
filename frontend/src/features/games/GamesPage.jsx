@@ -271,9 +271,9 @@ export default function GamesPage() {
               position: 'relative'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-6px)';
+              e.currentTarget.style.transform = 'translateY(-5px)';
               e.currentTarget.style.borderColor = game.color;
-              e.currentTarget.style.boxShadow = `0 12px 24px ${game.color}25, 0 4px 8px rgba(0,0,0,0.05)`;
+              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'none';
