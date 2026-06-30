@@ -271,14 +271,12 @@ export default function GamesPage() {
               position: 'relative'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
+              e.currentTarget.style.transform = 'translateY(-4px)';
               e.currentTarget.style.borderColor = game.color;
-              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'none';
               e.currentTarget.style.borderColor = 'var(--border)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))';
             }}
           >
             {/* Visual Icon Section (Glassmorphic thumbnail container) */}
