@@ -119,6 +119,8 @@
   --hologram-card-pill-bg: rgba(255, 255, 255, 0.03);
   --hologram-card-pill-border: rgba(255, 255, 255, 0.04);
   --text-on-primary: #0A0D12;
+  --modal-bg: rgba(20, 24, 33, 0.92);
+  --modal-overlay: rgba(0, 0, 0, 0.6);
 }
 
 .light {
@@ -165,6 +167,8 @@
   --hologram-card-pill-bg: rgba(0, 0, 0, 0.02);
   --hologram-card-pill-border: rgba(0, 0, 0, 0.04);
   --text-on-primary: #0A0D12;
+  --modal-bg: rgba(255, 255, 255, 0.95);
+  --modal-overlay: rgba(10, 13, 18, 0.35);
 }
 
 * {
@@ -2594,7 +2598,7 @@ body {
 .chat-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2603,7 +2607,7 @@ body {
 }
 
 .chat-modal {
-  background: var(--bg-card-glass);
+  background: var(--modal-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
