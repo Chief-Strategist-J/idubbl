@@ -5,9 +5,9 @@ import useWalletStore from '../../../shared/store/walletStore.js';
 import useMatchStore from '../../../shared/store/matchStore.js';
 import useAuthStore from '../../../shared/store/authStore.js';
 
-export default function TierCard({ tier }) {
+export default function TierCard({ tier, gameType = null }) {
   const navigate = useNavigate();
-  const { availableBalance, reserveForMatch } = useWalletStore();
+  const { availableBalance } = useWalletStore();
   const { joinQueue, queueStatus } = useMatchStore();
   const { user } = useAuthStore();
 
@@ -18,9 +18,14 @@ export default function TierCard({ tier }) {
   const handleJoin = () => {
     if (!canAfford || alreadyInQueue) return;
     const userId = user?.id || user?.email || 'u1';
-    joinQueue(tier.id, userId);
+    joinQueue(tier.id, userId, gameType);
     navigate(`/queue/${tier.id}`);
   };
+
+  // Convert gameType (e.g. math_duel) to readable label (e.g. Math Duel)
+  const displayGameLabel = gameType 
+    ? gameType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())
+    : (tier.gameLabel || 'Word Duel');
 
   // design.md §4.3: Rookie = text-secondary tint, Pro = accent-secondary, Elite = accent-primary
   const TIER_COLORS = {
@@ -36,9 +41,9 @@ export default function TierCard({ tier }) {
 
       <div style={{ marginTop: '0.5rem' }}>
         <p style={{ color, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.8rem', letterSpacing: 2, textTransform: 'uppercase' }}>{tier.name}</p>
-        {tier.gameLabel && (
+        {displayGameLabel && (
           <span style={{ display: 'inline-block', background: 'var(--glass-bg-hover)', fontSize: '0.7rem', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: 10, marginTop: '0.3rem' }}>
-            {tier.gameLabel}
+            {displayGameLabel}
           </span>
         )}
         <p style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{tier.entryFee} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>USDT</span></p>

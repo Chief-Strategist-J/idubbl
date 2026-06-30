@@ -42,7 +42,7 @@ class MatchmakerService {
     this.usersCollection = 'user';
   }
 
-  async findMatch(userId, tierName, socketId = null, playerName = null) {
+  async findMatch(userId, tierName, socketId = null, playerName = null, gameType = 'word_duel') {
     if (!userId || typeof userId !== 'string' || !userId.trim()) {
       throw new Error('Valid userId is required.');
     }
@@ -52,6 +52,7 @@ class MatchmakerService {
 
     const normUserId = normalizeKey(userId);
     const normTierName = normalizeKey(tierName);
+    const normGameType = normalizeKey(gameType || 'word_duel');
 
     const db = await getDb();
 
@@ -87,12 +88,17 @@ class MatchmakerService {
       userId: normUserId,
       name: playerName || normUserId,
       tier: normTierName,
+      gameType: normGameType,
       socketId,
       joinedAt: new Date()
     };
 
-    // atomic check-and-match — exclude self to prevent self-matching in edge cases
-    const opponent = await db.collection(this.queueCollection).findOneAndDelete({ tier: normTierName, userId: { $ne: normUserId } });
+    // atomic check-and-match — exclude self to prevent self-matching in edge cases, match same tier and game type
+    const opponent = await db.collection(this.queueCollection).findOneAndDelete({ 
+      tier: normTierName, 
+      gameType: normGameType, 
+      userId: { $ne: normUserId } 
+    });
 
     if (!opponent) {
       await db.collection(this.queueCollection).insertOne(queueEntry);
@@ -105,7 +111,7 @@ class MatchmakerService {
     let questions = [];
     try {
       const { quizService } = await import('./quizService.js');
-      questions = await quizService.fetchQuestions(5);
+      questions = await quizService.fetchQuestions(5, normGameType);
     } catch (e) {
       console.error("Error fetching quiz questions:", e);
     }
@@ -113,6 +119,7 @@ class MatchmakerService {
     const matchInfo = {
       matchId,
       tier: tierName,
+      gameType: normGameType,
       players: [opponent.userId, normUserId],
       playerNames: {
         [opponent.userId]: opponent.name || opponent.userId,

@@ -51,17 +51,22 @@ async function handleFindMatch(socket, data) {
   const userId = String(data?.userId || '').trim();
   const tier = String(data?.tier || '').trim();
   const name = String(data?.name || '').trim() || null;
+  const gameType = String(data?.gameType || 'word_duel').trim();
   if (!userId || !tier) return socket.emit('matchmaking_error', { error: 'userId and tier are required.' });
   try {
-    const result = await matchmakerService.findMatch(userId, tier, socket?.id, name);
+    const result = await matchmakerService.findMatch(userId, tier, socket?.id, name, gameType);
     if (result.status === 'matched') {
       // Strip correctIndex from the questions array sent to the clients for security
-      const clientSafeQuestions = (result.match.questions || []).map(q => ({
-        category: q.category,
-        difficulty: q.difficulty,
-        question: q.question,
-        options: q.options
-      }));
+      const clientSafeQuestions = (result.match.questions || []).map(q => {
+        const safe = {
+          category: q.category,
+          difficulty: q.difficulty,
+          options: q.options
+        };
+        if (q.question) safe.question = q.question;
+        if (q.expression) safe.expression = q.expression;
+        return safe;
+      });
       const clientSafeMatch = {
         ...result.match,
         questions: clientSafeQuestions

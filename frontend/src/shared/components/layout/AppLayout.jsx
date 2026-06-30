@@ -17,6 +17,7 @@ const NAV_ITEMS = [
 
 const HEADER_NAV = [
   { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Games',     path: '/games' },
   { label: 'Play',      path: '/lobby' },
   { label: 'Wallet',    path: '/wallet' },
   { label: 'History',   path: '/transactions' },

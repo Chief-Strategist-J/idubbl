@@ -17,7 +17,13 @@ function decodeHtmlEntities(str) {
 }
 
 export class QuizService {
-  async fetchQuestions(amount = 5) {
+  async fetchQuestions(amount = 5, gameType = 'word_duel') {
+    if (gameType === 'math_duel') {
+      return this.getMathQuestions(amount);
+    } else if (gameType !== 'word_duel') {
+      return this.getDummyQuestions(amount, gameType);
+    }
+
     try {
       const response = await fetch(`https://opentdb.com/api.php?amount=${amount}&type=multiple`);
       const data = await response.json();
@@ -43,7 +49,8 @@ export class QuizService {
             difficulty: q.difficulty,
             question: decodedQuestion,
             options,
-            correctIndex
+            correctIndex,
+            correct: correctIndex
           };
         });
       }
@@ -61,34 +68,67 @@ export class QuizService {
         category: "General Knowledge",
         question: "Which of the following is the correct definition of EPHEMERAL?",
         options: ["Lasting forever", "Lasting for a very short time", "Related to water", "A type of plant"],
-        correctIndex: 1
+        correctIndex: 1,
+        correct: 1
       },
       {
         category: "General Knowledge",
         question: "Which of the following is the correct definition of RESILIENT?",
         options: ["Easily broken", "Able to recover quickly from difficulties", "Very slow", "A musical term"],
-        correctIndex: 1
+        correctIndex: 1,
+        correct: 1
       },
       {
         category: "General Knowledge",
         question: "Which of the following is the correct definition of TENACIOUS?",
         options: ["Holding firmly to a purpose", "Moving slowly", "Very quiet", "Relating to time"],
-        correctIndex: 0
+        correctIndex: 0,
+        correct: 0
       },
       {
         category: "General Knowledge",
         question: "Which of the following is the correct definition of LUCID?",
         options: ["Dark and unclear", "Very bright", "Expressed clearly and easy to understand", "A type of dream"],
-        correctIndex: 2
+        correctIndex: 2,
+        correct: 2
       },
       {
         category: "General Knowledge",
         question: "Which of the following is the correct definition of VERBOSE?",
         options: ["Speaking briefly", "Using more words than needed", "Silent", "Very fast"],
-        correctIndex: 1
+        correctIndex: 1,
+        correct: 1
       }
     ];
     return fallbacks.slice(0, amount);
+  }
+
+  getMathQuestions(amount) {
+    const mathQuestions = [
+      { expression: '7 × 8', options: ['54', '56', '64', '58'], correctIndex: 1, correct: 1 },
+      { expression: '144 ÷ 12', options: ['10', '14', '12', '11'], correctIndex: 2, correct: 2 },
+      { expression: '23 + 49', options: ['62', '72', '68', '71'], correctIndex: 1, correct: 1 },
+      { expression: '91 − 37', options: ['54', '48', '64', '44'], correctIndex: 0, correct: 0 },
+      { expression: '9 × 9', options: ['72', '81', '83', '79'], correctIndex: 1, correct: 1 },
+      { expression: '256 ÷ 8', options: ['28', '34', '32', '30'], correctIndex: 2, correct: 2 },
+      { expression: '63 + 28', options: ['81', '91', '93', '89'], correctIndex: 1, correct: 1 },
+      { expression: '15 × 7', options: ['95', '105', '100', '115'], correctIndex: 1, correct: 1 },
+      { expression: '169 ÷ 13', options: ['11', '14', '13', '12'], correctIndex: 2, correct: 2 },
+      { expression: '47 + 58', options: ['95', '105', '97', '101'], correctIndex: 1, correct: 1 }
+    ];
+    const shuffled = [...mathQuestions].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, amount);
+  }
+
+  getDummyQuestions(amount, gameType) {
+    const name = gameType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return Array.from({ length: amount }, (_, i) => ({
+      category: name,
+      question: `Round ${i + 1} - Complete your game turn to submit score!`,
+      options: ['Option A', 'Option B'],
+      correctIndex: 1,
+      correct: 1
+    }));
   }
 }
 

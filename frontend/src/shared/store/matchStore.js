@@ -37,15 +37,24 @@ const useMatchStore = create((set, get) => ({
     }
   },
 
-  joinQueue: (tierId, userId) => {
+  joinQueue: (tierId, userId, gameType = null) => {
     if (!tierId || !userId) return;
-    const tier = get().tiers.find((t) => t.id === tierId);
-    if (!tier) return;
+    const originalTier = get().tiers.find((t) => t.id === tierId);
+    if (!originalTier) return;
+    
+    // Create a copy of tier and optionally override gameType/gameLabel
+    const tier = { ...originalTier };
+    if (gameType) {
+      tier.gameType = gameType;
+      // Convert snake_case to Title Case for display
+      tier.gameLabel = gameType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+    
     set({ queueStatus: 'searching', currentTier: tier, currentMatch: null, rounds: [], matchResult: null, matchmakingError: null });
 
     const playerName = useAuthStore.getState().user?.name || userId;
     const socket = connectSocket(userId);
-    socket.emit('find_match', { userId, tier: tier.name, name: playerName });
+    socket.emit('find_match', { userId, tier: tier.name, name: playerName, gameType: tier.gameType });
 
     // Handle incoming authoritative round scores from WebSockets E2E flow
     const listeners = {

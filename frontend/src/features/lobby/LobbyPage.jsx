@@ -1,14 +1,35 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card } from '../../shared/components/ui/index.js';
 import TierCard from './components/TierCard.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import useAuthStore from '../../shared/store/authStore.js';
 
+const GAMES = [
+  { id: 'word_duel', name: 'Word Duel', icon: '🔤' },
+  { id: 'math_duel', name: 'Math Duel', icon: '🔢' },
+  { id: 'reaction_race', name: 'Reaction Race', icon: '⚡' },
+  { id: 'lucky_wheel', name: 'Lucky Wheel', icon: '🎡' },
+  { id: 'lucky_balls', name: 'Lucky Balls', icon: '🎱' },
+  { id: 'blackjack', name: 'Blackjack Duel', icon: '🃏' },
+  { id: 'holdem_poker', name: 'Heads-Up Poker', icon: '💵' },
+  { id: 'baccarat', name: 'Baccarat Duel', icon: '💎' },
+  { id: 'casino_war', name: 'Casino War', icon: '⚔️' },
+  { id: 'red_dog', name: 'Red Dog', icon: '🐕' },
+  { id: 'pai_gow', name: 'Pai Gow Poker', icon: '🧧' },
+  { id: 'three_card', name: 'Three Card Poker', icon: '🔺' },
+  { id: 'video_poker', name: 'Video Poker', icon: '📺' }
+];
+
 export default function LobbyPage() {
   const { tiers } = useMatchStore();
   const { user } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const activeTiers = tiers.filter((t) => t.active);
+
+  const chosenGameId = searchParams.get('game') || 'word_duel';
+  const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0];
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
@@ -47,12 +68,49 @@ export default function LobbyPage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Choose a tier to enter the next available match."
-        subtitle="Your entry fee will be reserved when you join."
+        title="Game Matchmaking Lobby"
+        subtitle="Choose a game mode and entry fee tier to join the matchmaking pool."
       />
 
+      {/* Game Selector Pills */}
+      <div style={{ marginBottom: '2rem' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+          Select Game Mode
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {GAMES.map((g) => {
+            const isSelected = g.id === chosenGameId;
+            return (
+              <button
+                key={g.id}
+                onClick={() => setSearchParams({ game: g.id })}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  background: isSelected ? 'rgba(0, 227, 122, 0.15)' : 'var(--glass-bg)',
+                  color: isSelected ? 'var(--primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span>{g.icon}</span>
+                <span>{g.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="matchmaking-grid">
-        {activeTiers.map((tier) => <TierCard key={tier.id} tier={tier} />)}
+        {activeTiers.map((tier) => (
+          <TierCard key={tier.id} tier={tier} gameType={chosenGameId} />
+        ))}
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '3rem' }}>

@@ -33,6 +33,7 @@ import AdminGameSettingsPage from './features/admin/features/game-settings/Admin
 import AdminWalletsPage from './features/admin/features/wallets/AdminWalletsPage.jsx';
 import HowToUsePage from './features/guide/HowToUsePage.jsx';
 import ChatPage from './features/chat/ChatPage.jsx';
+import GamesPage from './features/games/GamesPage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
@@ -101,6 +102,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify" element={<VerifyAccountPage />} />
+        <Route path="/games" element={<GamesPage />} />
 
         {/* System pages */}
         <Route path="/maintenance" element={<MaintenancePage />} />

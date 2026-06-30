@@ -1,187 +1,356 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../shared/components/ui/index.js';
 
-// design.md §3.1 — Game spotlight section
+const GAMES = [
+  {
+    id: 'word_duel',
+    name: 'Word Duel',
+    subtitle: 'Anagram Sprint',
+    category: 'Skill Duels',
+    icon: '🔤',
+    difficulty: 'Medium',
+    color: '#00E37A',
+    bgGradient: 'linear-gradient(135deg, rgba(0, 227, 122, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'math_duel',
+    name: 'Math Duel',
+    subtitle: 'Arithmetic Blitz',
+    category: 'Skill Duels',
+    icon: '🔢',
+    difficulty: 'Hard',
+    color: '#5B8DEF',
+    bgGradient: 'linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'reaction_race',
+    name: 'Reaction Race',
+    subtitle: 'Speed Reflex',
+    category: 'Skill Duels',
+    icon: '⚡',
+    difficulty: 'Easy',
+    color: '#fbbf24',
+    bgGradient: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'lucky_wheel',
+    name: 'Lucky Wheel',
+    subtitle: 'Spin & Win',
+    category: 'Chance',
+    icon: '🎡',
+    difficulty: 'Easy',
+    color: '#8b5cf6',
+    bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'lucky_balls',
+    name: 'Lucky Balls',
+    subtitle: 'Lotto Draw',
+    category: 'Chance',
+    icon: '🎱',
+    difficulty: 'Easy',
+    color: '#f97316',
+    bgGradient: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'blackjack',
+    name: 'Blackjack',
+    subtitle: '21 Battle',
+    category: 'Card Games',
+    icon: '🃏',
+    difficulty: 'Medium',
+    color: '#ef4444',
+    bgGradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'holdem_poker',
+    name: 'Heads-Up Poker',
+    subtitle: 'Texas Hold\'em',
+    category: 'Card Games',
+    icon: '💵',
+    difficulty: 'Hard',
+    color: '#10b981',
+    bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'baccarat',
+    name: 'Baccarat',
+    subtitle: 'Player vs Banker',
+    category: 'Card Games',
+    icon: '💎',
+    difficulty: 'Medium',
+    color: '#a855f7',
+    bgGradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'casino_war',
+    name: 'Casino War',
+    subtitle: 'High Card Duel',
+    category: 'Card Games',
+    icon: '⚔️',
+    difficulty: 'Easy',
+    color: '#ec4899',
+    bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'red_dog',
+    name: 'Red Dog',
+    subtitle: 'In-Between Bet',
+    category: 'Card Games',
+    icon: '🐕',
+    difficulty: 'Medium',
+    color: '#f43f5e',
+    bgGradient: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'pai_gow',
+    name: 'Pai Gow Poker',
+    subtitle: 'Two-Hand Strategy',
+    category: 'Card Games',
+    icon: '🧧',
+    difficulty: 'Hard',
+    color: '#e11d48',
+    bgGradient: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'three_card',
+    name: 'Three Card Poker',
+    subtitle: 'Fast Tri-Card',
+    category: 'Card Games',
+    icon: '🔺',
+    difficulty: 'Medium',
+    color: '#d97706',
+    bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  },
+  {
+    id: 'video_poker',
+    name: 'Video Poker',
+    subtitle: 'Draw Poker',
+    category: 'Card Games',
+    icon: '📺',
+    difficulty: 'Medium',
+    color: '#2563eb',
+    bgGradient: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(10, 13, 18, 0) 100%)'
+  }
+];
+
+const CATEGORIES = ['All', 'Skill Duels', 'Card Games', 'Chance'];
+
 export default function GameSpotlight() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('All');
+
+  const handlePlayGame = (gameId) => {
+    navigate(`/login?redirect=/lobby&game=${gameId}`);
+  };
+
+  const filteredGames = GAMES.filter((game) => activeTab === 'All' || game.category === activeTab);
 
   return (
     <section
       id="game-spotlight"
       style={{
-        padding: '5rem 2rem',
-        background: 'linear-gradient(135deg, rgba(0,227,122,0.04) 0%, rgba(10,13,18,0) 60%)',
+        padding: '3rem 1rem 4rem',
+        background: 'linear-gradient(180deg, rgba(20,24,33,0) 0%, rgba(26,33,48,0.5) 100%)',
         borderTop: '1px solid var(--border)',
         borderBottom: '1px solid var(--border)',
       }}
     >
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '3rem',
-            alignItems: 'center',
-          }}
-        >
-          {/* Text side */}
-          <div>
-            <span
-              style={{
-                display: 'inline-block',
-                background: 'rgba(0,227,122,0.1)',
-                border: '1px solid rgba(0,227,122,0.25)',
-                color: 'var(--primary)',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '0.3rem 0.8rem',
-                borderRadius: 999,
-                marginBottom: '1.25rem',
-              }}
-            >
-              Featured Game
-            </span>
-            <h2
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
-                fontWeight: 700,
-                marginBottom: '1rem',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Word Duel: Anagram Sprint
-            </h2>
-            <p
-              style={{
-                color: 'var(--text-secondary)',
-                fontSize: '1.05rem',
-                lineHeight: 1.75,
-                marginBottom: '2rem',
-              }}
-            >
-              Same 7 letters. 20 seconds. Highest score wins the round. Best of 3 takes the match.
-            </p>
-            <Button variant="primary" onClick={() => navigate('/signup')}>
-              Play Word Duel
-            </Button>
-          </div>
+        
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <span style={{
+            display: 'inline-block',
+            background: 'rgba(0,227,122,0.1)',
+            border: '1px solid rgba(0,227,122,0.25)',
+            color: 'var(--primary)',
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            padding: '0.35rem 0.9rem',
+            borderRadius: 999,
+            marginBottom: '1rem',
+          }}>
+            Game Library
+          </span>
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'clamp(1.6rem, 4vw, 2.2rem)',
+            fontWeight: 800,
+            marginBottom: '0.5rem',
+            color: 'var(--text-primary)',
+          }}>
+            Explore All Playable Games
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: 500, margin: '0 auto' }}>
+            Choose a duel, test your skill, and claim the pool. Log in to play live matches.
+          </p>
+        </div>
 
-          {/* Visual side — letter tiles */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1rem',
-            }}
-          >
-            {/* Simulated letter tiles */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {[
-                { l: 'W', pts: 4 },
-                { l: 'O', pts: 1 },
-                { l: 'R', pts: 1 },
-                { l: 'D', pts: 2 },
-                { l: 'S', pts: 1 },
-                { l: 'K', pts: 5 },
-                { l: 'E', pts: 1 },
-              ].map(({ l, pts }, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: 56,
-                    height: 56,
-                    background: 'var(--bg-card)',
-                    border: '2px solid var(--primary)',
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    boxShadow: '0 4px 16px rgba(0,227,122,0.15)',
-                    animation: `tilePop 0.4s ${i * 0.05}s both`,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-display)',
-                      fontWeight: 700,
-                      fontSize: '1.4rem',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {l}
-                  </span>
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: 3,
-                      right: 4,
-                      fontSize: '0.55rem',
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--primary)',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {pts}
-                  </span>
-                </div>
-              ))}
-            </div>
+        {/* Categories navigation */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.4rem', 
+          overflowX: 'auto', 
+          paddingBottom: '0.75rem',
+          marginBottom: '1.5rem',
+          justifyContent: 'center',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}>
+          {CATEGORIES.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '0.4rem 0.9rem',
+                  borderRadius: '20px',
+                  background: isActive ? 'var(--primary-glow)' : 'var(--bg-card)',
+                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {tab}
+              </button>
+            );
+          })}
+        </div>
 
-            {/* Score preview */}
+        {/* Stake grid: 2 columns on mobile */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+          gap: '1rem',
+        }}>
+          {filteredGames.map((game) => (
             <div
+              key={game.id}
+              onClick={() => handlePlayGame(game.id)}
               style={{
                 background: 'var(--bg-card)',
+                borderRadius: '12px',
                 border: '1px solid var(--border)',
-                borderRadius: 12,
-                padding: '0.75rem 1.5rem',
+                overflow: 'hidden',
                 display: 'flex',
-                gap: '2rem',
-                fontSize: '0.85rem',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                boxShadow: 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.borderColor = game.color;
+                e.currentTarget.style.boxShadow = `0 12px 24px ${game.color}25, 0 4px 8px rgba(0,0,0,0.05)`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))';
               }}
             >
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Your word</p>
-                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--primary)' }}>WORDS</p>
-                <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-green)', fontSize: '0.75rem' }}>9 pts</p>
-              </div>
-              <div style={{ width: 1, background: 'var(--border)' }} />
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Opponent</p>
-                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-secondary)' }}>—</p>
-                <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '0.75rem' }}>waiting…</p>
-              </div>
-            </div>
-
-            {/* Round timer ring mockup */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
+              {/* Visual Icon Section (Glassmorphic thumbnail container) */}
+              <div style={{
+                height: '115px',
+                background: game.bgGradient || 'var(--glass-bg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                borderBottom: '1px solid var(--border)',
+              }}>
+                {/* Floating Game Icon with shadow */}
+                <div style={{
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '50%',
-                  border: '3px solid var(--primary)',
+                  background: 'var(--bg-dark)',
+                  border: '1.5px solid var(--border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                  color: 'var(--primary)',
-                  boxShadow: '0 0 16px rgba(0,227,122,0.3)',
-                }}
-              >
-                12s
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                  fontSize: '2rem',
+                }}>
+                  {game.icon}
+                </div>
+                
+                {/* Difficulty badge */}
+                <span style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  fontSize: '0.55rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.5px',
+                  padding: '0.15rem 0.4rem',
+                  borderRadius: '4px',
+                  background: 'var(--bg-darker)',
+                  color: game.color,
+                  border: `1px solid ${game.color}40`,
+                  textTransform: 'uppercase'
+                }}>
+                  {game.difficulty}
+                </span>
               </div>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>remaining</span>
+
+              {/* Info Section */}
+              <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', gap: '0.5rem' }}>
+                <div>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    color: 'var(--text-primary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    margin: 0
+                  }}>
+                    {game.name}
+                  </p>
+                  <p style={{
+                    fontSize: '0.65rem',
+                    color: 'var(--text-secondary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    marginTop: '0.15rem',
+                    margin: 0
+                  }}>
+                    {game.subtitle}
+                  </p>
+                </div>
+
+                {/* Play trigger indicator */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: '0.5rem',
+                  borderTop: '1.5px solid var(--border)',
+                  fontSize: '0.65rem',
+                  color: game.color,
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  <span>Play Duel</span>
+                  <span style={{ fontSize: '0.75rem', transition: 'transform 0.2s' }}>➔</span>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
+
       </div>
     </section>
   );

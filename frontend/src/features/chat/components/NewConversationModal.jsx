@@ -171,7 +171,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                     background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
                     border: '1px solid rgba(0, 227, 122, 0.25)',
                     borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '140px'
+                    display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '100%'
                   }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {u.name || u.email}
@@ -332,7 +332,7 @@ export default function NewConversationModal({ onClose, onConversationCreated })
                   background: 'rgba(0, 227, 122, 0.12)', color: 'var(--primary)',
                   border: '1px solid rgba(0, 227, 122, 0.25)',
                   borderRadius: '8px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
-                  display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '140px'
+                  display: 'flex', alignItems: 'center', gap: '0.35rem', maxWidth: '100%'
                 }}>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {u.name || u.email}
