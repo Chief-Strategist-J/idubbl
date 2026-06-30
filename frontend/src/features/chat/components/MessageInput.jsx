@@ -79,7 +79,7 @@ export default function MessageInput({ conversationId, replyTo, onClearReply }) 
         <textarea
           ref={textareaRef}
           className="chat-text-input"
-          placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+          placeholder="Type a message…"
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
