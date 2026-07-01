@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { Card, Button, PageHeader } from '../../../../shared/components/ui/index.js';
 import usePlatformStore, { ALL_GAMES } from '../../../../shared/store/platformStore.js';
+import useAuthStore from '../../../../shared/store/authStore.js';
 
 function Toggle({ checked, onChange, id }) {
   return (
@@ -36,6 +37,68 @@ export default function AdminGameSettingsPage() {
     setGameVisible, setChatEnabled,
     resetToDefaults,
   } = usePlatformStore();
+
+  const { user } = useAuthStore();
+  const [flwSecretKey, setFlwSecretKey] = useState('');
+  const [flwPublicKey, setFlwPublicKey] = useState('');
+  const [flwEncryptionKey, setFlwEncryptionKey] = useState('');
+  const [keysLoading, setKeysLoading] = useState(true);
+  const [keysSaved, setKeysSaved] = useState(false);
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+    let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+    if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+      apiBase = `https://${apiBase}`;
+    }
+    fetch(`${apiBase}/api/admin/settings/flutterwave`, {
+      headers: { 'x-user-id': user.id },
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && res.data) {
+          setFlwSecretKey(res.data.secretKey || '');
+          setFlwPublicKey(res.data.publicKey || '');
+          setFlwEncryptionKey(res.data.encryptionKey || '');
+        }
+        setKeysLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching flutterwave keys:', err);
+        setKeysLoading(false);
+      });
+  }, [user]);
+
+  const handleSaveKeys = async () => {
+    if (!user?.id) return;
+    let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+    if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+      apiBase = `https://${apiBase}`;
+    }
+    try {
+      const response = await fetch(`${apiBase}/api/admin/settings/flutterwave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          secretKey: flwSecretKey,
+          publicKey: flwPublicKey,
+          encryptionKey: flwEncryptionKey
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setKeysSaved(true);
+        setTimeout(() => setKeysSaved(false), 3000);
+      }
+    } catch (e) {
+      console.error('Error saving flutterwave keys:', e);
+    }
+  };
 
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
@@ -92,6 +155,84 @@ export default function AdminGameSettingsPage() {
               fontSize: '0.78rem', color: '#ff7070'
             }}>
               ⚠️ Chat is currently <strong>disabled</strong>. Users will not see the Chat option in navigation.
+            </div>
+          )}
+        </Card>
+
+        {/* ── Flutterwave Keys ─────────────────────────────────── */}
+        <Card>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, margin: '0 0 1rem 0' }}>
+            💳 Flutterwave API Keys
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: '1.25rem' }}>
+            Configure live or test payment gateway credentials. These settings are stored securely in the database and applied dynamically without restarting the server.
+          </p>
+
+          {keysLoading ? (
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Loading credentials...</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  Secret Key (FLWSECK_TEST / FLWSECK)
+                </label>
+                <input
+                  type="password"
+                  value={flwSecretKey}
+                  onChange={e => setFlwSecretKey(e.target.value)}
+                  placeholder="Enter secret key..."
+                  style={{
+                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  Public Key (FLWPUBK_TEST / FLWPUBK)
+                </label>
+                <input
+                  type="text"
+                  value={flwPublicKey}
+                  onChange={e => setFlwPublicKey(e.target.value)}
+                  placeholder="Enter public key..."
+                  style={{
+                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  Encryption Key
+                </label>
+                <input
+                  type="text"
+                  value={flwEncryptionKey}
+                  onChange={e => setFlwEncryptionKey(e.target.value)}
+                  placeholder="Enter encryption key..."
+                  style={{
+                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                <Button variant="primary" onClick={handleSaveKeys}>
+                  🔒 Save Payment Keys
+                </Button>
+                {keysSaved && (
+                  <span style={{ color: 'var(--primary)', fontSize: '0.82rem', fontWeight: 600 }}>
+                    ✓ Keys updated and secured in DB
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </Card>

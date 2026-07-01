@@ -230,4 +230,36 @@ router.post('/migrate-db', adminAuth, async (req, res) => {
   }
 });
 
+// 9. GET /api/admin/settings/flutterwave - Get Flutterwave keys from DB settings
+router.get('/settings/flutterwave', adminAuth, async (req, res) => {
+  try {
+    const db = await getDb();
+    const settings = await db.collection('settings').findOne({ key: 'flutterwave_keys' });
+    res.json({
+      success: true,
+      data: settings?.value || { secretKey: '', publicKey: '', encryptionKey: '' }
+    });
+  } catch (error) {
+    console.error('Error fetching Flutterwave settings:', error);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// 10. POST /api/admin/settings/flutterwave - Update Flutterwave keys in DB settings
+router.post('/settings/flutterwave', adminAuth, async (req, res) => {
+  const { secretKey, publicKey, encryptionKey } = req.body;
+  try {
+    const db = await getDb();
+    await db.collection('settings').updateOne(
+      { key: 'flutterwave_keys' },
+      { $set: { value: { secretKey, publicKey, encryptionKey }, updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ success: true, message: 'Flutterwave keys updated successfully.' });
+  } catch (error) {
+    console.error('Error updating Flutterwave settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
 export default router;

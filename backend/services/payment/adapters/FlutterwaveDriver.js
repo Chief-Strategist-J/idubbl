@@ -9,6 +9,20 @@ export class FlutterwaveDriver extends PaymentDriver {
     this.redirectUrl = config.redirectUrl;
   }
 
+  async getSecretKey() {
+    try {
+      const { getDb } = await import('../../db.js');
+      const db = await getDb();
+      const settings = await db.collection('settings').findOne({ key: 'flutterwave_keys' });
+      if (settings && settings.value && settings.value.secretKey) {
+        return settings.value.secretKey;
+      }
+    } catch (e) {
+      console.error('Error fetching Flutterwave secret key from database:', e);
+    }
+    return this.secretKey;
+  }
+
   async createOrder(data) {
     const endpoint = `${this.baseUrl}/payments`;
     const body = {
@@ -32,7 +46,7 @@ export class FlutterwaveDriver extends PaymentDriver {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
+          'Authorization': `Bearer ${await this.getSecretKey()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
@@ -69,7 +83,7 @@ export class FlutterwaveDriver extends PaymentDriver {
       const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
+          'Authorization': `Bearer ${await this.getSecretKey()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -126,7 +140,7 @@ export class FlutterwaveDriver extends PaymentDriver {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
+          'Authorization': `Bearer ${await this.getSecretKey()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
