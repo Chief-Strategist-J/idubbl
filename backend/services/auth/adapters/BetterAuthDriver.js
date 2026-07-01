@@ -5,6 +5,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { APIError } from 'better-auth/api';
 import { AuthDriver } from '../ports/AuthDriver.js';
 import { sendEmail } from '../../emailService.js';
+import { bearer } from 'better-auth/plugins';
 
 export class BetterAuthDriver extends AuthDriver {
   constructor(config) {
@@ -58,6 +59,7 @@ export class BetterAuthDriver extends AuthDriver {
           }
         },
         plugins: [
+          bearer(),
           // Enable role capabilities in Better Auth to natively fetch and populate user.role from the database user table
           {
             id: 'admin-roles',

@@ -18,7 +18,8 @@ import { getDb } from './services/db.js';
 const app = express();
 app.use(cors({
   origin: true,
-  credentials: true
+  credentials: true,
+  exposedHeaders: ['set-auth-token']
 }));
 app.use(express.json());
 

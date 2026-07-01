@@ -28,9 +28,15 @@ const useAuthStore = create(
           set({ loading: true });
         }
 
+        const token = localStorage.getItem('idubbl_bearer_token');
+        const headers = { 'Accept': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         try {
           const res = await fetch(`${AUTH_API}/get-session`, {
-            headers: { 'Accept': 'application/json' },
+            headers,
             credentials: 'include'
           });
 
@@ -53,6 +59,7 @@ const useAuthStore = create(
           // Server says no valid session — clear everything
           localStorage.removeItem('idubbl_login_portal');
           localStorage.removeItem('idubbl_role');
+          localStorage.removeItem('idubbl_bearer_token');
           set({ user: null, isAuthenticated: false, loading: false, sessionChecked: true });
         } catch (err) {
           // Network error — keep user logged in from localStorage if we have them.
@@ -61,6 +68,7 @@ const useAuthStore = create(
           if (!get().user) {
             localStorage.removeItem('idubbl_login_portal');
             localStorage.removeItem('idubbl_role');
+            localStorage.removeItem('idubbl_bearer_token');
             set({ user: null, isAuthenticated: false, loading: false, sessionChecked: true });
           } else {
             set({ loading: false, sessionChecked: true });
@@ -84,6 +92,10 @@ const useAuthStore = create(
           const data = await res.json();
           set({ loading: false });
           if (res.ok && data.user) {
+            const token = res.headers.get('set-auth-token');
+            if (token) {
+              localStorage.setItem('idubbl_bearer_token', token);
+            }
             localStorage.setItem('idubbl_login_portal', portal);
             const role = (portal === 'admin' && data.user.role === 'admin') ? 'admin' : 'player';
             localStorage.setItem('idubbl_role', role);
@@ -117,6 +129,10 @@ const useAuthStore = create(
           const resData = await res.json();
           set({ loading: false });
           if (res.ok && resData.user) {
+            const token = res.headers.get('set-auth-token');
+            if (token) {
+              localStorage.setItem('idubbl_bearer_token', token);
+            }
             set({ user: resData.user, isAuthenticated: true, sessionChecked: true });
             return { success: true };
           }
@@ -171,6 +187,7 @@ const useAuthStore = create(
       logout: async () => {
         localStorage.removeItem('idubbl_login_portal');
         localStorage.removeItem('idubbl_role');
+        localStorage.removeItem('idubbl_bearer_token');
         set({ loading: true });
         try {
           await fetch(`${AUTH_API}/sign-out`, {
