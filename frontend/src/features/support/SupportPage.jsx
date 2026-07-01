@@ -174,6 +174,77 @@ export default function SupportPage() {
           />
         </div>
 
+        {/* ── Support Info ────────────────────────────────────────────── */}
+        <Card>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <h2
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Support Information
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Need help? Our support team is available to assist with account, wallet, gameplay, and platform questions.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+              <div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.5rem' }}>How We Can Help</h3>
+                <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                  <li>Account registration and login issues</li>
+                  <li>Deposit questions</li>
+                  <li>Withdrawal requests</li>
+                  <li>Match disputes</li>
+                  <li>Technical issues</li>
+                  <li>Responsible play concerns</li>
+                  <li>General platform questions</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.5rem' }}>Contact Us</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  <div>
+                    <strong style={{ color: 'var(--text-primary)' }}>Email:</strong>
+                    <br />
+                    <a href="mailto:support@idubbl.com" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>support@idubbl.com</a>
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--text-primary)' }}>Support Hours:</strong>
+                    <br />
+                    Monday – Friday
+                    <br />
+                    9:00 AM – 6:00 PM
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.5rem' }}>Before Contacting Support</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                Please include:
+              </p>
+              <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                <li>Your registered email or phone number</li>
+                <li>Transaction reference (if applicable)</li>
+                <li>Match ID (if applicable)</li>
+                <li>A description of the issue</li>
+              </ul>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.75rem', fontStyle: 'italic' }}>
+                We aim to respond as quickly as possible and provide clear assistance.
+              </p>
+            </div>
+          </div>
+        </Card>
+
         {/* ── FAQ Accordion ────────────────────────────────────────────── */}
         <Card>
           <h3

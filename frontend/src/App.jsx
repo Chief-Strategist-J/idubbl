@@ -35,6 +35,10 @@ import HowToUsePage from './features/guide/HowToUsePage.jsx';
 import ChatPage from './features/chat/ChatPage.jsx';
 import GamesPage from './features/games/GamesPage.jsx';
 import LudoGamePage from './features/games/LudoGamePage.jsx';
+import PrivacyPage from './features/system/PrivacyPage.jsx';
+import AboutPage from './features/system/AboutPage.jsx';
+import ResponsiblePlayPage from './features/system/ResponsiblePlayPage.jsx';
+import TermsPage from './features/system/TermsPage.jsx';
 import NotFoundPage from './features/system/NotFoundPage.jsx';
 import ErrorPage from './features/system/ErrorPage.jsx';
 import MaintenancePage from './features/system/MaintenancePage.jsx';
@@ -105,6 +109,10 @@ export default function App() {
         <Route path="/verify" element={<VerifyAccountPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/ludo"  element={<LudoGamePage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/responsible-play" element={<ResponsiblePlayPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         {/* System pages */}
         <Route path="/maintenance" element={<MaintenancePage />} />

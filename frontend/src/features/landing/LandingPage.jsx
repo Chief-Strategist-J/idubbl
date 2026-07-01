@@ -121,24 +121,39 @@ export default function LandingPage() {
                 gap: '0.25rem 1.5rem',
               }}
             >
-              {FOOTER_LINKS.map((link) => (
-                <a
-                  key={link}
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85rem',
-                    textDecoration: 'none',
-                    transition: 'color 0.15s',
-                    padding: '0.25rem 0',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-                >
-                  {link}
-                </a>
-              ))}
+              {FOOTER_LINKS.map((link) => {
+                const isPrivacy = link === 'Privacy';
+                const isSupport = link === 'Support';
+                const isRespPlay = link === 'Responsible Play';
+                const isTerms = link === 'Terms';
+                const isAbout = link === 'About';
+                const href = isPrivacy ? '/privacy' : (isSupport ? '/support' : (isRespPlay ? '/responsible-play' : (isTerms ? '/terms' : (isAbout ? '/about' : '#'))));
+                return (
+                  <a
+                    key={link}
+                    href={href}
+                    onClick={(e) => {
+                      if (!isPrivacy && !isSupport && !isRespPlay && !isTerms && !isAbout) {
+                        e.preventDefault();
+                      } else {
+                        e.preventDefault();
+                        navigate(href);
+                      }
+                    }}
+                    style={{
+                      color: 'var(--text-muted)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      transition: 'color 0.15s',
+                      padding: '0.25rem 0',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  >
+                    {link}
+                  </a>
+                );
+              })}
             </div>
           </nav>
 
