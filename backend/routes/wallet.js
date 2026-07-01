@@ -12,9 +12,9 @@ async function getOrCreateWallet(db, userId) {
   if (!wallet) {
     wallet = {
       userId,
-      depositBalance: 1000,
+      depositBalance: 0,
       winningsBalance: 0,
-      idubbuBalance: 1000 * IDUBBU_RATE,
+      idubbuBalance: 0,
       lockedBalance: 0,
       pendingWithdrawals: 0,
       createdAt: new Date(),

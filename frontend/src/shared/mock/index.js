@@ -73,5 +73,5 @@ export const MATH_DUEL_QUESTIONS = [
 
 export const PLATFORM_WALLET = 'TDsqW9XXXXXXXXXXXXXXXXXXXXXXX';
 export const SUPPORTED_NETWORKS = ['TRC20 (TRON)', 'ERC20 (Ethereum)'];
-export const MIN_DEPOSIT = 10;
+export const MIN_DEPOSIT = 0.1;
 export const MIN_WITHDRAWAL = 5;
