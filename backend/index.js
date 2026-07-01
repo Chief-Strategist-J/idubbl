@@ -218,7 +218,7 @@ async function handleSubmitScore(socket, data) {
         }
 
         const entryFee = updatedMatch.tier === 'rookie' ? 5 : updatedMatch.tier === 'pro' ? 20 : 50;
-        const prize = entryFee * 2 * 0.90;
+        const prize = entryFee * 2 * 0.80;
 
         await matchmakerService.endMatch(matchId, finalWinnerId, prize);
       }

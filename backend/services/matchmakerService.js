@@ -128,7 +128,7 @@ class MatchmakerService {
       status: 'in_progress',
       startedAt: new Date(),
       rounds: [],
-      rake: entryFee * 2 * 0.10,
+      rake: entryFee * 2 * 0.20,
       questions
     };
 

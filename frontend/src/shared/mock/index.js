@@ -7,9 +7,9 @@ export const MOCK_USERS = [
 
 // design.md §4.3 — MVP: exactly 3 tiers (Rookie / Pro / Elite)
 export const MOCK_TIERS = [
-  { id: 't1', name: 'Rookie', entryFee: 5,  rakePercent: 10, prize: 9,  minWaitSeconds: 30, active: true, waitingCount: 3, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
-  { id: 't2', name: 'Pro',    entryFee: 20, rakePercent: 10, prize: 36, minWaitSeconds: 45, active: true, waitingCount: 1, color: 'pro',    gameType: 'word_duel', gameLabel: 'Word Duel' },
-  { id: 't3', name: 'Elite',  entryFee: 50, rakePercent: 8,  prize: 92, minWaitSeconds: 60, active: true, waitingCount: 0, color: 'elite',  gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't1', name: 'Rookie', entryFee: 5,  rakePercent: 20, prize: 8,  minWaitSeconds: 30, active: true, waitingCount: 3, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't2', name: 'Pro',    entryFee: 20, rakePercent: 20, prize: 32, minWaitSeconds: 45, active: true, waitingCount: 1, color: 'pro',    gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't3', name: 'Elite',  entryFee: 50, rakePercent: 20, prize: 80, minWaitSeconds: 60, active: true, waitingCount: 0, color: 'elite',  gameType: 'word_duel', gameLabel: 'Word Duel' },
 ];
 
 export const MOCK_MATCHES = [
