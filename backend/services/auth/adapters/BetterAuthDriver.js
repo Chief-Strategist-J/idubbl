@@ -34,6 +34,14 @@ export class BetterAuthDriver extends AuthDriver {
             secure: true
           }
         },
+        session: {
+          expiresIn:        60 * 60 * 24 * 30,  // 30 days
+          updateAge:        60 * 60 * 24,        // extend cookie once per day if active
+          cookieCache: {
+            enabled: true,
+            maxAge:  5 * 60                      // 5-min server-side cache → fewer DB hits
+          }
+        },
         databaseHooks: {
           user: {
             create: {
