@@ -106,6 +106,17 @@ router.post('/match/join-deduct', async (req, res) => {
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
+
+    // ── Idempotency guard: prevent double-charge for same match ───────────────
+    if (matchId) {
+      const alreadyCharged = await db.collection('transactions').findOne({
+        userId, matchId, type: 'match_entry'
+      });
+      if (alreadyCharged) {
+        return res.json({ success: true, alreadyDeducted: true });
+      }
+    }
+
     const wallet = await getOrCreateWallet(db, userId);
     const total = (wallet.depositBalance || 0) + (wallet.winningsBalance || 0);
     if (total < Number(entryFee)) {
@@ -482,7 +493,7 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
       { $inc: { pendingWithdrawals: -tx.amount } }
     );
 
-    res.json({ success: true, payoutTxHash: payout.txHash });
+    res.json({ success: true, payoutTxHash });
   } catch (error) {
     console.error('Error approving withdrawal:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error approving withdrawal.');

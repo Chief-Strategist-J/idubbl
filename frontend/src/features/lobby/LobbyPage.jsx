@@ -6,25 +6,11 @@ import TierCard from './components/TierCard.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import useAuthStore from '../../shared/store/authStore.js';
 import usePlatformStore, { ALL_GAMES } from '../../shared/store/platformStore.js';
+import { GAME_META } from '../../shared/data/gameMeta.js';
 
 // Game list is driven by platformStore so admin hide/show is respected
 
-const GAME_META = {
-  word_duel:     { subtitle: 'Anagram Sprint',    color: '#00E37A', emoji: '📝', howToPlay: ['Both players receive the same 7 scrambled letters.', 'Form the highest-scoring word in 20 seconds.', 'First to win 2 of 3 rounds wins the match.'], rules: ['Valid English words only — no proper nouns.', 'Longer words score more points.', 'Disconnection during a round = forfeit that round.'] },
-  math_duel:     { subtitle: 'Arithmetic Blitz',  color: '#5B8DEF', emoji: '🔢', howToPlay: ['Both players see the same arithmetic question.', 'Select the correct answer from 4 options as fast as possible.', 'Speed matters — faster correct answers score more.'], rules: ['One answer attempt per question, no changes.', 'Wrong answer scores zero regardless of speed.', '15-second time limit per question.'] },
-  reaction_race: { subtitle: 'Speed Reflex',       color: '#fbbf24', emoji: '⚡', howToPlay: ['Wait for the green GO! signal.', 'Tap as fast as possible.', 'Faster reaction time wins — best of 3.'], rules: ['False start (early tap) gives a time penalty.', 'Three consecutive false starts = forfeit.'] },
-  lucky_wheel:   { subtitle: 'Spin & Win',         color: '#8b5cf6', emoji: '🎡', howToPlay: ['Predict a sector before the spin.', 'Wheel is spun server-side (provably fair).', 'Closest prediction wins the round.'], rules: ['Predictions must be locked before the spin starts.', 'Tie predictions use a server tiebreak.'] },
-  lucky_balls:   { subtitle: 'Lotto Draw',         color: '#f97316', emoji: '🔮', howToPlay: ['Pick 3 unique numbers (1–20).', '5 balls are drawn server-side.', 'Most matches wins the round — best of 3.'], rules: ['All 3 picks must be unique.', 'Matching all 3 wins instantly.'] },
-  blackjack:     { subtitle: '21 Battle',          color: '#ef4444', emoji: '🃏', howToPlay: ['Receive 2 cards. Hit or Stand.', 'Get closer to 21 than your opponent without busting.', 'Best of 3 hands wins the match.'], rules: ['Aces = 1 or 11. Face cards = 10.', 'Busting (>21) = automatic loss.', 'Natural Blackjack beats any other 21.'] },
-  holdem_poker:  { subtitle: "Texas Hold'em",      color: '#10b981', emoji: '♠️', howToPlay: ['2 hole cards dealt to each player.', '5 community cards revealed over 3 rounds.', 'Best 5-card hand wins the round — best of 3.'], rules: ['Standard poker hand rankings apply.', 'All-in capped at match stake per hand.'] },
-  baccarat:      { subtitle: 'Player vs Banker',   color: '#a855f7', emoji: '👑', howToPlay: ['Predict: Player, Banker, or Tie.', 'Two cards dealt to each position.', 'Hand closest to 9 wins — correct prediction wins round.'], rules: ['10/J/Q/K = 0. Ace = 1. Total over 9: only second digit counts.', 'Third card rules are automatic.'] },
-  casino_war:    { subtitle: 'High Card Duel',     color: '#ec4899', emoji: '⚔️', howToPlay: ['One card dealt to each player face-up.', 'Higher card wins the round.', 'Tie: choose Go to War (double stake) or surrender.'], rules: ['Ace is highest. Suits do not matter.', 'War on tie: extra stake, next card decides.'] },
-  red_dog:       { subtitle: 'In-Between Bet',     color: '#f43f5e', emoji: '🐕', howToPlay: ['Two cards set the range.', 'Bet whether the third card falls strictly between them.', 'Wide spread = easier win but lower multiplier.'], rules: ['Consecutive first two cards = push (no winner).', 'Matching pair: third card another pair = instant win.'] },
-  pai_gow:       { subtitle: 'Two-Hand Strategy',  color: '#e11d48', emoji: '🀄', howToPlay: ['Split 7 cards into a 5-card high and 2-card low hand.', 'Both your hands must beat the dealer\'s to win the round.', 'Winning only one hand = push.'], rules: ['5-card hand must outrank the 2-card hand.', 'Dealer follows fixed house-way algorithm.'] },
-  three_card:    { subtitle: 'Fast Tri-Card',      color: '#d97706', emoji: '🎴', howToPlay: ['Each player gets 3 cards. Play or Fold.', 'Best 3-card poker hand wins.', 'Best of 3 rounds wins the match.'], rules: ['In 3-card poker, straight beats a flush.', 'Folding forfeits the round.'] },
-  video_poker:   { subtitle: 'Draw Poker',         color: '#2563eb', emoji: '🎰', howToPlay: ['Receive 5 cards. Choose which to hold.', 'Discards replaced from a fresh deck.', 'Better final hand wins the round.'], rules: ['Minimum winning hand: Jacks or better.', 'Royal Flush pays the highest multiplier.'] },
-  ludo:          { subtitle: 'Board Game',         color: '#f97316', emoji: '🎲', howToPlay: ['Race 4 tokens from base to home.', 'Roll 6 to enter a token from base.', 'Land on opponent to send them back.'], rules: ['Need a 6 to enter from base.', 'Safe squares cannot be captured.', 'Free to play — no USDT entry fee.'] },
-};
+
 
 export default function LobbyPage() {
   const navigate = useNavigate();

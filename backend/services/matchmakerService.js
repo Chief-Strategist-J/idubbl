@@ -1,5 +1,7 @@
 import { getDb } from './db.js';
 
+const IDUBBU_RATE = 1000; // 1 USDT = 1000 Idubbu — keep in sync with wallet.js
+
 function normalizeKey(key) {
   if (typeof key !== 'string') return '';
   return key.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -17,7 +19,7 @@ async function deductWallet(db, walletsCollection, transactionsCollection, uId, 
         depositBalance: -fromDep,
         winningsBalance: -fromWin,
         lockedBalance: entryFee,
-        idubbuBalance: -entryFee * 1000
+        idubbuBalance: -entryFee * IDUBBU_RATE
       }
     }
   );
@@ -118,7 +120,7 @@ class MatchmakerService {
 
     const matchInfo = {
       matchId,
-      tier: tierName,
+      tier: normTierName,
       gameType: normGameType,
       players: [opponent.userId, normUserId],
       playerNames: {
@@ -203,7 +205,7 @@ class MatchmakerService {
         $inc: {
           winningsBalance: Number(prize),
           lockedBalance: -Number(entryFee),
-          idubbuBalance: Number(prize) * 1000
+          idubbuBalance: Number(prize) * IDUBBU_RATE
         }
       }
     );
