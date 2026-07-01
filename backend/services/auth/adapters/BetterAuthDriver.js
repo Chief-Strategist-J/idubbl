@@ -25,7 +25,7 @@ export class BetterAuthDriver extends AuthDriver {
       this.db = this.client.db();
 
       const authOptions = {
-        secret: config.secret || 'SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME',
+        secret: process.env.BETTER_AUTH_SECRET || config.secret || 'SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME',
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
@@ -114,7 +114,7 @@ export class BetterAuthDriver extends AuthDriver {
             }
           }
         ],
-        baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+        baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === 'production' ? 'https://idubbl-backend.onrender.com' : 'http://localhost:5000'),
         trustedOrigins: [
           'https://idubbl-frontend.onrender.com',
           'http://localhost:5173',
