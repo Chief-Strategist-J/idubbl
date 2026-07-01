@@ -144,10 +144,10 @@ router.post('/match/join-deduct', async (req, res) => {
   }
 });
 
-// 3b. Settle match result — credit winner, record loss for loser
+// 3b. Settle match result — credit winner, record loss for loser, or refund for tie
 // NOTE: prize is NOT trusted from client — always re-derived from the match record in DB
 router.post('/match/settle', async (req, res) => {
-  const { isWinner, entryFee, matchId, tier, refId } = req.body;
+  const { isWinner, isTie, entryFee, matchId, tier, refId } = req.body;
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
@@ -155,29 +155,38 @@ router.post('/match/settle', async (req, res) => {
     const resolvedMatchId = matchId || refId;
     if (resolvedMatchId) {
       const existing = await db.collection('transactions').findOne({
-        matchId: resolvedMatchId, userId, type: { $in: ['win', 'loss'] }
+        matchId: resolvedMatchId, userId, type: { $in: ['win', 'loss', 'refund'] }
       });
       if (existing) return res.json({ success: true, alreadySettled: true });
     }
 
     // Re-derive the authoritative prize from the DB match record — NEVER trust client prize
     let derivedPrize = 0;
-    if (isWinner && resolvedMatchId) {
+    let actualIsTie = isTie || false;
+
+    if (resolvedMatchId) {
       const matchRecord = await db.collection('matches').findOne({ matchId: resolvedMatchId });
       if (matchRecord) {
-        const tierFees = { rookie: 5, pro: 20, elite: 50 };
-        const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
-        const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
-        derivedPrize = fee * 2 * 0.80; // 20% platform rake
-      } else if (entryFee) {
+        if (matchRecord.winner === 'tie' || matchRecord.winner === 'draw') {
+          actualIsTie = true;
+        }
+        if (isWinner && !actualIsTie) {
+          const tierFees = { rookie: 5, pro: 20, elite: 50 };
+          const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
+          const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
+          derivedPrize = fee * 2 * 0.80; // 20% platform rake
+        }
+      } else if (isWinner && entryFee) {
         // Fallback: match record not found — use client entryFee (still safer than client prize)
         derivedPrize = Number(entryFee) * 2 * 0.80;
       }
+    } else if (isWinner && entryFee) {
+      derivedPrize = Number(entryFee) * 2 * 0.80;
     }
 
     const fee = entryFee ? Number(entryFee) : 0;
 
-    if (isWinner && derivedPrize > 0) {
+    if (isWinner && derivedPrize > 0 && !actualIsTie) {
       await db.collection('wallets').updateOne(
         { userId },
         { $inc: {
@@ -190,6 +199,19 @@ router.post('/match/settle', async (req, res) => {
         userId, type: 'win', amount: derivedPrize,
         matchId: resolvedMatchId, tier, refId, status: 'approved', createdAt: new Date()
       });
+    } else if (actualIsTie) {
+      await db.collection('wallets').updateOne(
+        { userId },
+        { $inc: {
+            depositBalance: fee,
+            lockedBalance:  -fee,
+            idubbuBalance:   fee * IDUBBU_RATE
+        }}
+      );
+      await db.collection('transactions').insertOne({
+        userId, type: 'refund', amount: fee,
+        matchId: resolvedMatchId, tier, refId, status: 'approved', createdAt: new Date()
+      });
     } else {
       await db.collection('wallets').updateOne(
         { userId },
@@ -200,7 +222,7 @@ router.post('/match/settle', async (req, res) => {
         matchId: resolvedMatchId, tier, refId, status: 'approved', createdAt: new Date()
       });
     }
-    res.json({ success: true, prize: derivedPrize });
+    res.json({ success: true, prize: derivedPrize, isTie: actualIsTie });
   } catch (error) {
     console.error('Error settling match:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error settling match.');

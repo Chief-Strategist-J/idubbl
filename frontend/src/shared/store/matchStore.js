@@ -98,10 +98,12 @@ const useMatchStore = create((set, get) => ({
 
         if (playerWins === 2 || opponentWins === 2 || updatedRounds.length === 3) {
           const isWinner = playerWins > opponentWins;
-          const matchWinner = isWinner ? myName : winnerName;
+          const isTie = !isWinner && playerWins === opponentWins;
+          const matchWinner = isTie ? 'tie' : (isWinner ? myName : winnerName);
           const result = {
             winner: matchWinner,
             isWinner,
+            isTie,
             rounds: updatedRounds,
             prize: isWinner ? (currentMatch?.prize ?? 0) : 0,
             rake: currentMatch?.rake,

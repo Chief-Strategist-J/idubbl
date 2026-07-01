@@ -18,6 +18,7 @@ export default function ResultPage() {
       settled.current = true;
       creditWinnings(matchResult.isWinner ? matchResult.prize : 0, {
         entryFee: matchResult.entryFee,
+        isTie: matchResult.isTie || false,
         refId: matchResult.refId,
         matchId: matchResult.refId,
         tier: matchResult.tierName || 'Rookie'
@@ -41,14 +42,18 @@ export default function ResultPage() {
     <AppLayout>
       <div style={{ maxWidth: 600, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{matchResult.isWinner ? '🏆' : '😤'}</div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: matchResult.isWinner ? 'var(--accent-green)' : 'var(--accent-red)', marginBottom: '0.5rem' }}>
-            {matchResult.isWinner ? 'You Won!' : 'You Lost'}
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
+            {matchResult.isWinner ? '🏆' : (matchResult.isTie ? '🤝' : '😤')}
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: matchResult.isWinner ? 'var(--accent-green)' : (matchResult.isTie ? 'var(--text-primary)' : 'var(--accent-red)'), marginBottom: '0.5rem' }}>
+            {matchResult.isWinner ? 'You Won!' : (matchResult.isTie ? 'Match Tied!' : 'You Lost')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
             {matchResult.isWinner
               ? 'You won the match. Your prize has been credited to your balance.'
-              : 'Better luck next time. Play again in the same tier or choose a different tier.'}
+              : (matchResult.isTie
+                  ? 'It was a tie! Your locked entry fee has been released back to your balance.'
+                  : 'Better luck next time. Play again in the same tier or choose a different tier.')}
           </p>
         </div>
 

@@ -188,8 +188,6 @@ class MatchmakerService {
       throw new Error('Match not found or already settled.');
     }
 
-    const loserId = match.players.find(p => p !== normWinnerId);
-
     await db.collection(this.matchesCollection).updateOne(
       { matchId: normMatchId },
       { $set: { status: 'completed', winner: normWinnerId, settledAt: new Date() } }
@@ -197,6 +195,34 @@ class MatchmakerService {
 
     const tierFees = { rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normalizeKey(match.tier)] || 5;
+
+    if (normWinnerId === 'tie' || normWinnerId === 'draw') {
+      for (const pId of match.players) {
+        await db.collection(this.walletsCollection).updateOne(
+          { userId: pId },
+          {
+            $inc: {
+              depositBalance: Number(entryFee),
+              lockedBalance: -Number(entryFee),
+              idubbuBalance: Number(entryFee) * IDUBBU_RATE
+            }
+          }
+        );
+
+        await db.collection(this.transactionsCollection).insertOne({
+          userId: pId,
+          type: 'refund',
+          amount: Number(entryFee),
+          matchId: normMatchId,
+          tier: match.tier,
+          status: 'approved',
+          createdAt: new Date()
+        });
+      }
+      return { success: true };
+    }
+
+    const loserId = match.players.find(p => p !== normWinnerId);
 
     // Settle winner: deduct locked, add win balance
     await db.collection(this.walletsCollection).updateOne(

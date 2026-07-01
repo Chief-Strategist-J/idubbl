@@ -235,33 +235,51 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
-  // SRP: settle match result — credit winner or record loss, always persists to backend
+  // SRP: settle match result — credit winner, record loss, or refund tie, always persists to backend
   creditWinnings: async (prize, matchMeta = {}) => {
     const { winningsBalance, availableBalance, lockedBalance, idubbuBalance, idubbuRate, depositBalance, pendingWithdrawals } = get();
     const entryFee = matchMeta.entryFee || 0;
     const isWinner = prize > 0;
+    const isTie = matchMeta.isTie || false;
     const nextLocked = Math.max(0, lockedBalance - entryFee);
-    const nextWinnings = isWinner ? winningsBalance + prize : winningsBalance;
-    const nextIdubbu = isWinner ? (idubbuBalance || 0) + prize * (idubbuRate || 1000) : (idubbuBalance || 0);
+
+    let nextWinnings = winningsBalance;
+    let nextDeposit = depositBalance;
+    let nextIdubbu = idubbuBalance || 0;
+    let nextAvailable = availableBalance;
 
     if (isWinner) {
+      nextWinnings = winningsBalance + prize;
+      nextIdubbu = (idubbuBalance || 0) + prize * (idubbuRate || 1000);
+      nextAvailable = availableBalance + prize;
       set({
         winningsBalance: nextWinnings,
-        availableBalance: availableBalance + prize,
+        availableBalance: nextAvailable,
+        lockedBalance: nextLocked,
+        idubbuBalance: nextIdubbu,
+      });
+    } else if (isTie) {
+      nextDeposit = depositBalance + entryFee;
+      nextIdubbu = (idubbuBalance || 0) + entryFee * (idubbuRate || 1000);
+      nextAvailable = availableBalance + entryFee;
+      set({
+        depositBalance: nextDeposit,
+        availableBalance: nextAvailable,
         lockedBalance: nextLocked,
         idubbuBalance: nextIdubbu,
       });
     } else {
+      nextAvailable = Math.max(0, availableBalance - entryFee);
       set({
         lockedBalance: nextLocked,
-        availableBalance: Math.max(0, availableBalance - entryFee),
+        availableBalance: nextAvailable,
       });
     }
 
     const userId = useAuthStore.getState().user?.id;
     if (userId) {
       localStorage.setItem(`idubbl_wallet_${userId}`, JSON.stringify({
-        depositBalance,
+        depositBalance: nextDeposit,
         winningsBalance: nextWinnings,
         lockedBalance: nextLocked,
         idubbuBalance: nextIdubbu,
@@ -273,7 +291,7 @@ const useWalletStore = create((set, get) => ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
           credentials: 'include',
-          body: JSON.stringify({ isWinner, prize, ...matchMeta, tier: matchMeta.tierName || matchMeta.tier }),
+          body: JSON.stringify({ isWinner, isTie, prize, ...matchMeta, tier: matchMeta.tierName || matchMeta.tier }),
         });
         // Refresh real balance from server
         await get().fetchWalletData(userId);

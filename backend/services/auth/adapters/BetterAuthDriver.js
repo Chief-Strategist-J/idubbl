@@ -30,8 +30,8 @@ export class BetterAuthDriver extends AuthDriver {
         }),
         advanced: {
           cookie: {
-            sameSite: "none",
-            secure: true
+            sameSite: (process.env.NODE_ENV === 'production' || (process.env.BETTER_AUTH_URL && process.env.BETTER_AUTH_URL.startsWith('https://'))) ? "none" : "lax",
+            secure: process.env.NODE_ENV === 'production' || (process.env.BETTER_AUTH_URL && process.env.BETTER_AUTH_URL.startsWith('https://'))
           }
         },
         session: {

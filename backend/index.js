@@ -213,8 +213,8 @@ async function handleSubmitScore(socket, data) {
           finalWinnerId = player2;
           finalWinnerName = updatedMatch.playerNames[player2];
         } else {
-          finalWinnerId = p1Wins >= p2Wins ? player1 : player2;
-          finalWinnerName = updatedMatch.playerNames[finalWinnerId];
+          finalWinnerId = 'tie';
+          finalWinnerName = 'tie';
         }
 
         const normTier = (updatedMatch.tier || '').toLowerCase().trim();
