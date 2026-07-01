@@ -13,10 +13,14 @@ export const MOCK_TIERS = [
 ];
 
 export const MOCK_MATCHES = [
-  { id: 'm1', tier: 'Rookie', player1: 'Alex Storm', player2: 'Maya Chen',   status: 'completed', winner: 'Alex Storm',  winnerId: 'u1', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '120-80' }, { roundNo: 2, winner: 'Maya Chen', score: '95-110' }, { roundNo: 3, winner: 'Alex Storm', score: '130-100' }], prize: 9,  rake: 1, startedAt: '2026-06-16T10:00:00Z', endedAt: '2026-06-16T10:07:00Z', refId: 'M-001' },
-  { id: 'm2', tier: 'Pro',    player1: 'Alex Storm', player2: 'Jordan Wick', status: 'completed', winner: 'Jordan Wick', winnerId: 'u3', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '110-90' }, { roundNo: 2, winner: 'Jordan Wick', score: '80-120' }, { roundNo: 3, winner: 'Jordan Wick', score: '95-130' }], prize: 36, rake: 4, startedAt: '2026-06-16T09:00:00Z', endedAt: '2026-06-16T09:09:00Z', refId: 'M-002' },
-  { id: 'm3', tier: 'Rookie', player1: 'Maya Chen',  player2: 'Jordan Wick', status: 'active',    winner: null,         winnerId: null, rounds: [], prize: 9, rake: 1, startedAt: '2026-06-16T11:00:00Z', endedAt: null, refId: 'M-003' },
+  // Rookie: entryFee=5, prize=5×2×0.80=8, rake=5×2×0.20=2
+  { id: 'm1', tier: 'Rookie', player1: 'Alex Storm', player2: 'Maya Chen',   status: 'completed', winner: 'Alex Storm',  winnerId: 'u1', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '120-80' }, { roundNo: 2, winner: 'Maya Chen', score: '95-110' }, { roundNo: 3, winner: 'Alex Storm', score: '130-100' }], prize: 8,  rake: 2, startedAt: '2026-06-16T10:00:00Z', endedAt: '2026-06-16T10:07:00Z', refId: 'M-001' },
+  // Pro: entryFee=20, prize=20×2×0.80=32, rake=20×2×0.20=8
+  { id: 'm2', tier: 'Pro',    player1: 'Alex Storm', player2: 'Jordan Wick', status: 'completed', winner: 'Jordan Wick', winnerId: 'u3', rounds: [{ roundNo: 1, winner: 'Alex Storm', score: '110-90' }, { roundNo: 2, winner: 'Jordan Wick', score: '80-120' }, { roundNo: 3, winner: 'Jordan Wick', score: '95-130' }], prize: 32, rake: 8, startedAt: '2026-06-16T09:00:00Z', endedAt: '2026-06-16T09:09:00Z', refId: 'M-002' },
+  // Rookie active match: same prize pool
+  { id: 'm3', tier: 'Rookie', player1: 'Maya Chen',  player2: 'Jordan Wick', status: 'active',    winner: null,         winnerId: null, rounds: [], prize: 8, rake: 2, startedAt: '2026-06-16T11:00:00Z', endedAt: null, refId: 'M-003' },
 ];
+
 
 export const MOCK_DEPOSITS = [
   { id: 'd1', userId: 'u1', user: 'Alex Storm', amount: 50, network: 'TRC20', txHash: '0xabc123def456', status: 'approved', reviewedBy: 'admin1', createdAt: '2026-06-15T08:00:00Z', note: '' },

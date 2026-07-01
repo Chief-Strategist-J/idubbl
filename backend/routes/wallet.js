@@ -145,8 +145,9 @@ router.post('/match/join-deduct', async (req, res) => {
 });
 
 // 3b. Settle match result — credit winner, record loss for loser
+// NOTE: prize is NOT trusted from client — always re-derived from the match record in DB
 router.post('/match/settle', async (req, res) => {
-  const { isWinner, prize, entryFee, matchId, tier, refId } = req.body;
+  const { isWinner, entryFee, matchId, tier, refId } = req.body;
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
@@ -158,30 +159,48 @@ router.post('/match/settle', async (req, res) => {
       });
       if (existing) return res.json({ success: true, alreadySettled: true });
     }
-    if (isWinner && prize > 0) {
+
+    // Re-derive the authoritative prize from the DB match record — NEVER trust client prize
+    let derivedPrize = 0;
+    if (isWinner && resolvedMatchId) {
+      const matchRecord = await db.collection('matches').findOne({ matchId: resolvedMatchId });
+      if (matchRecord) {
+        const tierFees = { rookie: 5, pro: 20, elite: 50 };
+        const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
+        const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
+        derivedPrize = fee * 2 * 0.80; // 20% platform rake
+      } else if (entryFee) {
+        // Fallback: match record not found — use client entryFee (still safer than client prize)
+        derivedPrize = Number(entryFee) * 2 * 0.80;
+      }
+    }
+
+    const fee = entryFee ? Number(entryFee) : 0;
+
+    if (isWinner && derivedPrize > 0) {
       await db.collection('wallets').updateOne(
         { userId },
         { $inc: {
-            winningsBalance: Number(prize),
-            lockedBalance:  -Number(entryFee),
-            idubbuBalance:   Number(prize) * IDUBBU_RATE
+            winningsBalance: derivedPrize,
+            lockedBalance:  -fee,
+            idubbuBalance:   derivedPrize * IDUBBU_RATE
         }}
       );
       await db.collection('transactions').insertOne({
-        userId, type: 'win', amount: Number(prize),
-        matchId, tier, refId, status: 'approved', createdAt: new Date()
+        userId, type: 'win', amount: derivedPrize,
+        matchId: resolvedMatchId, tier, refId, status: 'approved', createdAt: new Date()
       });
     } else {
       await db.collection('wallets').updateOne(
         { userId },
-        { $inc: { lockedBalance: -Number(entryFee) } }
+        { $inc: { lockedBalance: -fee } }
       );
       await db.collection('transactions').insertOne({
-        userId, type: 'loss', amount: Number(entryFee),
-        matchId, tier, refId, status: 'approved', createdAt: new Date()
+        userId, type: 'loss', amount: fee,
+        matchId: resolvedMatchId, tier, refId, status: 'approved', createdAt: new Date()
       });
     }
-    res.json({ success: true });
+    res.json({ success: true, prize: derivedPrize });
   } catch (error) {
     console.error('Error settling match:', error);
     return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error settling match.');
