@@ -3,26 +3,27 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Zap, Wallet, Clock, User, MessageCircle } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
 import useWalletStore from '../../store/walletStore.js';
+import usePlatformStore from '../../store/platformStore.js';
 import ThemeToggle from '../ui/ThemeToggle.jsx';
 import OfflineBanner from '../ui/OfflineBanner.jsx';
 import SessionExpiredModal from '../ui/SessionExpiredModal.jsx';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home },
-  { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap },
-  { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet },
-  { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle },
-  { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User },
+const ALL_NAV_ITEMS = [
+  { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home,          requiresChat: false },
+  { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap,           requiresChat: false },
+  { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet,        requiresChat: false },
+  { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle, requiresChat: true  },
+  { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User,          requiresChat: false },
 ];
 
-const HEADER_NAV = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Games',     path: '/games' },
-  { label: 'Play',      path: '/lobby' },
-  { label: 'Wallet',    path: '/wallet' },
-  { label: 'History',   path: '/transactions' },
-  { label: 'Chat',      path: '/chat' },
-  { label: 'Profile',   path: '/profile' },
+const ALL_HEADER_NAV = [
+  { label: 'Dashboard', path: '/dashboard', requiresChat: false },
+  { label: 'Games',     path: '/games',     requiresChat: false },
+  { label: 'Play',      path: '/lobby',     requiresChat: false },
+  { label: 'Wallet',    path: '/wallet',    requiresChat: false },
+  { label: 'History',   path: '/transactions', requiresChat: false },
+  { label: 'Chat',      path: '/chat',      requiresChat: true  },
+  { label: 'Profile',   path: '/profile',   requiresChat: false },
 ];
 
 export default function AppLayout({ children, noPadding = false, hideBottomNav = false }) {
@@ -30,7 +31,11 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { availableBalance } = useWalletStore();
+  const { chatEnabled } = usePlatformStore();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const NAV_ITEMS    = ALL_NAV_ITEMS.filter(i => !i.requiresChat || chatEnabled);
+  const HEADER_NAV   = ALL_HEADER_NAV.filter(i => !i.requiresChat || chatEnabled);
 
   const handleLogout = () => {
     logout();

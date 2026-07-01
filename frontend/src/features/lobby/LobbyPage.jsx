@@ -1,32 +1,27 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card } from '../../shared/components/ui/index.js';
 import TierCard from './components/TierCard.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import useAuthStore from '../../shared/store/authStore.js';
+import usePlatformStore, { ALL_GAMES } from '../../shared/store/platformStore.js';
 
-const GAMES = [
-  { id: 'word_duel', name: 'Word Duel', icon: '🔤' },
-  { id: 'math_duel', name: 'Math Duel', icon: '🔢' },
-  { id: 'reaction_race', name: 'Reaction Race', icon: '⚡' },
-  { id: 'lucky_wheel', name: 'Lucky Wheel', icon: '🎡' },
-  { id: 'lucky_balls', name: 'Lucky Balls', icon: '🎱' },
-  { id: 'blackjack', name: 'Blackjack Duel', icon: '🃏' },
-  { id: 'holdem_poker', name: 'Heads-Up Poker', icon: '💵' },
-  { id: 'baccarat', name: 'Baccarat Duel', icon: '💎' },
-  { id: 'casino_war', name: 'Casino War', icon: '⚔️' },
-  { id: 'red_dog', name: 'Red Dog', icon: '🐕' },
-  { id: 'pai_gow', name: 'Pai Gow Poker', icon: '🧧' },
-  { id: 'three_card', name: 'Three Card Poker', icon: '🔺' },
-  { id: 'video_poker', name: 'Video Poker', icon: '📺' }
-];
+// Game list is driven by platformStore so admin hide/show is respected
 
 export default function LobbyPage() {
+  const navigate = useNavigate();
   const { tiers } = useMatchStore();
   const { user } = useAuthStore();
+  const { gameVisibility } = usePlatformStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTiers = tiers.filter((t) => t.active);
+
+  // Only lobby-compatible (non-freePlay) visible games
+  const GAMES = ALL_GAMES.filter(g => !g.freePlay && gameVisibility[g.id] !== false);
+
+  // Ludo and other free-play games shown as quick links
+  const FREEPLAY_GAMES = ALL_GAMES.filter(g => g.freePlay && gameVisibility[g.id] !== false);
 
   const chosenGameId = searchParams.get('game') || 'word_duel';
   const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0];
@@ -113,6 +108,41 @@ export default function LobbyPage() {
         ))}
       </div>
 
+      {/* Free-Play Games Section (e.g. Ludo) */}
+      {FREEPLAY_GAMES.length > 0 && (
+        <div style={{ marginTop: '2.5rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+            🎮 Free-Play Games
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {FREEPLAY_GAMES.map(g => (
+              <button
+                key={g.id}
+                onClick={() => navigate(`/${g.id}`)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.6rem',
+                  padding: '0.65rem 1.25rem', borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)', color: 'var(--text-primary)',
+                  cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
+              >
+                <span style={{ fontSize: '1.2rem' }}>{g.icon}</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div>{g.name}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 400 }}>Free · No entry fee</div>
+                </div>
+                <span style={{ marginLeft: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>➔</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginTop: '3rem' }}>
         <Button variant="secondary" onClick={() => setShowInviteModal(true)}>
           ✉️ Invite a Friend to Play
@@ -120,8 +150,9 @@ export default function LobbyPage() {
       </div>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', marginTop: '2rem' }}>
-        All matches are best of 3 rounds · Word Duel game type · Results are server-authoritative
+        All matches are best of 3 rounds · Results are server-authoritative
       </p>
+
 
       {showInviteModal && (
         <div style={{
