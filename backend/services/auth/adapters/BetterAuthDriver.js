@@ -11,10 +11,11 @@ export class BetterAuthDriver extends AuthDriver {
     super(config);
     
     const dbConfig = config.database || { provider: 'mongodb', url: 'mongodb://localhost:27017/idubbl' };
+    const mongoUrl = process.env.MONGODB_URI || dbConfig.url;
     
     try {
       // Connect to MongoDB
-      this.client = new MongoClient(dbConfig.url);
+      this.client = new MongoClient(mongoUrl);
       
       // Initialize connection in background
       this.client.connect()
