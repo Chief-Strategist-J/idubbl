@@ -25,7 +25,7 @@ export const GAME_META = {
       'Only standard dictionary English words are accepted — no proper nouns, abbreviations, or hyphenated words.',
       'You must use only the 7 provided letters; you cannot add extra letters not in the set.',
       'Duplicate letters in the set can be reused only as many times as they appear.',
-      'Using all 7 letters ("bingo") earns a +50 bonus on top of the word's letter score.',
+      'Using all 7 letters ("bingo") earns a +50 bonus on top of the word\'s letter score.',
       'If both players submit the same word score, the round is a tie — neither player wins that round.',
       'If you fail to submit before the 20-second timer expires, your score for that round is 0.',
       'Disconnecting during an active round forfeits that round for you (score = 0).',
