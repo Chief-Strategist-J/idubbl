@@ -44,6 +44,7 @@ export default function AdminGameSettingsPage() {
   const [flwEncryptionKey, setFlwEncryptionKey] = useState('');
   const [keysLoading, setKeysLoading] = useState(true);
   const [keysSaved, setKeysSaved] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
 
   React.useEffect(() => {
     if (!user?.id) return;
@@ -171,56 +172,115 @@ export default function AdminGameSettingsPage() {
           {keysLoading ? (
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Loading credentials...</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
                   Secret Key (FLWSECK_TEST / FLWSECK)
                 </label>
-                <input
-                  type="password"
-                  value={flwSecretKey}
-                  onChange={e => setFlwSecretKey(e.target.value)}
-                  placeholder="Enter secret key..."
-                  style={{
-                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
-                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
-                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
-                  }}
-                />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type={showSecret ? 'text' : 'password'}
+                    value={flwSecretKey}
+                    onChange={e => setFlwSecretKey(e.target.value)}
+                    placeholder="Enter secret key..."
+                    style={{
+                      flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                      background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSecret(!showSecret)}
+                    style={{
+                      padding: '0.5rem 0.75rem', fontSize: '0.8rem', fontWeight: 600,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer'
+                    }}
+                  >
+                    {showSecret ? '🙈 Hide' : '👁️ Show'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(flwSecretKey);
+                      alert('Secret Key copied to clipboard!');
+                    }}
+                    style={{
+                      padding: '0.5rem 0.75rem', fontSize: '0.8rem', fontWeight: 600,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer'
+                    }}
+                  >
+                    📋 Copy
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
                   Public Key (FLWPUBK_TEST / FLWPUBK)
                 </label>
-                <input
-                  type="text"
-                  value={flwPublicKey}
-                  onChange={e => setFlwPublicKey(e.target.value)}
-                  placeholder="Enter public key..."
-                  style={{
-                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
-                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
-                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
-                  }}
-                />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="text"
+                    value={flwPublicKey}
+                    onChange={e => setFlwPublicKey(e.target.value)}
+                    placeholder="Enter public key..."
+                    style={{
+                      flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                      background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(flwPublicKey);
+                      alert('Public Key copied to clipboard!');
+                    }}
+                    style={{
+                      padding: '0.5rem 0.75rem', fontSize: '0.8rem', fontWeight: 600,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer'
+                    }}
+                  >
+                    📋 Copy
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
                   Encryption Key
                 </label>
-                <input
-                  type="text"
-                  value={flwEncryptionKey}
-                  onChange={e => setFlwEncryptionKey(e.target.value)}
-                  placeholder="Enter encryption key..."
-                  style={{
-                    width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem',
-                    background: 'var(--bg-darker)', border: '1px solid var(--border)',
-                    borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
-                  }}
-                />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="text"
+                    value={flwEncryptionKey}
+                    onChange={e => setFlwEncryptionKey(e.target.value)}
+                    placeholder="Enter encryption key..."
+                    style={{
+                      flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem',
+                      background: 'var(--bg-darker)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(flwEncryptionKey);
+                      alert('Encryption Key copied to clipboard!');
+                    }}
+                    style={{
+                      padding: '0.5rem 0.75rem', fontSize: '0.8rem', fontWeight: 600,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                      borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer'
+                    }}
+                  >
+                    📋 Copy
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.5rem' }}>
