@@ -149,17 +149,17 @@ export default function TierPreview() {
                 style={{
                   fontFamily: 'var(--font-display)',
                   fontWeight: 800,
-                  fontSize: '2.4rem',
-                  color: 'var(--text-primary)',
+                  fontSize: '2.7rem',
+                  color: 'var(--accent-green)',
                   lineHeight: 1,
                   marginBottom: '0.25rem',
                 }}
               >
-                {tier.entry}{' '}
+                {tier.prize}{' '}
                 <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>USDT</span>
               </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
-                entry fee
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                Estimated Prize
               </p>
 
               <div
@@ -175,9 +175,9 @@ export default function TierPreview() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Win up to</span>
-                  <span style={{ color: 'var(--primary)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                    {tier.prize} USDT
+                  <span style={{ color: 'var(--text-muted)' }}>Entry Fee</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                    {tier.entry} USDT
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>

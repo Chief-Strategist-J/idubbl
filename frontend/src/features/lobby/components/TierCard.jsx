@@ -46,8 +46,10 @@ export default function TierCard({ tier, gameType = null }) {
             {displayGameLabel}
           </span>
         )}
-        <p style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{tier.entryFee} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>USDT</span></p>
-        <p style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>Prize: {tier.prize} USDT</p>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: '2.8rem', fontWeight: 800, margin: '0.5rem 0 0.15rem 0', color: 'var(--accent-green)' }}>
+          {tier.prize} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>USDT Prize</span>
+        </p>
+        <p style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '1.05rem', margin: '0.25rem 0' }}>Entry Fee: <span style={{ color: 'var(--text-primary)' }}>{tier.entryFee} USDT</span></p>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Platform rake: {tier.rakePercent}%</p>
       </div>
 

@@ -126,7 +126,16 @@ router.post('/webhook', async (req, res) => {
         const creditAmount = tx.usdAmount || tx.amount;
         await db.collection('wallets').updateOne(
           { userId: tx.userId },
-          { $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE } }
+          { 
+            $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE },
+            $setOnInsert: {
+              winningsBalance: 0,
+              lockedBalance: 0,
+              pendingWithdrawals: 0,
+              createdAt: new Date()
+            }
+          },
+          { upsert: true }
         );
       }
     }
@@ -158,6 +167,14 @@ router.get('/callback/flutterwave', async (req, res) => {
   
   const frontendUrl = process.env.FRONTEND_URL || 'https://idubbl-frontend.onrender.com';
 
+  if (status === 'cancelled' || status === 'failed') {
+    return res.redirect(`${frontendUrl}/wallet?payment=failed&ref=${tx_ref || ''}`);
+  }
+
+  if (!transaction_id && !tx_ref) {
+    return res.redirect(`${frontendUrl}/wallet?payment=error&message=Missing+transaction+reference`);
+  }
+
   try {
     const db = await getDb();
     
@@ -182,7 +199,16 @@ router.get('/callback/flutterwave', async (req, res) => {
         const creditAmount = tx.usdAmount || tx.amount;
         await db.collection('wallets').updateOne(
           { userId: tx.userId },
-          { $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE } }
+          { 
+            $inc: { depositBalance: creditAmount, idubbuBalance: creditAmount * IDUBBU_RATE },
+            $setOnInsert: {
+              winningsBalance: 0,
+              lockedBalance: 0,
+              pendingWithdrawals: 0,
+              createdAt: new Date()
+            }
+          },
+          { upsert: true }
         );
       }
       

@@ -404,7 +404,16 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
 
     await db.collection('wallets').updateOne(
       { userId: tx.userId },
-      { $inc: { depositBalance: tx.amount, idubbuBalance: tx.amount * IDUBBU_RATE } }
+      { 
+        $inc: { depositBalance: tx.amount, idubbuBalance: tx.amount * IDUBBU_RATE },
+        $setOnInsert: {
+          winningsBalance: 0,
+          lockedBalance: 0,
+          pendingWithdrawals: 0,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
     );
 
     res.json({ success: true });
