@@ -77,6 +77,10 @@ router.get('/balance', async (req, res) => {
         idubbuRate: IDUBBU_RATE,
       }
     });
+  } catch (error) {
+    console.error('Error fetching wallet balance:', error);
+    res.status(500).json({ success: false, error: 'Database error fetching balance.' });
+  }
 });
 
 // 1.2 Get Referral System Details
