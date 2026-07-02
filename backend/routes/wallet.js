@@ -97,7 +97,21 @@ router.get('/referrals', async (req, res) => {
       return res.json({ success: true, referralCode: '', referrals: [] });
     }
 
-    const referralCode = currentUser.referralCode || '';
+    let referralCode = currentUser.referralCode || '';
+    if (!referralCode) {
+      let exists = true;
+      while (exists) {
+        referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const found = await db.collection('user').findOne({ referralCode });
+        if (!found) {
+          exists = false;
+        }
+      }
+      await db.collection('user').updateOne(
+        { _id: currentUser._id },
+        { $set: { referralCode } }
+      );
+    }
 
     // Find all users referred by this user
     const referredUsers = await db.collection('user').find({ referredBy: referralCode }).toArray();
