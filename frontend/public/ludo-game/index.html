@@ -13,41 +13,57 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 18px 12px 28px;
         }
         .ludo-container {
-            margin: 16px auto;
+            width: min(100vw, 470px);
+            max-width: 470px;
+            margin: 0 auto;
+            border-radius: 0;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
         }
         .footer {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 0 0 10px 10px;
-            padding: 12px 16px;
+            background: transparent;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 14px 16px 18px;
         }
         .active-player {
             color: #e6edf3;
             font-size: 1rem;
             margin: 8px 0 0;
             font-weight: 600;
+            letter-spacing: 0.01em;
         }
         .active-player span {
             color: #58a6ff;
         }
         .dice-value {
             color: #f0883e;
+            min-width: 56px;
+            text-align: center;
         }
         .btn-reset {
             background-color: #21262d;
             color: #e6edf3;
             border: 1px solid #30363d;
-            border-radius: 6px;
+            border-radius: 10px;
         }
         .btn-reset:hover {
             background-color: #30363d;
         }
         .btn-dice {
-            border-radius: 6px;
+            border-radius: 10px;
+        }
+        @media (max-width: 520px) {
+            body {
+                padding: 14px 10px 22px;
+            }
+            .ludo-container {
+                width: min(100vw, 100%);
+            }
         }
     </style>
 </head>

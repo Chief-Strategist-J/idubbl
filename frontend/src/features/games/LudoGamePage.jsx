@@ -115,23 +115,35 @@ export default function LudoGamePage() {
       <div style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        borderRadius: '14px',
+        borderRadius: '0',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
+        boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
+        minHeight: '480px',
+        position: 'relative'
       }}>
-        <iframe
-          ref={iframeRef}
-          src="/ludo-game/index.html"
-          title="Ludo Classic Game"
-          style={{
-            width: '100%',
-            height: '680px',
-            border: 'none',
-            display: 'block',
-            borderRadius: '14px'
-          }}
-          allow="fullscreen"
-        />
+        <div style={{
+          width: '100%',
+          paddingTop: '100%',
+          position: 'relative',
+          minHeight: '420px'
+        }}>
+          <iframe
+            ref={iframeRef}
+            src="/ludo-game/index.html"
+            title="Ludo Classic Game"
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              display: 'block',
+              borderRadius: '0',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+            allow="fullscreen"
+          />
+        </div>
       </div>
 
       {/* How to Play */}
