@@ -370,7 +370,10 @@ export default function DepositForm() {
             <Select label="Network" name="network" value={form.network} onChange={handleChange} options={NETWORK_OPTIONS} />
             <Input label="Transaction Hash" name="txHash" value={form.txHash} onChange={handleChange} placeholder="0x..." error={errors.txHash} required />
             <Input label="Note (optional)" name="note" value={form.note} onChange={handleChange} placeholder="Optional reference note" />
-            <Button type="submit" fullWidth loading={submitting}>Submit Deposit Request</Button>
+            <Button type="submit" fullWidth loading={submitting} disabled={!form.amount || Number(form.amount) < MIN_DEPOSIT} style={{
+              opacity: (!form.amount || Number(form.amount) < MIN_DEPOSIT) ? 0.5 : 1,
+              cursor: (!form.amount || Number(form.amount) < MIN_DEPOSIT) ? 'not-allowed' : 'pointer'
+            }}>Submit Deposit Request</Button>
           </form>
         </>
       ) : (
@@ -585,12 +588,14 @@ export default function DepositForm() {
               <span>Secure Checkout. Payments are processed encrypted using SSL protocols. Deposits are settled instantly.</span>
             </div>
 
-            <Button type="submit" fullWidth loading={submitting} style={{
+            <Button type="submit" fullWidth loading={submitting} disabled={!form.amount || (Number(form.amount) / rate) < MIN_DEPOSIT} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              height: '46px'
+              height: '46px',
+              opacity: (!form.amount || (Number(form.amount) / rate) < MIN_DEPOSIT) ? 0.5 : 1,
+              cursor: (!form.amount || (Number(form.amount) / rate) < MIN_DEPOSIT) ? 'not-allowed' : 'pointer'
             }}>
               💳 Pay with Flutterwave
               <ChevronRight style={{ width: '18px', height: '18px' }} />
