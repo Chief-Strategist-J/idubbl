@@ -87,15 +87,15 @@ export default function WalletHubPage() {
             </h3>
           </div>
 
-          {/* Idubbu Balance Hero */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(20,241,149,0.15), rgba(99,102,241,0.15))', border: '1px solid rgba(20,241,149,0.3)', borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          {/* Main Available Balance Hero */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(20,241,149,0.15), rgba(99,102,241,0.15))', border: '1px solid rgba(20,241,149,0.3)', borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.3rem' }}>💎 Idubbu Balance</p>
-              <p style={{ fontSize: '2.2rem', fontWeight: 900, fontFamily: 'var(--font-display)', color: 'var(--secondary)', margin: 0, lineHeight: 1.2 }}>
-                {(idubbuBalance || 0).toLocaleString()}
-                <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 8 }}>Idubbu</span>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.3rem' }}>💵 Available Balance</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: 900, fontFamily: 'var(--font-display)', color: 'var(--accent-green)', margin: 0, lineHeight: 1.2 }}>
+                {Number(availableBalance || 0).toFixed(2)}
+                <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 8 }}>USDT</span>
               </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.25rem 0 0' }}>= {((idubbuBalance || 0) / 1).toFixed(2)} USDT · Rate: 1 USDT = 1 Idubbu</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.25rem 0 0' }}>This is your total available balance for challenges</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <Button variant="secondary" onClick={() => navigate('/deposit')} style={{ fontSize: '0.82rem', padding: '0.4rem 1rem' }}>+ Add Funds</Button>
@@ -104,7 +104,7 @@ export default function WalletHubPage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-            {/* Available balance */}
+            {/* Winnings balance */}
             <div style={{
               background: 'rgba(0, 227, 122, 0.06)',
               border: '1px solid rgba(0, 227, 122, 0.15)',
@@ -112,13 +112,13 @@ export default function WalletHubPage() {
               padding: '1rem 1.25rem',
             }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>
-                Available balance
+                Winning Balance
               </p>
               <p style={{
                 fontSize: '1.8rem',
                 fontWeight: 800,
                 fontFamily: 'var(--font-display)',
-                color: 'var(--accent-green)',
+                color: 'var(--secondary)',
                 margin: 0,
                 lineHeight: '1.3',
                 letterSpacing: '0.02em',
@@ -128,7 +128,7 @@ export default function WalletHubPage() {
                 flexWrap: 'wrap',
                 gap: '0.25rem 0.5rem'
               }}>
-                <span>{Number(availableBalance || 0).toFixed(2)}</span>
+                <span>{Number(winningsBalance || 0).toFixed(2)}</span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7 }}>USDT</span>
               </p>
             </div>
@@ -141,7 +141,7 @@ export default function WalletHubPage() {
               padding: '1rem 1.25rem',
             }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>
-                Locked balance
+                Locked Balance
               </p>
               <p style={{
                 fontSize: '1.8rem',
