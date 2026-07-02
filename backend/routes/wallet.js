@@ -5,7 +5,7 @@ import { authService, blockchainService } from '../services/index.js';
 
 const router = express.Router();
 
-const IDUBBU_RATE = 1000; // 1 USDT = 1000 Idubbu
+const IDUBBU_RATE = 1; // 1 USDT = 1 Idubbu
 
 async function getOrCreateWallet(db, userId) {
   let wallet = await db.collection('wallets').findOne({ userId });
@@ -241,7 +241,7 @@ router.post('/match/settle', async (req, res) => {
           actualIsTie = true;
         }
         if (isWinner && !actualIsTie) {
-          const tierFees = { rookie: 5, pro: 20, elite: 50 };
+          const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
           const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
           const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
           derivedPrize = fee * 2 * 0.80; // 20% platform rake

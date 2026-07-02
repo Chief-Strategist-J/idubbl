@@ -1,6 +1,6 @@
 import { getDb } from './db.js';
 
-const IDUBBU_RATE = 1000; // 1 USDT = 1000 Idubbu — keep in sync with wallet.js
+const IDUBBU_RATE = 1; // 1 USDT = 1 Idubbu — keep in sync with wallet.js
 
 function normalizeKey(key) {
   if (typeof key !== 'string') return '';
@@ -73,7 +73,7 @@ class MatchmakerService {
     }
 
     // Verify wallet exists and has sufficient balance BEFORE entering queue
-    const tierFees = { rookie: 5, pro: 20, elite: 50 };
+    const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normTierName] || 5;
 
     const wallet = await db.collection(this.walletsCollection).findOne({ userId: normUserId });
@@ -193,7 +193,7 @@ class MatchmakerService {
       { $set: { status: 'completed', winner: normWinnerId, settledAt: new Date() } }
     );
 
-    const tierFees = { rookie: 5, pro: 20, elite: 50 };
+    const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normalizeKey(match.tier)] || 5;
 
     if (normWinnerId === 'tie' || normWinnerId === 'draw') {

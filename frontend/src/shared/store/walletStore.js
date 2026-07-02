@@ -13,7 +13,7 @@ const useWalletStore = create((set, get) => ({
   winningsBalance: 0,
   availableBalance: 0,
   idubbuBalance: 0,
-  idubbuRate: 1000,
+  idubbuRate: 1,
   lockedBalance: 0,
   pendingWithdrawals: 0,
   transactions: [],
@@ -74,7 +74,7 @@ const useWalletStore = create((set, get) => ({
       const lockedBalance = Math.max(0, balance.lockedBalance !== undefined ? balance.lockedBalance : (localData.lockedBalance ?? 0));
       const pendingWithdrawals = Math.max(0, balance.pendingWithdrawals !== undefined ? balance.pendingWithdrawals : (localData.pendingWithdrawals ?? 0));
       const idubbuBalance = Math.max(0, balance.idubbuBalance !== undefined ? balance.idubbuBalance : (localData.idubbuBalance ?? 1000000));
-      const idubbuRate = balance.idubbuRate || 1000;
+      const idubbuRate = balance.idubbuRate || 1;
 
       const localTxs = localData.transactions ?? [];
       const mergedTx = [
@@ -111,7 +111,7 @@ const useWalletStore = create((set, get) => ({
         lockedBalance: localData.lockedBalance ?? 0,
         pendingWithdrawals: localData.pendingWithdrawals ?? 0,
         idubbuBalance: localData.idubbuBalance ?? 1000000,
-        idubbuRate: 1000,
+        idubbuRate: 1,
         availableBalance: depositBalance + winningsBalance,
         transactions: txs,
         deposits: txs.filter(t => t.type === 'deposit'),
@@ -203,7 +203,7 @@ const useWalletStore = create((set, get) => ({
     const nextDeposit = depositBalance - fromDeposit;
     const nextWinnings = winningsBalance - (amount - fromDeposit);
     const nextLocked = lockedBalance + amount;
-    const nextIdubbu = (idubbuBalance || 0) - amount * (idubbuRate || 1000);
+    const nextIdubbu = (idubbuBalance || 0) - amount * (idubbuRate || 1);
     set({
       depositBalance: nextDeposit,
       winningsBalance: nextWinnings,
@@ -238,7 +238,7 @@ const useWalletStore = create((set, get) => ({
     const { availableBalance, depositBalance, winningsBalance, lockedBalance, idubbuBalance, idubbuRate, pendingWithdrawals } = get();
     const nextDeposit = depositBalance + amount;
     const nextLocked = Math.max(0, lockedBalance - amount);
-    const nextIdubbu = (idubbuBalance || 0) + amount * (idubbuRate || 1000);
+    const nextIdubbu = (idubbuBalance || 0) + amount * (idubbuRate || 1);
     set({
       depositBalance: nextDeposit,
       availableBalance: availableBalance + amount,
@@ -272,8 +272,7 @@ const useWalletStore = create((set, get) => ({
 
     if (isWinner) {
       nextWinnings = winningsBalance + prize;
-      nextIdubbu = (idubbuBalance || 0) + prize * (idubbuRate || 1000);
-      nextAvailable = availableBalance + prize;
+      nextIdubbu = (idubbuBalance || 0) + prize * (idubbuRate || 1);
       set({
         winningsBalance: nextWinnings,
         availableBalance: nextAvailable,
@@ -282,7 +281,7 @@ const useWalletStore = create((set, get) => ({
       });
     } else if (isTie) {
       nextDeposit = depositBalance + entryFee;
-      nextIdubbu = (idubbuBalance || 0) + entryFee * (idubbuRate || 1000);
+      nextIdubbu = (idubbuBalance || 0) + entryFee * (idubbuRate || 1);
       nextAvailable = availableBalance + entryFee;
       set({
         depositBalance: nextDeposit,

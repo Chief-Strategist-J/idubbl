@@ -15,8 +15,8 @@ const COLUMNS = (onApprove, onReject) => [
     key: 'actions', label: 'Actions',
     render: (_, row) => row.status === 'pending' ? (
       <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <Button variant="primary" onClick={() => onApprove(row.id)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Approve</Button>
-        <Button variant="danger" onClick={() => onReject(row.id)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Reject</Button>
+        <Button variant="primary" onClick={() => onApprove(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Approve</Button>
+        <Button variant="danger" onClick={() => onReject(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Reject</Button>
       </div>
     ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>,
   },

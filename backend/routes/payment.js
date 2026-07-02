@@ -5,7 +5,7 @@ import { errorRegistry } from '../services/errorRegistry.js';
 
 const router = express.Router();
 
-const IDUBBU_RATE = 1000;
+const IDUBBU_RATE = 1;
 
 async function getUserIdFromReq(req) {
   try {

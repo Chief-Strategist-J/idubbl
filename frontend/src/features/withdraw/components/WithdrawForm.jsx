@@ -6,7 +6,7 @@ import { MIN_WITHDRAWAL } from '../../../shared/mock/index.js';
 import { Coins, CreditCard, ShieldAlert, ShieldCheck, Shield, AlertTriangle, CheckCircle, XCircle, RefreshCw, Zap } from 'lucide-react';
 import QoreID from '@qore-id/web-sdk';
 
-const IDUBBU_RATE = 1000;
+const IDUBBU_RATE = 1;
 
 export default function WithdrawForm() {
   const { depositBalance, winningsBalance, idubbuBalance, pendingWithdrawals, submitWithdrawal } = useWalletStore();

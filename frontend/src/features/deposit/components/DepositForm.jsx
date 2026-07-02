@@ -22,7 +22,7 @@ import useAuthStore from '../../../shared/store/authStore.js';
 import { PLATFORM_WALLET, SUPPORTED_NETWORKS, MIN_DEPOSIT } from '../../../shared/mock/index.js';
 
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
-const IDUBBU_RATE = 1000;
+const IDUBBU_RATE = 1;
 
 // Full list of currencies officially supported by Flutterwave with custom flag emojis
 const CURRENCY_LIST = [

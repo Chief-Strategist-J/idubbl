@@ -95,7 +95,7 @@ export default function WalletHubPage() {
                 {(idubbuBalance || 0).toLocaleString()}
                 <span style={{ fontSize: '1rem', fontWeight: 500, opacity: 0.7, marginLeft: 8 }}>Idubbu</span>
               </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.25rem 0 0' }}>= {((idubbuBalance || 0) / 1000).toFixed(2)} USDT · Rate: 1 USDT = 1,000 Idubbu</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.25rem 0 0' }}>= {((idubbuBalance || 0) / 1).toFixed(2)} USDT · Rate: 1 USDT = 1 Idubbu</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <Button variant="secondary" onClick={() => navigate('/deposit')} style={{ fontSize: '0.82rem', padding: '0.4rem 1rem' }}>+ Add Funds</Button>
