@@ -51,6 +51,29 @@ export class BetterAuthDriver extends AuthDriver {
                 if (user.role === 'admin') {
                   user.role = 'player';
                 }
+                
+                // Generate a unique 8-character referral code
+                let referralCode = '';
+                let exists = true;
+                while (exists) {
+                  referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+                  const found = await this.db.collection('user').findOne({ referralCode });
+                  if (!found) {
+                    exists = false;
+                  }
+                }
+                user.referralCode = referralCode;
+
+                // Link referredBy if enteredReferralCode matches a valid code
+                if (user.enteredReferralCode) {
+                  const parentUser = await this.db.collection('user').findOne({
+                    referralCode: user.enteredReferralCode.trim().toUpperCase()
+                  });
+                  if (parentUser) {
+                    user.referredBy = parentUser.referralCode;
+                  }
+                }
+
                 return {
                   data: user
                 };
@@ -60,7 +83,6 @@ export class BetterAuthDriver extends AuthDriver {
         },
         plugins: [
           bearer(),
-          // Enable role capabilities in Better Auth to natively fetch and populate user.role from the database user table
           {
             id: 'admin-roles',
             schema: {
@@ -70,6 +92,18 @@ export class BetterAuthDriver extends AuthDriver {
                     type: 'string',
                     required: false,
                     defaultValue: 'player'
+                  },
+                  referralCode: {
+                    type: 'string',
+                    required: false
+                  },
+                  referredBy: {
+                    type: 'string',
+                    required: false
+                  },
+                  enteredReferralCode: {
+                    type: 'string',
+                    required: false
                   }
                 }
               }

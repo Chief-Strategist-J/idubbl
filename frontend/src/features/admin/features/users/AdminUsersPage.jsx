@@ -7,6 +7,21 @@ const COLUMNS = (onSuspend) => [
   { key: 'id', label: 'ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{(v || row._id || '').substring(0, 8)}</code> },
   { key: 'name', label: 'Name', render: (_, row) => row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'No Name' },
   { key: 'email', label: 'Email' },
+  { key: 'referralCode', label: 'Ref Code', render: (v) => v ? <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-display)', fontSize: '0.85rem' }}>{v}</strong> : '—' },
+  { key: 'referredBy', label: 'Referred By', render: (v) => v ? <code style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>{v}</code> : '—' },
+  {
+    key: 'referredUsersList',
+    label: 'Referrals (Total / Funded)',
+    render: (v) => {
+      const list = v || [];
+      const fundedCount = list.filter(r => r.funded).length;
+      return (
+        <span style={{ fontSize: '0.85rem' }}>
+          <strong>{list.length}</strong> referred / <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{fundedCount}</span> funded
+        </span>
+      );
+    }
+  },
   { 
     key: 'balances', 
     label: 'Balances (USDT)', 

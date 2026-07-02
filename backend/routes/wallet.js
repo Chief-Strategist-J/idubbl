@@ -77,9 +77,59 @@ router.get('/balance', async (req, res) => {
         idubbuRate: IDUBBU_RATE,
       }
     });
+});
+
+// 1.2 Get Referral System Details
+router.get('/referrals', async (req, res) => {
+  try {
+    const userId = await getUserIdFromReq(req);
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+
+    // Look up current user to fetch referralCode
+    let userQuery = { id: userId };
+    try {
+      userQuery = { $or: [{ id: userId }, { _id: new ObjectId(userId) }] };
+    } catch (_) {}
+
+    const currentUser = await db.collection('user').findOne(userQuery);
+    if (!currentUser) {
+      return res.json({ success: true, referralCode: '', referrals: [] });
+    }
+
+    const referralCode = currentUser.referralCode || '';
+
+    // Find all users referred by this user
+    const referredUsers = await db.collection('user').find({ referredBy: referralCode }).toArray();
+
+    const referrals = [];
+    for (const refUser of referredUsers) {
+      const refUserId = refUser.id || refUser._id?.toString();
+
+      // Check if referred user funded their wallet (at least one approved deposit transaction)
+      const hasFunded = await db.collection('transactions').findOne({
+        userId: refUserId,
+        type: 'deposit',
+        status: 'approved'
+      });
+
+      referrals.push({
+        id: refUserId,
+        name: refUser.name,
+        email: refUser.email,
+        funded: !!hasFunded,
+        joinedAt: refUser.createdAt
+      });
+    }
+
+    res.json({
+      success: true,
+      referralCode,
+      referrals
+    });
   } catch (error) {
-    console.error('Error fetching balance:', error);
-    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error fetching balance.');
+    console.error('Error fetching referrals:', error);
+    res.status(500).json({ error: 'Database error fetching referrals.' });
   }
 });
 

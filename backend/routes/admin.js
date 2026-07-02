@@ -125,6 +125,30 @@ router.get('/users', adminAuth, async (req, res) => {
       personalWalletMap[pw.userId] = pw;
     });
 
+    // 2. Fetch all approved deposit transactions to determine who has funded their wallets
+    const approvedDeposits = await db.collection('transactions').find({ type: 'deposit', status: 'approved' }).toArray();
+    const fundedUserMap = {};
+    approvedDeposits.forEach(tx => {
+      fundedUserMap[tx.userId] = true;
+    });
+
+    // 3. Map users to who referred them
+    const referralsByReferralCode = {};
+    users.forEach(u => {
+      if (u.referredBy) {
+        if (!referralsByReferralCode[u.referredBy]) {
+          referralsByReferralCode[u.referredBy] = [];
+        }
+        const uId = u.id || u._id.toString();
+        referralsByReferralCode[u.referredBy].push({
+          id: uId,
+          name: u.name,
+          email: u.email,
+          funded: !!fundedUserMap[uId]
+        });
+      }
+    });
+
     const usersWithBalances = users.map(u => {
       const userId = u.id || u._id.toString();
       const wallet = walletMap[userId] || {
@@ -133,9 +157,16 @@ router.get('/users', adminAuth, async (req, res) => {
         lockedBalance: 0,
         pendingWithdrawals: 0
       };
+
+      const userRefCode = u.referralCode || '';
+      const referredUsersList = referralsByReferralCode[userRefCode] || [];
+
       return {
         ...u,
         id: u.id || u._id.toString(),
+        referralCode: userRefCode,
+        referredBy: u.referredBy || '',
+        referredUsersList,
         balances: {
           depositBalance: wallet.depositBalance,
           winningsBalance: wallet.winningsBalance,

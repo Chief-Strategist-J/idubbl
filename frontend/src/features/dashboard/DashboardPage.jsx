@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card, Badge } from '../../shared/components/ui/index.js';
@@ -13,13 +13,15 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { queueStatus, currentTier, leaveQueue, matches } = useMatchStore();
-  const { fetchWalletData, withdrawals, transactions } = useWalletStore();
+  const { fetchWalletData, withdrawals, transactions, fetchReferralsData, referralCode, referrals } = useWalletStore();
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
       fetchWalletData(user.id);
+      fetchReferralsData();
     }
-  }, [user?.id, fetchWalletData]);
+  }, [user?.id, fetchWalletData, fetchReferralsData]);
 
   // Compute live win/loss stats
   const currentUserId = user?.id || 'u1';
@@ -127,6 +129,87 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
+        </Card>
+
+        {/* Referral Program */}
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+            <div>
+              <h3 className="dash-section-title" style={{ margin: 0 }}>Referral Program</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                Share your referral code with friends and track their funding status.
+              </p>
+            </div>
+            {referralCode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-darker)', padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>YOUR CODE:</span>
+                <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--primary)', letterSpacing: '0.05em' }}>{referralCode}</strong>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralCode);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: copied ? 'var(--accent-green)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    padding: '0.25rem',
+                    marginLeft: '0.25rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Referred</span>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0.25rem 0 0 0' }}>
+                {referrals.length}
+              </p>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Funded Referrals</span>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--accent-green)', margin: '0.25rem 0 0 0' }}>
+                {referrals.filter(r => r.funded).length}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Your Referrals</h4>
+            {referrals.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No referrals yet. Share your code to get started.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {referrals.map((ref) => (
+                  <div key={ref.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>{ref.name || 'Anonymous'}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ref.email}</p>
+                    </div>
+                    <div>
+                      {ref.funded ? (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--accent-green)', background: 'rgba(0, 227, 122, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(0, 227, 122, 0.2)', fontWeight: 600 }}>
+                          Funded
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.05)', padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border)', fontWeight: 500 }}>
+                          Not Funded
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
       </div>
     </AppLayout>

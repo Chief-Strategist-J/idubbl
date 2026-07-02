@@ -123,6 +123,7 @@ const useAuthStore = create(
               email: data.email,
               password: data.password,
               name: name,
+              enteredReferralCode: data.referral,
             })
           });
 

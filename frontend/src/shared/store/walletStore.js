@@ -23,6 +23,28 @@ const useWalletStore = create((set, get) => ({
   platformRevenue: 0,
   totalFees: 0,
   loading: false,
+  referralCode: '',
+  referrals: [],
+
+  fetchReferralsData: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    if (!currentUserId) return;
+    try {
+      const res = await fetch(`${BASE_URL}/referrals`, {
+        headers: { 'x-user-id': currentUserId },
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({
+          referralCode: json.referralCode || '',
+          referrals: json.referrals || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching referrals data:', error);
+    }
+  },
 
   fetchWalletData: async (userId) => {
     const currentUserId = userId || useAuthStore.getState().user?.id;
