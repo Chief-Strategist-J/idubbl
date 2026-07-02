@@ -726,9 +726,31 @@ router.get('/personal', async (req, res) => {
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
-    const wallet = await db.collection('user_wallets').findOne({ userId });
+    let wallet = await db.collection('user_wallets').findOne({ userId });
     if (!wallet) {
-      return res.status(404).json({ success: false, error: 'Personal wallets not generated yet.' });
+      // Auto-generate personal wallets if they don't exist yet
+      const keypair = blockchainService.generatePersonalWallet();
+      await db.collection('user_wallets').updateOne(
+        { userId },
+        {
+          $set: {
+            tron: {
+              address: keypair.tron.address,
+              privateKey: keypair.tron.privateKey
+            },
+            ethereum: {
+              address: keypair.ethereum.address,
+              privateKey: keypair.ethereum.privateKey
+            },
+            updatedAt: new Date()
+          },
+          $setOnInsert: {
+            createdAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+      wallet = await db.collection('user_wallets').findOne({ userId });
     }
 
     const tronHost = process.env.TRONGRID_BASE_URL || 'https://api.trongrid.io';
@@ -779,9 +801,31 @@ router.get('/personal/balance', async (req, res) => {
   try {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
-    const wallet = await db.collection('user_wallets').findOne({ userId });
+    let wallet = await db.collection('user_wallets').findOne({ userId });
     if (!wallet) {
-      return res.status(404).json({ success: false, error: 'Personal wallets not found.' });
+      // Auto-generate personal wallets if they don't exist yet
+      const keypair = blockchainService.generatePersonalWallet();
+      await db.collection('user_wallets').updateOne(
+        { userId },
+        {
+          $set: {
+            tron: {
+              address: keypair.tron.address,
+              privateKey: keypair.tron.privateKey
+            },
+            ethereum: {
+              address: keypair.ethereum.address,
+              privateKey: keypair.ethereum.privateKey
+            },
+            updatedAt: new Date()
+          },
+          $setOnInsert: {
+            createdAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+      wallet = await db.collection('user_wallets').findOne({ userId });
     }
 
     const [tronBalance, ethBalance, nativeTronBalance, nativeEthBalance] = await Promise.all([
