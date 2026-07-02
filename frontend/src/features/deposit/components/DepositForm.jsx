@@ -159,7 +159,10 @@ export default function DepositForm() {
       const apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
       const res = await fetch(`${apiBase}/api/payment/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || user?._id
+        },
         body: JSON.stringify({
           amount: Number(form.amount),
           currency: flwCurrency,
