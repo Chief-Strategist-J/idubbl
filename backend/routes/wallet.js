@@ -386,20 +386,26 @@ router.post('/withdraw', async (req, res) => {
     const userId = await getUserIdFromReq(req);
     const db = await getDb();
 
-    // Check user KYC status before allowing withdrawal
-    const { ObjectId } = await import('mongodb');
-    let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser) {
-      try {
-        const query = userId.length === 24 
-          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
-          : { _id: userId };
-        dbUser = await db.collection('user').findOne(query);
-      } catch (err) {}
-    }
+    // Check if KYC is required
+    const kycConfig = await db.collection('settings').findOne({ key: 'kyc_config' });
+    const kycRequired = kycConfig?.value?.kycRequired !== false;
 
-    if (!dbUser || dbUser.kycStatus !== 'verified') {
-      return errorRegistry.send(res, 'KYC_REQUIRED', 'KYC verification is required before withdrawing funds.');
+    if (kycRequired) {
+      // Check user KYC status before allowing withdrawal
+      const { ObjectId } = await import('mongodb');
+      let dbUser = await db.collection('user').findOne({ id: userId });
+      if (!dbUser) {
+        try {
+          const query = userId.length === 24 
+            ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+            : { _id: userId };
+          dbUser = await db.collection('user').findOne(query);
+        } catch (err) {}
+      }
+
+      if (!dbUser || dbUser.kycStatus !== 'verified') {
+        return errorRegistry.send(res, 'KYC_REQUIRED', 'KYC verification is required before withdrawing funds.');
+      }
     }
 
     const wallet = await getOrCreateWallet(db, userId);

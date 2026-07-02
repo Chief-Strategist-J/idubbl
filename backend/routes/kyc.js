@@ -266,4 +266,19 @@ router.post('/simulate', async (req, res) => {
   }
 });
 
+// 5. Get KYC Config (Public)
+router.get('/config', async (req, res) => {
+  try {
+    const db = await getDb();
+    const settings = await db.collection('settings').findOne({ key: 'kyc_config' });
+    res.json({
+      success: true,
+      kycRequired: settings?.value?.kycRequired !== false
+    });
+  } catch (error) {
+    console.error('Error fetching KYC config:', error);
+    res.status(500).json({ success: false, error: 'Database error fetching config' });
+  }
+});
+
 export default router;

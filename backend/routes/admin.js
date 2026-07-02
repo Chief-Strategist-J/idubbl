@@ -296,4 +296,36 @@ router.post('/settings/flutterwave', adminAuth, async (req, res) => {
   }
 });
 
+// 11. GET /api/admin/settings/kyc - Get KYC config from DB settings
+router.get('/settings/kyc', adminAuth, async (req, res) => {
+  try {
+    const db = await getDb();
+    const settings = await db.collection('settings').findOne({ key: 'kyc_config' });
+    res.json({
+      success: true,
+      data: settings?.value || { kycRequired: true }
+    });
+  } catch (error) {
+    console.error('Error fetching KYC settings:', error);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// 12. POST /api/admin/settings/kyc - Update KYC config in DB settings
+router.post('/settings/kyc', adminAuth, async (req, res) => {
+  const { kycRequired } = req.body;
+  try {
+    const db = await getDb();
+    await db.collection('settings').updateOne(
+      { key: 'kyc_config' },
+      { $set: { value: { kycRequired: !!kycRequired }, updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ success: true, message: 'KYC settings updated successfully.' });
+  } catch (error) {
+    console.error('Error updating KYC settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
 export default router;

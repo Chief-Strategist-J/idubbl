@@ -46,14 +46,21 @@ export default function AdminGameSettingsPage() {
   const [keysSaved, setKeysSaved] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
 
+  const [kycRequired, setKycRequired] = useState(true);
+  const [kycLoading, setKycLoading] = useState(true);
+  const [kycSaved, setKycSaved] = useState(false);
+
   React.useEffect(() => {
-    if (!user?.id) return;
+    const uid = user?.id || user?._id;
+    if (!uid) return;
     let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
     if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
       apiBase = `https://${apiBase}`;
     }
+
+    // Fetch Flutterwave settings
     fetch(`${apiBase}/api/admin/settings/flutterwave`, {
-      headers: { 'x-user-id': user.id },
+      headers: { 'x-user-id': uid },
       credentials: 'include'
     })
       .then(res => res.json())
@@ -69,10 +76,28 @@ export default function AdminGameSettingsPage() {
         console.error('Error fetching flutterwave keys:', err);
         setKeysLoading(false);
       });
+
+    // Fetch KYC settings
+    fetch(`${apiBase}/api/admin/settings/kyc`, {
+      headers: { 'x-user-id': uid },
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && res.data) {
+          setKycRequired(res.data.kycRequired !== false);
+        }
+        setKycLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching KYC settings:', err);
+        setKycLoading(false);
+      });
   }, [user]);
 
   const handleSaveKeys = async () => {
-    if (!user?.id) return;
+    const uid = user?.id || user?._id;
+    if (!uid) return;
     let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
     if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
       apiBase = `https://${apiBase}`;
@@ -82,7 +107,7 @@ export default function AdminGameSettingsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'x-user-id': uid
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -98,6 +123,36 @@ export default function AdminGameSettingsPage() {
       }
     } catch (e) {
       console.error('Error saving flutterwave keys:', e);
+    }
+  };
+
+  const handleSaveKyc = async (newVal) => {
+    const uid = user?.id || user?._id;
+    if (!uid) return;
+    setKycRequired(newVal);
+    let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+    if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+      apiBase = `https://${apiBase}`;
+    }
+    try {
+      const response = await fetch(`${apiBase}/api/admin/settings/kyc`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': uid
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          kycRequired: newVal
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setKycSaved(true);
+        setTimeout(() => setKycSaved(false), 2000);
+      }
+    } catch (e) {
+      console.error('Error saving KYC settings:', e);
     }
   };
 
@@ -156,6 +211,43 @@ export default function AdminGameSettingsPage() {
               fontSize: '0.78rem', color: '#ff7070'
             }}>
               ⚠️ Chat is currently <strong>disabled</strong>. Users will not see the Chat option in navigation.
+            </div>
+          )}
+        </Card>
+
+        {/* ── Identity Verification (KYC) ─────────────────────────── */}
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: kycRequired ? '0' : '1rem' }}>
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, margin: 0 }}>
+                🛡️ Identity Verification (KYC)
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.25rem' }}>
+                When disabled, KYC verification is not required for withdrawals, and the verification section is hidden from player profiles.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {kycSaved && <span style={{ color: 'var(--accent-green)', fontSize: '0.75rem', fontWeight: 600 }}>Saved!</span>}
+              <span style={{
+                fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+                color: kycRequired ? 'var(--primary)' : 'var(--text-muted)'
+              }}>
+                {kycRequired ? 'Required' : 'Disabled'}
+              </span>
+              <Toggle
+                id="kyc-toggle"
+                checked={kycRequired}
+                onChange={handleSaveKyc}
+              />
+            </div>
+          </div>
+          {!kycRequired && (
+            <div style={{
+              padding: '0.6rem 0.9rem', background: 'rgba(255,176,32,0.06)',
+              border: '1px solid rgba(255,176,32,0.2)', borderRadius: '8px',
+              fontSize: '0.78rem', color: '#ffb020'
+            }}>
+              ⚠️ KYC is currently <strong>disabled</strong>. Users can perform withdrawals without identity verification.
             </div>
           )}
         </Card>

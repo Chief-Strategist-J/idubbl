@@ -17,6 +17,7 @@ export default function WithdrawForm() {
   const [kycDetails, setKycDetails] = useState(null);
   const [kycActionLoading, setKycActionLoading] = useState(false);
   const [simulationModalOpen, setSimulationModalOpen] = useState(false);
+  const [kycRequired, setKycRequired] = useState(true);
 
   const [method, setMethod] = useState('crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: 'TRC20 (TRON)', note: '' });
@@ -59,6 +60,16 @@ export default function WithdrawForm() {
 
   useEffect(() => {
     fetchKycStatus();
+
+    // Fetch public KYC requirement config
+    fetch(`${apiBase}/api/kyc/config`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          setKycRequired(json.kycRequired !== false);
+        }
+      })
+      .catch(err => console.error('Error fetching KYC config in Withdraw:', err));
   }, [user?.id]);
 
   // Fetch personal wallets on mount
@@ -275,7 +286,7 @@ export default function WithdrawForm() {
   };
 
   // Render KYC View
-  if (kycStatus !== 'verified') {
+  if (kycRequired && kycStatus !== 'verified') {
     return (
       <Card style={{ position: 'relative', overflow: 'hidden', minHeight: '380px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {/* Glow effect */}
