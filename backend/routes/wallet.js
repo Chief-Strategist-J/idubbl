@@ -89,8 +89,10 @@ router.get('/referrals', async (req, res) => {
     // Look up current user to fetch referralCode
     let userQuery = { id: userId };
     try {
-      userQuery = { $or: [{ id: userId }, { _id: new ObjectId(userId) }] };
-    } catch (_) {}
+      userQuery = { $or: [{ id: userId }, { _id: new ObjectId(userId) }, { _id: userId }] };
+    } catch (_) {
+      userQuery = { $or: [{ id: userId }, { _id: userId }] };
+    }
 
     const currentUser = await db.collection('user').findOne(userQuery);
     if (!currentUser) {
@@ -383,9 +385,12 @@ router.post('/withdraw', async (req, res) => {
     // Check user KYC status before allowing withdrawal
     const { ObjectId } = await import('mongodb');
     let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser && userId.length === 24) {
+    if (!dbUser) {
       try {
-        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+        const query = userId.length === 24 
+          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+          : { _id: userId };
+        dbUser = await db.collection('user').findOne(query);
       } catch (err) {}
     }
 

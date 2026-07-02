@@ -33,9 +33,12 @@ router.get('/status', async (req, res) => {
 
     const db = await getDb();
     let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser && userId.length === 24) {
+    if (!dbUser) {
       try {
-        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+        const query = userId.length === 24 
+          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+          : { _id: userId };
+        dbUser = await db.collection('user').findOne(query);
       } catch (err) {}
     }
 
@@ -64,9 +67,12 @@ router.post('/session', async (req, res) => {
 
     const db = await getDb();
     let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser && userId.length === 24) {
+    if (!dbUser) {
       try {
-        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+        const query = userId.length === 24 
+          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+          : { _id: userId };
+        dbUser = await db.collection('user').findOne(query);
       } catch (err) {}
     }
 
@@ -172,9 +178,12 @@ router.post('/callback', async (req, res) => {
     const db = await getDb();
     
     let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser && userId.length === 24) {
+    if (!dbUser) {
       try {
-        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+        const query = userId.length === 24 
+          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+          : { _id: userId };
+        dbUser = await db.collection('user').findOne(query);
       } catch (err) {}
     }
 
@@ -224,9 +233,12 @@ router.post('/simulate', async (req, res) => {
 
     const db = await getDb();
     let dbUser = await db.collection('user').findOne({ id: userId });
-    if (!dbUser && userId.length === 24) {
+    if (!dbUser) {
       try {
-        dbUser = await db.collection('user').findOne({ _id: new ObjectId(userId) });
+        const query = userId.length === 24 
+          ? { $or: [{ _id: new ObjectId(userId) }, { _id: userId }] }
+          : { _id: userId };
+        dbUser = await db.collection('user').findOne(query);
       } catch (err) {}
     }
 

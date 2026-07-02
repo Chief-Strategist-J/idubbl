@@ -17,14 +17,15 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchWalletData(user.id);
-      fetchReferralsData();
+    const uid = user?.id || user?._id;
+    if (uid) {
+      fetchWalletData(uid);
+      fetchReferralsData(uid);
     }
-  }, [user?.id, fetchWalletData, fetchReferralsData]);
+  }, [user?.id, user?._id, fetchWalletData, fetchReferralsData]);
 
   // Compute live win/loss stats
-  const currentUserId = user?.id || 'u1';
+  const currentUserId = user?.id || user?._id || 'u1';
   const completedMatches = matches.filter((m) => m.status === 'completed');
   const wins = completedMatches.filter((m) => m.winnerId === currentUserId || m.winner === user?.name || m.winner === 'You').length;
   const losses = completedMatches.length - wins;

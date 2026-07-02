@@ -11,9 +11,12 @@ async function adminAuth(req, res, next) {
     if (userIdHeader) {
       const db = await getDb();
       let dbUser = await db.collection('user').findOne({ id: userIdHeader });
-      if (!dbUser && userIdHeader.length === 24) {
+      if (!dbUser) {
         try {
-          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
+          const query = userIdHeader.length === 24 
+            ? { $or: [{ _id: new ObjectId(userIdHeader) }, { _id: userIdHeader }] }
+            : { _id: userIdHeader };
+          dbUser = await db.collection('user').findOne(query);
         } catch (err) {}
       }
       if (dbUser && dbUser.role === 'admin') {

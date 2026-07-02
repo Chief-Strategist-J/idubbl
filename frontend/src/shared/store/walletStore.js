@@ -26,8 +26,8 @@ const useWalletStore = create((set, get) => ({
   referralCode: '',
   referrals: [],
 
-  fetchReferralsData: async () => {
-    const currentUserId = useAuthStore.getState().user?.id;
+  fetchReferralsData: async (userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id || useAuthStore.getState().user?._id;
     if (!currentUserId) return;
     try {
       const res = await fetch(`${BASE_URL}/referrals`, {
