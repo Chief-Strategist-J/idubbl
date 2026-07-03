@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Select({ label, value, onChange, options = [], disabled = false, required = false, name }) {
   return (
-    <div className="form-group">
+    <div className={label ? "form-group" : ""}>
       {label && (
         <label className="form-label">
           {label}

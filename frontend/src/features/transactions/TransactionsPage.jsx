@@ -83,7 +83,7 @@ export default function TransactionsPage() {
       <Card>
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search by ref ID or description..." style={{ flex: 1, minWidth: 220 }} />
-          <div style={{ minWidth: 200 }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
             <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} options={TYPE_OPTIONS} />
           </div>
         </div>
