@@ -348,5 +348,68 @@ describe('Frontend Fetch Cache', () => {
     // Verify queue is now empty
     expect(getOfflineQueue().length).toBe(0);
   });
+
+  it('should bypass caching for auth and KYC GET requests', async () => {
+    const mockResponse = { user: { id: 'u1' } };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify(mockResponse)
+    });
+
+    global.fetch = fetchMock;
+    initFetchCache();
+
+    // First call to get-session
+    await fetch('/api/auth/get-session');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Second call to get-session (should hit network again, not cache)
+    await fetch('/api/auth/get-session');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should bypass offline queueing for auth and KYC POST requests', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ success: true })
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Trigger authentication POST call while offline
+    try {
+      await fetch('/api/auth/sign-in/email', {
+        method: 'POST',
+        body: JSON.stringify({ email: 'user@test.com' })
+      });
+    } catch (e) {
+      // Expect normal network/fetch error when offline
+    }
+
+    // Verify it was NOT enqueued in localStorage
+    const queue = getOfflineQueue();
+    expect(queue.length).toBe(0);
+  });
 });
 

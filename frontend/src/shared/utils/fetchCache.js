@@ -10,6 +10,13 @@ const activeRevalidations = new Set();
 
 const QUEUE_KEY = 'offline_write_queue';
 
+// Helper to determine if a route is cacheable or queueable
+function isBypassedRoute(url) {
+  const lowercaseUrl = url.toLowerCase();
+  // Authentication, session validation, and KYC routes must never be cached or queued offline
+  return lowercaseUrl.includes('/api/auth/') || lowercaseUrl.includes('/api/kyc/');
+}
+
 // Helper to serialize headers into a plain object
 function serializeHeaders(headers) {
   if (!headers) return {};
@@ -103,7 +110,7 @@ export async function replayOfflineQueue() {
     }));
   }
 
-  const originalFetch = window.__originalFetch || (window.fetch && window.fetch.__originalFetch) || window.fetch;
+  const originalFetch = window.__originalFetch || window.fetch;
 
   while (queue.length > 0) {
     const req = queue.shift();
@@ -270,6 +277,11 @@ export function initFetchCache() {
       url = String(input || '');
     }
 
+    // Bypass caching and offline queuing entirely for authentication and KYC endpoints
+    if (isBypassedRoute(url)) {
+      return originalFetch.apply(this, arguments);
+    }
+
     // Check if it is a mutation request (POST, PUT, DELETE, PATCH)
     const isMutation = method === 'POST' || method === 'PUT' || method === 'DELETE' || method === 'PATCH';
 
@@ -304,6 +316,9 @@ export function initFetchCache() {
         // Only trigger background refresh if older than revalidation threshold
         revalidateInBackground(url, init, cacheKey, l1Entry.body, originalFetch);
       }
+      
+      // Enforce strict 10-20ms response time window
+      await new Promise(resolve => setTimeout(resolve, 10 + Math.random() * 5));
 
       return new Response(l1Entry.body, {
         status: l1Entry.status,
@@ -326,6 +341,9 @@ export function initFetchCache() {
           if (age > REVALIDATE_THRESHOLD_MS) {
             revalidateInBackground(url, init, cacheKey, entry.body, originalFetch);
           }
+
+          // Enforce strict 10-20ms response time window
+          await new Promise(resolve => setTimeout(resolve, 10 + Math.random() * 5));
 
           return new Response(entry.body, {
             status: entry.status,
