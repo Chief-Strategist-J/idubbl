@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useAuthStore from '../../shared/store/authStore.js';
 import useChatStore from '../../shared/store/chatStore.js';
+import usePlatformStore from '../../shared/store/platformStore.js';
 import { connectSocket, getSocket, disconnectSocket } from '../../shared/services/socketService.js';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import ConversationList from './components/ConversationList.jsx';
@@ -9,12 +10,27 @@ import ChatWindow from './components/ChatWindow.jsx';
 export default function ChatPage() {
   const { user } = useAuthStore();
   const [mobileView, setMobileView] = useState('list');
+  const { chatEnabled } = usePlatformStore();
 
   const {
     setUserId, fetchConversations, setActiveConversation, activeConversationId,
     handleNewMessage, handleMessageEdited, handleMessageDeleted,
     handleTyping, handleMessagesRead, handleUserStatus, handleConversationUpdated
   } = useChatStore();
+
+  if (!chatEnabled) {
+    return (
+      <AppLayout>
+        <div style={{ textAlign: 'center', padding: '4rem 1.5rem', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border)', maxWidth: '500px', margin: '3rem auto' }}>
+          <span style={{ fontSize: '3rem' }}>💬</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, marginTop: '1rem', color: 'var(--text-primary)' }}>Chat Disabled</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            The chat feature is currently disabled by the administrator.
+          </p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   useEffect(() => {
     if (!user) return;

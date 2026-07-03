@@ -50,6 +50,7 @@ export default function AdminGameSettingsPage() {
   const [kycRequired, setKycRequired] = useState(true);
   const [kycLoading, setKycLoading] = useState(true);
   const [kycSaved, setKycSaved] = useState(false);
+  const [chatSaved, setChatSaved] = useState(false);
 
   React.useEffect(() => {
     fetchPlatformSettings();
@@ -153,8 +154,36 @@ export default function AdminGameSettingsPage() {
         setKycSaved(true);
         setTimeout(() => setKycSaved(false), 2000);
       }
+  };
+
+  const handleSaveChat = async (newVal) => {
+    const uid = user?.id || user?._id;
+    if (!uid) return;
+    setChatEnabled(newVal);
+    let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+    if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+      apiBase = `https://${apiBase}`;
+    }
+    try {
+      const response = await fetch(`${apiBase}/api/admin/settings/platform`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': uid
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          chatEnabled: newVal,
+          gameVisibility: gameVisibility
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setChatSaved(true);
+        setTimeout(() => setChatSaved(false), 2000);
+      }
     } catch (e) {
-      console.error('Error saving KYC settings:', e);
+      console.error('Error saving chat settings:', e);
     }
   };
 
@@ -196,7 +225,8 @@ export default function AdminGameSettingsPage() {
                 When disabled, the chat link is hidden from all users and the chat page is inaccessible.
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {chatSaved && <span style={{ color: 'var(--accent-green)', fontSize: '0.75rem', fontWeight: 600 }}>Saved!</span>}
               <span style={{
                 fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
                 color: chatEnabled ? 'var(--primary)' : 'var(--text-muted)'
@@ -206,7 +236,7 @@ export default function AdminGameSettingsPage() {
               <Toggle
                 id="chat-toggle"
                 checked={chatEnabled}
-                onChange={setChatEnabled}
+                onChange={handleSaveChat}
               />
             </div>
           </div>

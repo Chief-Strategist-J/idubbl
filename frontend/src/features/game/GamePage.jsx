@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import useAuthStore from '../../shared/store/authStore.js';
 import { useMatchChat } from '../../shared/hooks/useMatchChat.js';
+import usePlatformStore from '../../shared/store/platformStore.js';
 import MatchChatWidget from './components/MatchChatWidget.jsx';
 import { Card } from '../../shared/components/ui/index.js';
 import RoundHeader from './components/RoundHeader.jsx';
@@ -49,6 +50,7 @@ export default function GamePage() {
   const { user } = useAuthStore();
   const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting } = useMatchStore();
 
+  const { chatEnabled } = usePlatformStore();
   const { fetchWalletData } = useWalletStore();
 
   // Sync balance once on game start — backend deducted entry fee when match was found
@@ -153,15 +155,17 @@ export default function GamePage() {
         </div>
       )}
 
-      <MatchChatWidget
-        messages={matchChat.messages}
-        sendMessage={matchChat.sendMessage}
-        isOpen={matchChat.isOpen}
-        toggle={matchChat.toggle}
-        unread={matchChat.unread}
-        userId={user?.id}
-        opponentName={opponentName}
-      />
+      {chatEnabled && (
+        <MatchChatWidget
+          messages={matchChat.messages}
+          sendMessage={matchChat.sendMessage}
+          isOpen={matchChat.isOpen}
+          toggle={matchChat.toggle}
+          unread={matchChat.unread}
+          userId={user?.id}
+          opponentName={opponentName}
+        />
+      )}
 
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <Card>
