@@ -58,7 +58,23 @@ function saveOfflineQueue(queue) {
   try {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch (e) {
-    // Ignore
+    // If quota exceeded, evict general read caches to prioritize critical write queue
+    if (e.name === 'QuotaExceededError' || e.code === 22 || e.number === 0x8007000E) {
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('api_cache:')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        // Retry saving queue
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+      } catch (retryError) {
+        // Fallback
+      }
+    }
   }
 }
 

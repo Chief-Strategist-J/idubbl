@@ -543,5 +543,78 @@ describe('Frontend Fetch Cache', () => {
     
     vi.useRealTimers();
   });
+
+  it('should recover from QuotaExceededError when queueing by purging read caches and retrying', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ success: true })
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+
+    // Prepare simulated localStorage stores
+    const store = {
+      'api_cache:/api/stale-read-1': '{}',
+      'api_cache:/api/stale-read-2': '{}',
+    };
+
+    // Override setItem to throw QuotaExceededError on first queue call, then succeed after purge
+    let setItemAttempts = 0;
+    global.localStorage = {
+      getItem: vi.fn((key) => store[key] || null),
+      setItem: vi.fn((key, value) => {
+        if (key === 'offline_write_queue') {
+          setItemAttempts++;
+          if (setItemAttempts === 1) {
+            // Throw QuotaExceededError
+            const error = new Error('Quota Exceeded');
+            error.name = 'QuotaExceededError';
+            error.code = 22;
+            throw error;
+          }
+        }
+        store[key] = value.toString();
+      }),
+      removeItem: vi.fn((key) => { delete store[key]; }),
+      clear: vi.fn(() => { for (const k in store) delete store[k]; }),
+      key: vi.fn((index) => Object.keys(store)[index] || null),
+      get length() { return Object.keys(store).length; }
+    };
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Trigger POST mutation while offline, which should attempt to enqueue
+    await fetch('/api/create-entity', {
+      method: 'POST',
+      body: JSON.stringify({ data: 'item' })
+    });
+
+    // Check that setItem tried to execute, threw, purged api_cache:*, and retried successfully
+    expect(setItemAttempts).toBe(2);
+    
+    // Stale reads should be evicted to free up space
+    expect(store['api_cache:/api/stale-read-1']).toBeUndefined();
+    expect(store['api_cache:/api/stale-read-2']).toBeUndefined();
+
+    // Critical queue should be successfully saved
+    const queue = getOfflineQueue();
+    expect(queue.length).toBe(1);
+    expect(queue[0].url).toBe('/api/create-entity');
+  });
 });
 
