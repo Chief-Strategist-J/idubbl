@@ -8,6 +8,8 @@ const MAX_L1_CACHE_SIZE = 100;
 const activeRequests = new Map();
 const activeRevalidations = new Set();
 
+let cacheEpoch = 0;
+
 const QUEUE_KEY = 'offline_write_queue';
 
 // Helper to determine if a route is cacheable or queueable
@@ -190,6 +192,7 @@ function pruneL1Cache() {
 
 // Helper to clear all cache
 export function clearFrontendCache() {
+  cacheEpoch++;
   l1Cache.clear();
   try {
     const keysToRemove = [];
@@ -210,9 +213,14 @@ async function revalidateInBackground(url, init, cacheKey, cachedBody, originalF
   if (activeRevalidations.has(cacheKey)) return;
   activeRevalidations.add(cacheKey);
 
+  const startEpoch = cacheEpoch;
+
   try {
     const res = await originalFetch(url, init);
     if (res.ok) {
+      // Discard write-back if cache was cleared/mutated during the network call
+      if (startEpoch !== cacheEpoch) return;
+
       const body = await res.text();
       // Only update cache if the content has changed
       if (body !== cachedBody) {

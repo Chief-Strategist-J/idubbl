@@ -479,5 +479,69 @@ describe('Frontend Fetch Cache', () => {
     // First request was successfully sent, second failed. Fired exactly 2 calls.
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('should discard in-flight revalidations if the cache is cleared/mutated concurrently', async () => {
+    vi.useFakeTimers();
+    let resolveRevalidation;
+    let fetchCount = 0;
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      if (url === '/api/test-race') {
+        fetchCount++;
+        if (fetchCount === 2) {
+          return new Promise((resolve) => {
+            resolveRevalidation = () => resolve({
+              ok: true,
+              status: 200,
+              statusText: 'OK',
+              headers: new Headers({ 'content-type': 'application/json' }),
+              clone: function() { return this; },
+              text: async () => JSON.stringify({ data: 'fresh-mutated-leak' })
+            });
+          });
+        }
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        clone: function() { return this; },
+        text: async () => JSON.stringify({ data: 'stale-data' })
+      });
+    });
+
+    global.fetch = fetchMock;
+    initFetchCache();
+
+    // Populate L1 cache initially
+    const res1 = await fetch('/api/test-race');
+    await res1.text();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Fast-forward past revalidation threshold
+    vi.advanceTimersByTime(20000);
+
+    // Call it again to hit cache and trigger async background revalidation (which stays pending)
+    const promise = fetch('/api/test-race');
+    vi.advanceTimersByTime(20); // resolve latency timeout
+    await promise;
+
+    // Mutate and clear cache concurrently (e.g. POST request)
+    await fetch('/api/mutation', { method: 'POST', body: '{}' });
+
+    // Now resolve the background revalidation that started before the mutation
+    resolveRevalidation();
+    // Advance fake timers to resolve the promise chain
+    vi.advanceTimersByTime(10);
+
+    // Verify cache remains empty (no stale leak from the in-flight revalidation)
+    fetchMock.mockClear();
+    const checkPromise = fetch('/api/test-race');
+    vi.advanceTimersByTime(20);
+    await checkPromise;
+    expect(fetchMock).toHaveBeenCalledTimes(1); // Fired a network fetch (cache miss), proving the stale revalidation was discarded!
+    
+    vi.useRealTimers();
+  });
 });
 
