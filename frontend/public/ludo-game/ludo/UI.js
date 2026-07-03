@@ -85,6 +85,44 @@ export class UI {
 
     static setDiceValue(value) {
         document.querySelector('.dice-value').innerText = value;
+        const cube = document.querySelector('#dice-btn');
+        if (!cube) return;
+
+        // Generate dynamic spin multipliers to make each roll feel distinct
+        const randX = Math.floor(Math.random() * 3 + 3) * 360; 
+        const randY = Math.floor(Math.random() * 3 + 3) * 360;
+
+        let rotateX = 0;
+        let rotateY = 0;
+
+        switch (Number(value)) {
+            case 1:
+                rotateX = randX;
+                rotateY = randY;
+                break;
+            case 2:
+                rotateX = randX;
+                rotateY = randY + 180;
+                break;
+            case 3:
+                rotateX = randX;
+                rotateY = randY - 90;
+                break;
+            case 4:
+                rotateX = randX;
+                rotateY = randY + 90;
+                break;
+            case 5:
+                rotateX = randX - 90;
+                rotateY = randY;
+                break;
+            case 6:
+                rotateX = randX + 90;
+                rotateY = randY;
+                break;
+        }
+
+        cube.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     }
 }
 

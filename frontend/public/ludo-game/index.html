@@ -88,9 +88,65 @@
             </div>
         </div>
         <div class="footer">
-            <div class="row">
-                <button id="dice-btn" class="btn btn-dice">🎲 Roll</button>
-                <div class="dice-value"></div>
+            <div class="row" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 10px 0;">
+                <div class="dice-wrapper">
+                    <div id="dice-btn" class="cube">
+                        <!-- Face 1 -->
+                        <div class="face front">
+                            <span class="dot"></span>
+                        </div>
+                        <!-- Face 2 -->
+                        <div class="face back">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <!-- Face 3 -->
+                        <div class="face right">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <!-- Face 4 -->
+                        <div class="face left">
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                        <!-- Face 5 -->
+                        <div class="face top">
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="column font-middle">
+                                <span class="dot"></span>
+                            </div>
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                        <!-- Face 6 -->
+                        <div class="face bottom">
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            <div class="column">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dice-value" style="display: none;"></div>
                 <button id="reset-btn" class="btn btn-reset">🔄 Reset</button>
             </div>
             <h2 class="active-player">Active Player: <span></span></h2>
