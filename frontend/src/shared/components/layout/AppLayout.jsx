@@ -10,8 +10,7 @@ import SessionExpiredModal from '../ui/SessionExpiredModal.jsx';
 
 const ALL_NAV_ITEMS = [
   { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home,          requiresChat: false },
-  { label: 'Games',     short: 'Games',   path: '/games',         icon: Gamepad2,      requiresChat: false },
-  { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap,           requiresChat: false },
+  { label: 'Games',     short: 'Games',   path: '/lobby',         icon: Gamepad2,      requiresChat: false },
   { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet,        requiresChat: false },
   { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle, requiresChat: true  },
   { label: 'History',   short: 'History', path: '/transactions', icon: Clock,         requiresChat: false },
@@ -20,8 +19,7 @@ const ALL_NAV_ITEMS = [
 
 const ALL_HEADER_NAV = [
   { label: 'Dashboard', path: '/dashboard', requiresChat: false },
-  { label: 'Games',     path: '/games',     requiresChat: false },
-  { label: 'Play',      path: '/lobby',     requiresChat: false },
+  { label: 'Games',     path: '/lobby',     requiresChat: false },
   { label: 'Wallet',    path: '/wallet',    requiresChat: false },
   { label: 'History',   path: '/transactions', requiresChat: false },
   { label: 'Chat',      path: '/chat',      requiresChat: true  },
