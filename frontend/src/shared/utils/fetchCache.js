@@ -13,8 +13,12 @@ const QUEUE_KEY = 'offline_write_queue';
 // Helper to determine if a route is cacheable or queueable
 function isBypassedRoute(url) {
   const lowercaseUrl = url.toLowerCase();
-  // Authentication, session validation, and KYC routes must never be cached or queued offline
-  return lowercaseUrl.includes('/api/auth/') || lowercaseUrl.includes('/api/kyc/');
+  // Auth, KYC, payment, deposit, and withdrawal routes must bypass cache and offline queue
+  return lowercaseUrl.includes('/api/auth/') || 
+         lowercaseUrl.includes('/api/kyc/') || 
+         lowercaseUrl.includes('/api/payment/') || 
+         lowercaseUrl.includes('/deposit') || 
+         lowercaseUrl.includes('/withdraw');
 }
 
 // Helper to serialize headers into a plain object
