@@ -9,6 +9,13 @@ export default function LudoGamePage() {
   const { isAuthenticated } = useAuthStore();
   const iframeRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const handleFullscreen = () => {
     const el = iframeRef.current;
@@ -21,6 +28,34 @@ export default function LudoGamePage() {
       setIsFullscreen(false);
     }
   };
+
+  /* ── MOBILE: full-screen iframe, no scroll, no header ── */
+  if (isMobile) {
+    return (
+      <div style={{
+        width: '100vw',
+        height: '100dvh',
+        overflow: 'hidden',
+        background: '#0d1117',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <iframe
+          ref={iframeRef}
+          src="/ludo-game/index.html"
+          title="Ludo Classic Game"
+          style={{
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            display: 'block',
+            flex: 1
+          }}
+          allow="fullscreen"
+        />
+      </div>
+    );
+  }
 
   const content = (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0.5rem 0.25rem 5rem' }}>
