@@ -17,113 +17,134 @@ function GameExplainerModal({ game, meta, onClose, onPlay }) {
       onClick={(e) => e.target.id === 'game-explainer-overlay' && onClose()}
       style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        zIndex: 9999, backdropFilter: 'blur(6px)',
-        animation: 'fadeIn 0.2s ease'
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1.5rem 1rem 1.5rem', overflow: 'hidden', zIndex: 9999,
+        backdropFilter: 'blur(6px)', animation: 'fadeIn 0.2s ease'
       }}
     >
       <div style={{
+        position: 'relative',
         background: 'var(--bg-card)',
         borderTop: `3px solid ${color}`,
-        borderRadius: '20px 20px 0 0',
-        width: '100%', maxWidth: 620,
-        maxHeight: '85vh', overflowY: 'auto',
-        padding: '1.75rem 1.5rem 2.5rem',
+        borderRadius: 20,
+        width: 'min(620px, calc(100% - 2rem))',
+        maxHeight: '85vh', display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
         boxShadow: '0 -12px 48px rgba(0,0,0,0.4)',
         animation: 'slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}>
-        {/* Handle bar */}
-        <div style={{ width: 40, height: 4, background: 'var(--border)', borderRadius: 4, margin: '0 auto 1.25rem', opacity: 0.6 }} />
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
-          <div style={{
-            width: 54, height: 54, borderRadius: 14, flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.75rem', background: `${color}18`,
-            border: `1.5px solid ${color}40`,
-          }}>
-            {meta.emoji || game.icon}
-          </div>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              {game.icon} {game.name}
-            </h2>
-            <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {meta.subtitle}
-            </p>
-          </div>
-          <span style={{
-            padding: '0.2rem 0.6rem', borderRadius: 6,
-            fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px',
-            background: `${color}18`, color, border: `1px solid ${color}40`, flexShrink: 0
-          }}>
-            {meta.difficulty}
-          </span>
-        </div>
-
-        {/* Description */}
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65, margin: '0 0 1.5rem' }}>
-          {meta.description}
-        </p>
-
-        {/* How to Play */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
-            🎮 How to Play
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-            {(meta.howToPlay || []).map((step, i) => (
-              <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <span style={{
-                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.65rem', fontWeight: 800, background: `${color}20`, color,
-                  border: `1px solid ${color}30`, marginTop: '0.1rem'
-                }}>
-                  {i + 1}
-                </span>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  {step}
-                </p>
-              </div>
-            ))}
+        <button
+          aria-label="Close dialog"
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 8, right: 18,
+            width: 36, height: 36, borderRadius: 999,
+            border: 'none', background: 'transparent', color: 'var(--text-primary)',
+            cursor: 'pointer', fontSize: '20px', lineHeight: 1,
+            boxShadow: 'none',
+            display: 'grid', placeItems: 'center', padding: 0,
+          }}
+        >
+          ×
+        </button>
+        <div style={{
+          padding: '2.5rem 1.5rem 0',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: 54, height: 54, borderRadius: 14, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.75rem', background: `${color}18`,
+              border: `1.5px solid ${color}40`,
+            }}>
+              {meta.emoji || game.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                {game.icon} {game.name}
+              </h2>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {meta.subtitle}
+              </p>
+            </div>
+            <span style={{
+              padding: '0.2rem 0.6rem', borderRadius: 6,
+              fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px',
+              background: `${color}18`, color, border: `1px solid ${color}40`, flexShrink: 0
+            }}>
+              {meta.difficulty}
+            </span>
           </div>
         </div>
+
+        <div className="game-explainer-body" style={{
+          overflowY: 'auto', padding: '1.5rem 1.5rem 1.5rem', flex: 1,
+          WebkitOverflowScrolling: 'touch'
+        }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65, margin: '0 0 1.5rem' }}>
+            {meta.description}
+          </p>
+
+          <div style={{ marginBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '0.75rem', fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+              🎮 How to Play
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+              {(meta.howToPlay || []).map((step, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <span style={{
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.65rem', fontWeight: 800, background: `${color}20`, color,
+                    border: `1px solid ${color}30`, marginTop: '0.1rem'
+                  }}>
+                    {i + 1}
+                  </span>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
 
         {/* Rules */}
-        <div style={{
-          background: 'var(--bg-dark)', borderRadius: 12, padding: '1rem 1.1rem',
-          border: '1px solid var(--border)', marginBottom: '1.75rem'
-        }}>
-          <h3 style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 0.65rem' }}>
-            📋 Official Rules
-          </h3>
-          <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {(meta.rules || []).map((rule, i) => (
-              <li key={i} style={{ fontSize: '0.83rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                {rule}
-              </li>
-            ))}
-          </ul>
+          <div style={{
+            background: 'var(--bg-dark)', borderRadius: 12, padding: '1rem 1.1rem',
+            border: '1px solid var(--border)', marginBottom: '1.75rem'
+          }}>
+            <h3 style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 0.65rem' }}>
+              📋 Official Rules
+            </h3>
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(meta.rules || []).map((rule, i) => (
+                <li key={i} style={{ fontSize: '0.83rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-
         {/* CTA */}
-        <button
-          id={`play-game-${game.id}`}
-          onClick={onPlay}
-          style={{
-            width: '100%', padding: '0.9rem', borderRadius: 12, border: 'none', cursor: 'pointer',
-            background: `linear-gradient(135deg, ${color}, ${color}bb)`,
-            color: '#0A0D12', fontWeight: 800, fontSize: '1rem', fontFamily: 'var(--font-display)',
-            boxShadow: `0 4px 20px ${color}40`, transition: 'all 0.2s ease',
-            letterSpacing: '0.5px',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${color}55`; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `0 4px 20px ${color}40`; }}
-        >
-          {game.freePlay ? '🎮 Play Free — No Entry Fee' : `🚀 Choose Tier & Play`}
-        </button>
+
+        <div style={{ padding: '0 1.5rem 1.25rem', flexShrink: 0 }}>
+          <button
+            id={`play-game-${game.id}`}
+            onClick={onPlay}
+            style={{
+              width: '100%', padding: '0.72rem', borderRadius: 10, border: 'none', cursor: 'pointer',
+              background: `linear-gradient(135deg, ${color}, ${color}bb)`,
+              color: '#0A0D12', fontWeight: 700, fontSize: '0.95rem', fontFamily: 'var(--font-display)',
+              boxShadow: `0 4px 18px ${color}40`, transition: 'all 0.2s ease',
+              letterSpacing: '0.4px',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${color}55`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `0 4px 18px ${color}40`; }}
+          >
+            {game.freePlay ? '🎮 Play Free — No Entry Fee' : `🚀 Choose Tier & Play`}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Zap, Wallet, Clock, User, MessageCircle } from 'lucide-react';
+import { Home, Gamepad2, Zap, Wallet, Clock, User, MessageCircle } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
 import useWalletStore from '../../store/walletStore.js';
 import usePlatformStore from '../../store/platformStore.js';
@@ -10,9 +10,11 @@ import SessionExpiredModal from '../ui/SessionExpiredModal.jsx';
 
 const ALL_NAV_ITEMS = [
   { label: 'Dashboard', short: 'Home',    path: '/dashboard',     icon: Home,          requiresChat: false },
+  { label: 'Games',     short: 'Games',   path: '/games',         icon: Gamepad2,      requiresChat: false },
   { label: 'Play',      short: 'Play',    path: '/lobby',         icon: Zap,           requiresChat: false },
   { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet,        requiresChat: false },
   { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle, requiresChat: true  },
+  { label: 'History',   short: 'History', path: '/transactions', icon: Clock,         requiresChat: false },
   { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User,          requiresChat: false },
 ];
 

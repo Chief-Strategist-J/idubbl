@@ -184,11 +184,14 @@ code, pre, kbd, .monospace {
   font-family: var(--font-mono);
 }
 
+html, body, .app-container {
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--bg-darker);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  overflow-x: hidden;
   min-height: 100vh;
 }
 
@@ -205,6 +208,26 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+}
+
+.game-explainer-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.game-explainer-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.game-explainer-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.game-explainer-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Base Layout */
@@ -1861,7 +1884,7 @@ body {
   .bottom-nav {
     display: flex;
     position: fixed;
-    bottom: 0;
+    bottom: -1px;
     left: 0;
     right: 0;
     height: 60px;
@@ -1873,6 +1896,7 @@ body {
     z-index: 100;
     /* Safe area for notched iPhones */
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-width: 0;
   }
 
   .bottom-nav-item {
@@ -1894,6 +1918,10 @@ body {
     -webkit-tap-highlight-color: transparent;
     letter-spacing: 0.2px;
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .bottom-nav-item.active {
