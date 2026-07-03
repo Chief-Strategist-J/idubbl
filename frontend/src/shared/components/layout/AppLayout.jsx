@@ -13,7 +13,6 @@ const ALL_NAV_ITEMS = [
   { label: 'Games',     short: 'Games',   path: '/lobby',         icon: Gamepad2,      requiresChat: false },
   { label: 'Wallet',    short: 'Wallet',  path: '/wallet',        icon: Wallet,        requiresChat: false },
   { label: 'Chat',      short: 'Chat',    path: '/chat',          icon: MessageCircle, requiresChat: true  },
-  { label: 'History',   short: 'History', path: '/transactions', icon: Clock,         requiresChat: false },
   { label: 'Profile',   short: 'Profile', path: '/profile',       icon: User,          requiresChat: false },
 ];
 
@@ -21,7 +20,6 @@ const ALL_HEADER_NAV = [
   { label: 'Dashboard', path: '/dashboard', requiresChat: false },
   { label: 'Games',     path: '/lobby',     requiresChat: false },
   { label: 'Wallet',    path: '/wallet',    requiresChat: false },
-  { label: 'History',   path: '/transactions', requiresChat: false },
   { label: 'Chat',      path: '/chat',      requiresChat: true  },
   { label: 'Profile',   path: '/profile',   requiresChat: false },
 ];
