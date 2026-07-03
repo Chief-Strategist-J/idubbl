@@ -26,6 +26,9 @@ export function clearFrontendCache() {
 export function initFetchCache() {
   if (typeof window === 'undefined') return;
 
+  // Attach central clear cache method to global window object
+  window.clearFrontendCache = clearFrontendCache;
+
   // Prevent multiple initializations
   if (window.__fetchCacheInitialized) return;
   window.__fetchCacheInitialized = true;
