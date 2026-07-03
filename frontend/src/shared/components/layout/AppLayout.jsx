@@ -110,12 +110,13 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
         >
           <span>Profile Settings</span>
         </button>
-        <button
-          className="overflow-drawer-btn"
+        <div
           onClick={() => { navigate('/transactions'); setMenuOpen(false); }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
         >
-          <span>Transaction History</span>
-        </button>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>History</span>
+          <Clock size={16} style={{ color: 'var(--text-secondary)' }} />
+        </div>
         {user?.role === 'admin' && (
           <button
             className="overflow-drawer-btn"
