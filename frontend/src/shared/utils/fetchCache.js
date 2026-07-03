@@ -103,7 +103,7 @@ export async function replayOfflineQueue() {
     }));
   }
 
-  const originalFetch = window.fetch.__originalFetch || window.fetch;
+  const originalFetch = window.__originalFetch || (window.fetch && window.fetch.__originalFetch) || window.fetch;
 
   while (queue.length > 0) {
     const req = queue.shift();
@@ -250,7 +250,7 @@ export function initFetchCache() {
   window.__fetchCacheInitialized = true;
 
   const originalFetch = window.fetch;
-  window.fetch.__originalFetch = originalFetch;
+  window.__originalFetch = originalFetch;
 
   window.fetch = async function (input, init) {
     let method = 'GET';

@@ -204,16 +204,21 @@ describe('Frontend Fetch Cache', () => {
     global.fetch = fetchMock;
     
     // Simulate offline
-    global.navigator = { onLine: false };
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
     
     // Mock event listeners on window
     const listeners = {};
-    global.window = {
-      addEventListener: vi.fn((event, cb) => {
-        listeners[event] = cb;
-      }),
-      dispatchEvent: vi.fn()
-    };
+    global.window.addEventListener = vi.fn((event, cb) => {
+      listeners[event] = cb;
+    });
+    global.window.dispatchEvent = vi.fn();
 
     const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
     initFetchCache();
@@ -225,7 +230,8 @@ describe('Frontend Fetch Cache', () => {
       headers: { 'Content-Type': 'application/json' }
     });
 
-    const resJson = await response.json();
+    const resText = await response.text();
+    const resJson = JSON.parse(resText);
     expect(resJson).toEqual({ success: true, offline: true });
 
     // Verify it is queued in localStorage
@@ -236,7 +242,14 @@ describe('Frontend Fetch Cache', () => {
     expect(JSON.parse(queue[0].body)).toEqual({ name: 'Alice' });
 
     // Restored connection and trigger online event
-    global.navigator.onLine = true;
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => true,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: true };
+    }
     expect(listeners['online']).toBeDefined();
 
     // Trigger the online event handler
@@ -247,6 +260,90 @@ describe('Frontend Fetch Cache', () => {
       method: 'POST',
       body: JSON.stringify({ name: 'Alice' })
     }));
+
+    // Verify queue is now empty
+    expect(getOfflineQueue().length).toBe(0);
+  });
+
+  it('should replay offline mutation requests in FIFO order when connection is restored', async () => {
+    const replayedRequests = [];
+    const fetchMock = vi.fn().mockImplementation((url, init) => {
+      replayedRequests.push({ url, method: init.method, body: init.body });
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        clone: function() { return this; },
+        text: async () => JSON.stringify({ success: true })
+      });
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+    
+    // Mock event listeners on window
+    const listeners = {};
+    global.window.addEventListener = vi.fn((event, cb) => {
+      listeners[event] = cb;
+    });
+    global.window.dispatchEvent = vi.fn();
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Call first mutation
+    await fetch('/api/create-user-1', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Alice' }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Call second mutation
+    await fetch('/api/create-user-2', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Bob' }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Call third mutation
+    await fetch('/api/create-user-3', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Charlie' }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Verify all three are queued in order
+    const queue = getOfflineQueue();
+    expect(queue.length).toBe(3);
+    expect(queue[0].url).toBe('/api/create-user-1');
+    expect(queue[1].url).toBe('/api/create-user-2');
+    expect(queue[2].url).toBe('/api/create-user-3');
+
+    // Restored connection and trigger online event
+    global.navigator = { onLine: true };
+    expect(listeners['online']).toBeDefined();
+
+    // Trigger the online event handler
+    await listeners['online']();
+
+    // Verify they are replayed in order (FIFO)
+    expect(replayedRequests.length).toBe(3);
+    expect(replayedRequests[0].url).toBe('/api/create-user-1');
+    expect(replayedRequests[0].body).toBe(JSON.stringify({ name: 'Alice' }));
+    expect(replayedRequests[1].url).toBe('/api/create-user-2');
+    expect(replayedRequests[1].body).toBe(JSON.stringify({ name: 'Bob' }));
+    expect(replayedRequests[2].url).toBe('/api/create-user-3');
+    expect(replayedRequests[2].body).toBe(JSON.stringify({ name: 'Charlie' }));
 
     // Verify queue is now empty
     expect(getOfflineQueue().length).toBe(0);
