@@ -112,13 +112,44 @@ async function enqueueRequest(url, method, headers, body) {
   }
 }
 
+const LOCK_KEY = 'offline_sync_lock';
+const LOCK_TIMEOUT_MS = 15000;
+
+function acquireLock() {
+  try {
+    const now = Date.now();
+    const lock = localStorage.getItem(LOCK_KEY);
+    if (lock) {
+      const lockTime = parseInt(lock, 10);
+      if (now - lockTime < LOCK_TIMEOUT_MS) {
+        return false;
+      }
+    }
+    localStorage.setItem(LOCK_KEY, String(now));
+    return true;
+  } catch (e) {
+    return true; // Fallback
+  }
+}
+
+function releaseLock() {
+  try {
+    localStorage.removeItem(LOCK_KEY);
+  } catch (e) {}
+}
+
 let isReplaying = false;
 
 // Replay the queued mutating requests in FIFO order
 export async function replayOfflineQueue() {
   if (isReplaying) return;
+  if (!acquireLock()) return;
+
   const queue = getOfflineQueue();
-  if (queue.length === 0) return;
+  if (queue.length === 0) {
+    releaseLock();
+    return;
+  }
 
   isReplaying = true;
   
@@ -136,6 +167,13 @@ export async function replayOfflineQueue() {
 
   while (queue.length > 0) {
     const req = queue.shift();
+    saveOfflineQueue(queue); // Save immediately so other tabs see it's removed
+    
+    // Refresh lock lease to keep the lock held for longer runs
+    try {
+      localStorage.setItem(LOCK_KEY, String(Date.now()));
+    } catch (e) {}
+
     try {
       const init = {
         method: req.method,
@@ -150,24 +188,28 @@ export async function replayOfflineQueue() {
         console.error(`Offline queue replay failed for ${req.url}:`, response.statusText);
         // Temporary server errors (5xx) should halt replay and keep the item in queue to retry later
         if (response.status >= 500) {
-          queue.unshift(req);
-          saveOfflineQueue(queue);
+          const currentQueue = getOfflineQueue();
+          currentQueue.unshift(req);
+          saveOfflineQueue(currentQueue);
           isReplaying = false;
+          releaseLock();
           return;
         }
       }
     } catch (err) {
       console.error(`Offline queue replay network connection error for ${req.url}:`, err.message);
       // Fails due to a network connection/fetch failure — unshift back and abort to retry later
-      queue.unshift(req);
-      saveOfflineQueue(queue);
+      const currentQueue = getOfflineQueue();
+      currentQueue.unshift(req);
+      saveOfflineQueue(currentQueue);
       isReplaying = false;
+      releaseLock();
       return;
     }
-    saveOfflineQueue(queue);
   }
 
   isReplaying = false;
+  releaseLock();
 
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent('show_toast', {

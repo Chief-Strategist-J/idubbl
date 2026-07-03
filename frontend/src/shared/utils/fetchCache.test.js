@@ -616,5 +616,72 @@ describe('Frontend Fetch Cache', () => {
     expect(queue.length).toBe(1);
     expect(queue[0].url).toBe('/api/create-entity');
   });
+
+  it('should prevent concurrent replays by acquiring lock and popping queue immediately before fetch', async () => {
+    let resolveFetch;
+    const fetchMock = vi.fn().mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolveFetch = () => resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          clone: function() { return this; },
+          text: async () => JSON.stringify({ success: true })
+        });
+      });
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+    
+    const store = {};
+    global.localStorage = {
+      getItem: vi.fn((key) => store[key] || null),
+      setItem: vi.fn((key, value) => { store[key] = value.toString(); }),
+      removeItem: vi.fn((key) => { delete store[key]; }),
+      clear: vi.fn(() => { for (const k in store) delete store[k]; }),
+      key: vi.fn((index) => Object.keys(store)[index] || null),
+      get length() { return Object.keys(store).length; }
+    };
+
+    const { getOfflineQueue, initFetchCache, replayOfflineQueue } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Enqueue one request offline
+    await fetch('/api/trans-1', { method: 'POST', body: '{}' });
+    expect(getOfflineQueue().length).toBe(1);
+
+    // Restore connection
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => true,
+        configurable: true
+      });
+    }
+
+    // Start Tab 1 replaying
+    const replayPromise = replayOfflineQueue();
+
+    // Assert that lock is held in storage while fetch is in-flight
+    expect(store['offline_sync_lock']).toBeDefined();
+
+    // Resolve the network fetch call
+    resolveFetch();
+    await replayPromise;
+
+    // Verify lock is released and queue is cleared
+    expect(store['offline_sync_lock']).toBeUndefined();
+    expect(getOfflineQueue().length).toBe(0);
+  });
 });
 
