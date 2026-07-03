@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
-import { PageHeader, Card, Table, Badge, SearchBar, Select } from '../../shared/components/ui/index.js';
+import { PageHeader, Card, Table, Badge, SearchBar } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
 import useAuthStore from '../../shared/store/authStore.js';
 
@@ -81,10 +81,56 @@ export default function TransactionsPage() {
       <PageHeader title="Transaction History" subtitle="All wallet activity is recorded here." />
 
       <Card>
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search by ref ID or description..." style={{ flex: 1, minWidth: 220 }} />
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} options={TYPE_OPTIONS} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search by ref ID or description..." style={{ width: '100%' }} />
+          
+          {/* Categories Horizontal Scroll */}
+          <div 
+            className="hide-scrollbar" 
+            style={{ 
+              display: 'flex', 
+              gap: '0.5rem', 
+              overflowX: 'auto', 
+              paddingBottom: '0.25rem',
+              alignItems: 'center'
+            }}
+          >
+            {TYPE_OPTIONS.map((opt) => {
+              const isActive = typeFilter === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setTypeFilter(opt.value)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '20px',
+                    border: '1px solid',
+                    borderColor: isActive ? 'var(--primary)' : 'var(--border)',
+                    background: isActive ? 'rgba(20, 241, 149, 0.15)' : 'var(--bg-darker)',
+                    color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = 'var(--text-secondary)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
