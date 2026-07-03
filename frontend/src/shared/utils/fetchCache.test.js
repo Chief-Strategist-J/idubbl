@@ -411,5 +411,73 @@ describe('Frontend Fetch Cache', () => {
     const queue = getOfflineQueue();
     expect(queue.length).toBe(0);
   });
+
+  it('should halt replay and preserve remaining queue if a network failure occurs mid-replay', async () => {
+    let callIndex = 0;
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      callIndex++;
+      if (callIndex === 2) {
+        // Second call throws network error (connection drop)
+        return Promise.reject(new TypeError('Failed to fetch'));
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        clone: function() { return this; },
+        text: async () => JSON.stringify({ success: true })
+      });
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+    
+    // Mock event listeners on window
+    const listeners = {};
+    global.window.addEventListener = vi.fn((event, cb) => {
+      listeners[event] = cb;
+    });
+    global.window.dispatchEvent = vi.fn();
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Enqueue three requests
+    await fetch('/api/req-1', { method: 'POST', body: '{}' });
+    await fetch('/api/req-2', { method: 'POST', body: '{}' });
+    await fetch('/api/req-3', { method: 'POST', body: '{}' });
+
+    expect(getOfflineQueue().length).toBe(3);
+
+    // Restore online connection
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => true,
+        configurable: true
+      });
+    }
+
+    // Trigger online event to start replay
+    await listeners['online']();
+
+    // Verify queue is not empty: req-2 failed, so req-2 and req-3 must remain in queue!
+    const remainingQueue = getOfflineQueue();
+    expect(remainingQueue.length).toBe(2);
+    expect(remainingQueue[0].url).toBe('/api/req-2');
+    expect(remainingQueue[1].url).toBe('/api/req-3');
+
+    // First request was successfully sent, second failed. Fired exactly 2 calls.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
 

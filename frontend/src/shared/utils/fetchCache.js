@@ -130,16 +130,21 @@ export async function replayOfflineQueue() {
       const response = await originalFetch(req.url, init);
       if (!response.ok) {
         console.error(`Offline queue replay failed for ${req.url}:`, response.statusText);
+        // Temporary server errors (5xx) should halt replay and keep the item in queue to retry later
+        if (response.status >= 500) {
+          queue.unshift(req);
+          saveOfflineQueue(queue);
+          isReplaying = false;
+          return;
+        }
       }
     } catch (err) {
-      console.error(`Offline queue replay error for ${req.url}:`, err);
-      // If we are back offline, preserve the remaining queue and abort replay
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        queue.unshift(req);
-        saveOfflineQueue(queue);
-        isReplaying = false;
-        return;
-      }
+      console.error(`Offline queue replay network connection error for ${req.url}:`, err.message);
+      // Fails due to a network connection/fetch failure — unshift back and abort to retry later
+      queue.unshift(req);
+      saveOfflineQueue(queue);
+      isReplaying = false;
+      return;
     }
     saveOfflineQueue(queue);
   }
