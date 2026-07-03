@@ -5,7 +5,6 @@ import useAuthStore from '../../shared/store/authStore.js';
 import QoreID from '@qore-id/web-sdk';
 import { ShieldCheck, ShieldAlert, Shield, XCircle, RefreshCw } from 'lucide-react';
 
-import PersonalWalletsWidget from '../deposit/components/PersonalWalletsWidget.jsx';
 
 /* ── Toggle row ─────────────────────────────────────────────────────────── */
 function ToggleRow({ label, checked, onChange }) {
@@ -518,7 +517,6 @@ export default function ProfilePage() {
           <SuccessBanner message={notifSuccess} />
         </Card>
 
-        <PersonalWalletsWidget />
 
         <Card
           style={{
