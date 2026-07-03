@@ -16,5 +16,12 @@ createRoot(document.getElementById('root')).render(
       </ToastProvider>
     </ThemeProvider>
   </StrictMode>,
-)
+);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}
 
