@@ -154,6 +154,9 @@ export default function AdminGameSettingsPage() {
         setKycSaved(true);
         setTimeout(() => setKycSaved(false), 2000);
       }
+    } catch (e) {
+      console.error('Error saving kyc settings:', e);
+    }
   };
 
   const handleSaveChat = async (newVal) => {
