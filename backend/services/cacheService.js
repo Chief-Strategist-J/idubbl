@@ -173,6 +173,18 @@ const pendingResSenders = new Map();
 
 export function cacheMiddleware() {
   return async (req, res, next) => {
+    const urlPath = req.originalUrl || req.url || '';
+    const cleanPath = urlPath.split('?')[0];
+
+    const isCacheable = cleanPath === '/api/admin/settings/platform' || 
+                        cleanPath === '/health' || 
+                        cleanPath.startsWith('/api/v1/test/') ||
+                        cleanPath.startsWith('/api/v2/test/');
+
+    if (!isCacheable) {
+      return next();
+    }
+
     const method = req.method;
 
     // Write Path / Invalidation: On POST, PUT, DELETE, PATCH, etc.

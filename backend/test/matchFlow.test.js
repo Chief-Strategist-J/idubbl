@@ -80,5 +80,5 @@ test('Integration Flow - Match Join Deduct and Settle', async () => {
   await db.collection('transactions').deleteMany({ userId: testUserId });
 
   console.log('✓ Match join and settle validation integration test passed successfully!');
-  process.exit(0);
 });
+

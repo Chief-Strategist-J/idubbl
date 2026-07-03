@@ -165,6 +165,5 @@ test('End-to-End Platform Integration Flow', async () => {
   await db.collection('wallets').deleteOne({ userId });
   await db.collection('transactions').deleteMany({ userId });
   console.log('[E2E Test] All steps passed successfully! Cleaning up resources.');
-
-  process.exit(0);
 });
+
