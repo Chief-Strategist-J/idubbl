@@ -110,6 +110,12 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
         >
           <span>Profile Settings</span>
         </button>
+        <button
+          className="overflow-drawer-btn"
+          onClick={() => { navigate('/transactions'); setMenuOpen(false); }}
+        >
+          <span>Transaction History</span>
+        </button>
         {user?.role === 'admin' && (
           <button
             className="overflow-drawer-btn"
