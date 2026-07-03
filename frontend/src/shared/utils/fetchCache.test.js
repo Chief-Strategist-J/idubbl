@@ -2,14 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { initFetchCache, clearFrontendCache } from './fetchCache.js';
 
 describe('Frontend Fetch Cache', () => {
-  let originalFetchSpy;
-
   beforeEach(() => {
-    // Reset global fetch and localStorage
     vi.restoreAllMocks();
     clearFrontendCache();
 
-    // Stub localStorage
     const store = {};
     global.localStorage = {
       getItem: vi.fn((key) => store[key] || null),
@@ -20,16 +16,15 @@ describe('Frontend Fetch Cache', () => {
       get length() { return Object.keys(store).length; }
     };
 
-    // Keep track of the original global fetch
     if (!global.window) {
       global.window = global;
     }
     
-    // Reset initialisation flag
     delete window.__fetchCacheInitialized;
   });
 
-  it('should intercept GET request and return cached response on subsequent calls, then trigger background update', async () => {
+  it('should intercept GET request, use cache within threshold, and only revalidate when stale', async () => {
+    vi.useFakeTimers();
     const mockResponse = { data: 'test-data' };
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -43,22 +38,32 @@ describe('Frontend Fetch Cache', () => {
     global.fetch = fetchMock;
     initFetchCache();
 
-    // First call (cache miss)
+    // 1st call (cache miss -> network fetch)
     const res1 = await fetch('/api/test');
     const data1 = await res1.text();
     expect(JSON.parse(data1)).toEqual(mockResponse);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    // Second call (cache hit L1, triggers async revalidation)
+    // 2nd call (cache hit -> within 15s threshold -> no network fetch)
     const res2 = await fetch('/api/test');
     const data2 = await res2.text();
     expect(JSON.parse(data2)).toEqual(mockResponse);
+    expect(fetchMock).toHaveBeenCalledTimes(1); 
+
+    // Move clock forward by 20 seconds (past 15s threshold)
+    vi.advanceTimersByTime(20000);
+
+    // 3rd call (cache hit -> stale -> triggers background revalidation fetch)
+    const res3 = await fetch('/api/test');
+    const data3 = await res3.text();
+    expect(JSON.parse(data3)).toEqual(mockResponse);
     
-    // Wait briefly for background revalidation promise to resolve
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // Resolve any background promises
+    vi.runAllTicks();
     
-    // Because of Stale-While-Revalidate, a background fetch is triggered
+    // Fired background fetch, total calls should now be 2
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 
   it('should clear caches when a POST request is made', async () => {

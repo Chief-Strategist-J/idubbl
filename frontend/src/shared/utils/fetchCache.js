@@ -1,6 +1,7 @@
 // L1 in-process memory cache
 const l1Cache = new Map();
-const L1_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const L1_TTL_MS = 15 * 60 * 1000; // 15 minutes cache lifecycle
+const REVALIDATE_THRESHOLD_MS = 15 * 1000; // 15 seconds revalidation cooldown
 
 // Singleflight deduplication map for active fetch promises
 const activeRequests = new Map();
@@ -44,6 +45,7 @@ async function revalidateInBackground(url, init, cacheKey, cachedBody, originalF
             statusText: res.statusText,
             headers: headersObj,
             expiry: Date.now() + L1_TTL_MS,
+            cachedAt: Date.now(),
           };
 
           // Update L1
@@ -109,9 +111,12 @@ export function initFetchCache() {
 
     // 1. Check L1 Memory Cache (Hot Path)
     const l1Entry = l1Cache.get(cacheKey);
-    if (l1Entry) {
-      // Revalidate in background to fetch fresh data asynchronously
-      revalidateInBackground(url, init, cacheKey, l1Entry.body, originalFetch);
+    if (l1Entry && Date.now() < l1Entry.expiry) {
+      const age = Date.now() - (l1Entry.cachedAt || 0);
+      if (age > REVALIDATE_THRESHOLD_MS) {
+        // Only trigger background refresh if older than revalidation threshold
+        revalidateInBackground(url, init, cacheKey, l1Entry.body, originalFetch);
+      }
       
       return new Response(l1Entry.body, {
         status: l1Entry.status,
@@ -125,17 +130,23 @@ export function initFetchCache() {
       const l2Data = localStorage.getItem(cacheKey);
       if (l2Data) {
         const entry = JSON.parse(l2Data);
-        // Populate L1
-        l1Cache.set(cacheKey, entry);
-        
-        // Revalidate in background to fetch fresh data asynchronously
-        revalidateInBackground(url, init, cacheKey, entry.body, originalFetch);
+        if (Date.now() < entry.expiry) {
+          // Populate L1
+          l1Cache.set(cacheKey, entry);
+          
+          const age = Date.now() - (entry.cachedAt || 0);
+          if (age > REVALIDATE_THRESHOLD_MS) {
+            revalidateInBackground(url, init, cacheKey, entry.body, originalFetch);
+          }
 
-        return new Response(entry.body, {
-          status: entry.status,
-          statusText: entry.statusText,
-          headers: new Headers(entry.headers),
-        });
+          return new Response(entry.body, {
+            status: entry.status,
+            statusText: entry.statusText,
+            headers: new Headers(entry.headers),
+          });
+        } else {
+          localStorage.removeItem(cacheKey);
+        }
       }
     } catch (e) {
       // Fallback
@@ -164,6 +175,7 @@ export function initFetchCache() {
             statusText: res.statusText,
             headers: headersObj,
             expiry: Date.now() + L1_TTL_MS,
+            cachedAt: Date.now(),
           };
 
           // Populate L1
