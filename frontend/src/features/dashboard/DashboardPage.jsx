@@ -26,8 +26,13 @@ export default function DashboardPage() {
 
   // Compute live win/loss stats
   const currentUserId = user?.id || user?._id || 'u1';
-  const completedMatches = matches.filter((m) => m.status === 'completed');
-  const wins = completedMatches.filter((m) => m.winnerId === currentUserId || m.winner === user?.name || m.winner === 'You').length;
+  const completedMatches = matches.filter((m) => {
+    if (m.status !== 'completed') return false;
+    const isP1 = m.player1 === user?.name || m.player1 === 'You' || m.player1Id === currentUserId || (m.players && m.players[0] === currentUserId);
+    const isP2 = m.player2 === user?.name || m.player2 === 'You' || m.player2Id === currentUserId || (m.players && m.players[1] === currentUserId);
+    return isP1 || isP2;
+  });
+  const wins = completedMatches.filter((m) => m.winnerId === currentUserId || m.winner === currentUserId || m.winner === user?.name || m.winner === 'You').length;
   const losses = completedMatches.length - wins;
   const winRate = completedMatches.length > 0 ? Math.round((wins / completedMatches.length) * 100) : 0;
 

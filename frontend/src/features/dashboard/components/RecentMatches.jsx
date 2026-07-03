@@ -13,14 +13,29 @@ export default function RecentMatches() {
   const currentUserName = user?.name || 'Alex Storm';
 
   const rows = matches
-    .filter((m) => m.status === 'completed')
+    .filter((m) => {
+      if (m.status !== 'completed') return false;
+      const isP1 = m.player1 === currentUserName || m.player1 === 'You' || m.player1Id === currentUserId || (m.players && m.players[0] === currentUserId);
+      const isP2 = m.player2 === currentUserName || m.player2 === 'You' || m.player2Id === currentUserId || (m.players && m.players[1] === currentUserId);
+      return isP1 || isP2;
+    })
     .slice(0, 5)
     .map((m) => {
-      const isP1 = m.player1 === currentUserName || m.player1 === 'You';
+      let opponent = 'Opponent';
+      const entryFee = m.entryFee || 5;
+      
+      if (m.players && m.playerNames) {
+        const oppId = m.players.find(pId => pId !== currentUserId);
+        opponent = m.playerNames[oppId] || 'Opponent';
+      } else {
+        const isP1 = m.player1 === currentUserName || m.player1 === 'You';
+        opponent = isP1 ? m.player2 : m.player1;
+      }
+
       return {
         ...m,
-        opponent: isP1 ? m.player2 : m.player1,
-        entryFee: 5,
+        opponent,
+        entryFee,
       };
     });
 
@@ -36,7 +51,7 @@ export default function RecentMatches() {
       {/* Mobile card list */}
       <div className="match-card-list">
         {rows.map((row, i) => {
-          const isWinner = row.winnerId === currentUserId || row.winner === currentUserName || row.winner === 'You';
+          const isWinner = row.winnerId === currentUserId || row.winner === currentUserId || row.winner === currentUserName || row.winner === 'You';
           return (
             <div key={row.id || i} className="match-card">
               <div className="match-card-left">
@@ -73,7 +88,7 @@ export default function RecentMatches() {
           </thead>
           <tbody>
             {rows.map((row, i) => {
-              const isWinner = row.winnerId === currentUserId || row.winner === currentUserName || row.winner === 'You';
+              const isWinner = row.winnerId === currentUserId || row.winner === currentUserId || row.winner === currentUserName || row.winner === 'You';
               return (
                 <tr key={row.id || i}>
                   <td>#{row.refId || `M${i + 1}`}</td>
