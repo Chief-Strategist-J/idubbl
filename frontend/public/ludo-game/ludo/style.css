@@ -29,73 +29,92 @@
 .player-piece {
     width: 5%;
     height: 5%;
-    border: 2px solid rgba(255, 255, 255, 0.85);
     border-radius: 50%;
     position: absolute;
     transform: translate(-50%, -50%);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
     z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-shadow: 0 1px 1.5px rgba(0,0,0,0.45);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    /* 3D Sphere: radial highlight top-left, dark base bottom-right */
+    background:
+        radial-gradient(circle at 35% 32%, rgba(255,255,255,0.82) 0%, transparent 55%),
+        radial-gradient(circle at 65% 68%, rgba(0,0,0,0.22) 0%, transparent 55%),
+        var(--piece-color, #2d98ff);
+    /* Physical drop shadow + subtle rim light */
+    box-shadow:
+        0 6px 14px rgba(0,0,0,0.45),
+        0 2px 4px rgba(0,0,0,0.3),
+        inset 0 -3px 6px rgba(0,0,0,0.25),
+        inset 0 3px 6px rgba(255,255,255,0.4);
+    border: none;
 }
 
+/* Remove old emoji, replaced by glossy sphere appearance */
 .player-piece::before {
-    content: '📍';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    line-height: 1;
-    font-size: 1rem;
+    content: '';
 }
 
 .player-piece.highlight {
     cursor: pointer;
-    border-color: #ffd166;
-    animation: pulse 0.8s infinite alternate ease-in-out, rotate 1.4s infinite linear;
-    box-shadow: 0 0 0 0 rgba(255, 209, 64, 0.35), 0 12px 30px rgba(0, 0, 0, 0.25);
+    animation: sphere-pulse 0.75s infinite alternate ease-in-out;
 }
 
-@keyframes rotate {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-@keyframes pulse {
+@keyframes sphere-pulse {
     from {
         transform: translate(-50%, -50%) scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 209, 64, 0.25);
+        filter: brightness(1);
+        box-shadow:
+            0 6px 16px rgba(255,209,64,0.45),
+            0 2px 4px rgba(0,0,0,0.3),
+            inset 0 -4px 8px rgba(0,0,0,0.25),
+            inset 0 3px 7px rgba(255,255,255,0.45),
+            0 0 0 0 rgba(255, 209, 64, 0.4);
     }
     to {
-        transform: translate(-50%, -50%) scale(1.08);
-        box-shadow: 0 0 0 10px rgba(255, 209, 64, 0.14);
+        transform: translate(-50%, -50%) scale(1.18);
+        filter: brightness(1.15);
+        box-shadow:
+            0 10px 28px rgba(255,209,64,0.6),
+            0 3px 6px rgba(0,0,0,0.3),
+            inset 0 -4px 8px rgba(0,0,0,0.25),
+            inset 0 3px 7px rgba(255,255,255,0.55),
+            0 0 0 8px rgba(255, 209, 64, 0.18);
     }
 }
 
+/* P1 — Blue sphere */
 [player-id="P1"].player-piece {
-    background-color: #2d98ff;
+    --piece-color: #1a7fe8;
+    background:
+        radial-gradient(circle at 35% 32%, rgba(255,255,255,0.85) 0%, transparent 52%),
+        radial-gradient(circle at 60% 65%, rgba(0,20,80,0.3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, #2d98ff 0%, #1464c8 100%);
+    box-shadow:
+        0 6px 16px rgba(29,100,200,0.55),
+        0 2px 4px rgba(0,0,0,0.3),
+        inset 0 -4px 8px rgba(0,30,100,0.3),
+        inset 0 3px 7px rgba(255,255,255,0.45);
 }
 
+/* P2 — Green sphere */
 [player-id="P2"].player-piece {
-    background-color: #11be61;
+    --piece-color: #11be61;
+    background:
+        radial-gradient(circle at 35% 32%, rgba(255,255,255,0.85) 0%, transparent 52%),
+        radial-gradient(circle at 60% 65%, rgba(0,60,20,0.3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, #11be61 0%, #0a8a45 100%);
+    box-shadow:
+        0 6px 16px rgba(10,138,69,0.55),
+        0 2px 4px rgba(0,0,0,0.3),
+        inset 0 -4px 8px rgba(0,60,20,0.3),
+        inset 0 3px 7px rgba(255,255,255,0.45);
 }
 
-[player-id="P1"].player-piece::before {
-    content: '★';
-}
-
+[player-id="P1"].player-piece::before,
 [player-id="P2"].player-piece::before {
-    content: '◉';
+    content: '';
 }
 
 .player-base {
