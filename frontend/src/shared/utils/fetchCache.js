@@ -22,6 +22,59 @@ export function clearFrontendCache() {
   }
 }
 
+// Background revalidation logic (Stale-While-Revalidate)
+async function revalidateInBackground(url, init, cacheKey, cachedBody, originalFetch) {
+  if (activeRequests.has(cacheKey)) return;
+
+  const fetchPromise = (async () => {
+    try {
+      const res = await originalFetch(url, init);
+      if (res.ok) {
+        const body = await res.text();
+        // Only update cache if the content has changed
+        if (body !== cachedBody) {
+          const headersObj = {};
+          res.headers.forEach((val, key) => {
+            headersObj[key] = val;
+          });
+
+          const entry = {
+            body,
+            status: res.status,
+            statusText: res.statusText,
+            headers: headersObj,
+            expiry: Date.now() + L1_TTL_MS,
+          };
+
+          // Update L1
+          l1Cache.set(cacheKey, entry);
+
+          // Update L2 (LocalStorage)
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(entry));
+          } catch (e) {
+            // Ignore
+          }
+
+          // Trigger custom event to notify components that the API data has updated
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('api_cache_updated', { detail: { url, cacheKey } }));
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore background fetch failures
+    }
+  })();
+
+  activeRequests.set(cacheKey, fetchPromise);
+  try {
+    await fetchPromise;
+  } finally {
+    activeRequests.delete(cacheKey);
+  }
+}
+
 // Override window.fetch globally
 export function initFetchCache() {
   if (typeof window === 'undefined') return;
@@ -43,7 +96,6 @@ export function initFetchCache() {
     const isMutation = method === 'POST' || method === 'PUT' || method === 'DELETE' || method === 'PATCH';
 
     if (isMutation) {
-      // Clear cache immediately
       clearFrontendCache();
       return originalFetch.apply(this, arguments);
     }
@@ -53,12 +105,14 @@ export function initFetchCache() {
       return originalFetch.apply(this, arguments);
     }
 
-    // Cache key schema
     const cacheKey = `api_cache:${url}`;
 
-    // 1. Check L1 Memory Cache
+    // 1. Check L1 Memory Cache (Hot Path)
     const l1Entry = l1Cache.get(cacheKey);
-    if (l1Entry && Date.now() < l1Entry.expiry) {
+    if (l1Entry) {
+      // Revalidate in background to fetch fresh data asynchronously
+      revalidateInBackground(url, init, cacheKey, l1Entry.body, originalFetch);
+      
       return new Response(l1Entry.body, {
         status: l1Entry.status,
         statusText: l1Entry.statusText,
@@ -71,20 +125,20 @@ export function initFetchCache() {
       const l2Data = localStorage.getItem(cacheKey);
       if (l2Data) {
         const entry = JSON.parse(l2Data);
-        if (Date.now() < entry.expiry) {
-          // Populate L1 cache
-          l1Cache.set(cacheKey, entry);
-          return new Response(entry.body, {
-            status: entry.status,
-            statusText: entry.statusText,
-            headers: new Headers(entry.headers),
-          });
-        } else {
-          localStorage.removeItem(cacheKey);
-        }
+        // Populate L1
+        l1Cache.set(cacheKey, entry);
+        
+        // Revalidate in background to fetch fresh data asynchronously
+        revalidateInBackground(url, init, cacheKey, entry.body, originalFetch);
+
+        return new Response(entry.body, {
+          status: entry.status,
+          statusText: entry.statusText,
+          headers: new Headers(entry.headers),
+        });
       }
     } catch (e) {
-      // Fallback gracefully
+      // Fallback
     }
 
     // 3. Cold Path: Singleflight / Deduplicate matching requests
@@ -119,10 +173,10 @@ export function initFetchCache() {
           try {
             localStorage.setItem(cacheKey, JSON.stringify(entry));
           } catch (e) {
-            // Ignore full storage errors
+            // Ignore
           }
         } catch (err) {
-          // Stream read error or non-cacheable data
+          // Ignore
         }
       }
       return res;

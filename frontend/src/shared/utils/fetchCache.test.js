@@ -29,7 +29,7 @@ describe('Frontend Fetch Cache', () => {
     delete window.__fetchCacheInitialized;
   });
 
-  it('should intercept GET request and return cached response on subsequent calls', async () => {
+  it('should intercept GET request and return cached response on subsequent calls, then trigger background update', async () => {
     const mockResponse = { data: 'test-data' };
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -49,11 +49,16 @@ describe('Frontend Fetch Cache', () => {
     expect(JSON.parse(data1)).toEqual(mockResponse);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    // Second call (cache hit L1)
+    // Second call (cache hit L1, triggers async revalidation)
     const res2 = await fetch('/api/test');
     const data2 = await res2.text();
     expect(JSON.parse(data2)).toEqual(mockResponse);
-    expect(fetchMock).toHaveBeenCalledTimes(1); // Still 1 call
+    
+    // Wait briefly for background revalidation promise to resolve
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    // Because of Stale-While-Revalidate, a background fetch is triggered
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('should clear caches when a POST request is made', async () => {
