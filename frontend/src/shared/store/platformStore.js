@@ -21,6 +21,12 @@ export const ALL_GAMES = [
 
 const defaultVisibility = Object.fromEntries(ALL_GAMES.map(g => [g.id, true]));
 
+let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+  apiBase = `https://${apiBase}`;
+}
+const ADMIN_BASE_URL = `${apiBase}/api/admin`;
+
 const usePlatformStore = create(
   persist(
     (set, get) => ({
@@ -59,6 +65,46 @@ const usePlatformStore = create(
 
       isGameVisible: (gameId) =>
         get().gameVisibility[gameId] !== false,
+
+      // API Sync Actions
+      fetchPlatformSettings: async () => {
+        try {
+          const res = await fetch(`${ADMIN_BASE_URL}/settings/platform`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              set({
+                chatEnabled: json.data.chatEnabled !== false,
+                gameVisibility: {
+                  ...defaultVisibility,
+                  ...(json.data.gameVisibility || {})
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load platform settings from server:', err);
+        }
+      },
+
+      savePlatformSettings: async (userId) => {
+        const { chatEnabled, gameVisibility } = get();
+        try {
+          const res = await fetch(`${ADMIN_BASE_URL}/settings/platform`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': userId
+            },
+            body: JSON.stringify({ chatEnabled, gameVisibility }),
+            credentials: 'include'
+          });
+          return res.ok;
+        } catch (err) {
+          console.error('Failed to save platform settings to server:', err);
+          return false;
+        }
+      },
     }),
     {
       name: 'idubbl-platform-settings',

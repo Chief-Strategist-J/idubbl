@@ -36,6 +36,7 @@ export default function AdminGameSettingsPage() {
     gameVisibility, chatEnabled,
     setGameVisible, setChatEnabled,
     resetToDefaults,
+    fetchPlatformSettings, savePlatformSettings,
   } = usePlatformStore();
 
   const { user } = useAuthStore();
@@ -51,6 +52,7 @@ export default function AdminGameSettingsPage() {
   const [kycSaved, setKycSaved] = useState(false);
 
   React.useEffect(() => {
+    fetchPlatformSettings();
     const uid = user?.id || user?._id;
     if (!uid) return;
     let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
@@ -159,7 +161,11 @@ export default function AdminGameSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const uid = user?.id || user?._id;
+    if (uid) {
+      await savePlatformSettings(uid);
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -503,7 +509,15 @@ export default function AdminGameSettingsPage() {
           <Button variant="primary" onClick={handleSave}>
             💾 Save Settings
           </Button>
-          <Button variant="secondary" onClick={resetToDefaults}>
+          <Button variant="secondary" onClick={async () => {
+            resetToDefaults();
+            const uid = user?.id || user?._id;
+            if (uid) {
+              setTimeout(async () => {
+                await savePlatformSettings(uid);
+              }, 100);
+            }
+          }}>
             🔄 Reset to Defaults
           </Button>
           {saved && (

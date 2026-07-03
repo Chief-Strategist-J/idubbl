@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Gamepad2, Zap, Wallet, Clock, User, MessageCircle } from 'lucide-react';
 import useAuthStore from '../../store/authStore.js';
@@ -33,8 +33,12 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { availableBalance } = useWalletStore();
-  const { chatEnabled } = usePlatformStore();
+  const { chatEnabled, fetchPlatformSettings } = usePlatformStore();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetchPlatformSettings();
+  }, [fetchPlatformSettings]);
 
   const NAV_ITEMS    = ALL_NAV_ITEMS.filter(i => !i.requiresChat || chatEnabled);
   const HEADER_NAV   = ALL_HEADER_NAV.filter(i => !i.requiresChat || chatEnabled);

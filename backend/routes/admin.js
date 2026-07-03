@@ -328,4 +328,37 @@ router.post('/settings/kyc', adminAuth, async (req, res) => {
   }
 });
 
+// 13. GET /api/admin/settings/platform - Get platform settings from DB (public)
+router.get('/settings/platform', async (req, res) => {
+  try {
+    const db = await getDb();
+    const settings = await db.collection('settings').findOne({ key: 'platform_settings' });
+    res.json({
+      success: true,
+      data: settings?.value || { chatEnabled: true, gameVisibility: {} }
+    });
+  } catch (error) {
+    console.error('Error fetching platform settings:', error);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// 14. POST /api/admin/settings/platform - Update platform settings in DB (admin only)
+router.post('/settings/platform', adminAuth, async (req, res) => {
+  const { chatEnabled, gameVisibility } = req.body;
+  try {
+    const db = await getDb();
+    await db.collection('settings').updateOne(
+      { key: 'platform_settings' },
+      { $set: { value: { chatEnabled, gameVisibility }, updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ success: true, message: 'Platform settings updated successfully.' });
+  } catch (error) {
+    console.error('Error updating platform settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
 export default router;
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import useAuthStore from '../../shared/store/authStore.js';
@@ -153,8 +153,12 @@ function GameExplainerModal({ game, meta, onClose, onPlay }) {
 export default function GamesPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { gameVisibility } = usePlatformStore();
+  const { gameVisibility, fetchPlatformSettings } = usePlatformStore();
   const [activeTab, setActiveTab] = useState('All');
+
+  useEffect(() => {
+    fetchPlatformSettings();
+  }, [fetchPlatformSettings]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGame, setSelectedGame] = useState(null);
 
