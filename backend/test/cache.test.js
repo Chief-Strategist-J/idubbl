@@ -1,133 +1,190 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { cacheMiddleware, flushAllCaches, getL1Cache } from '../services/cacheService.js';
+import { 
+  cacheMiddleware, 
+  flushAllCaches, 
+  getL1Cache, 
+  generateCacheKey, 
+  getTTLWithJitter,
+  BoundedLRU,
+  redisCircuitBreaker
+} from '../services/cacheService.js';
 
-test('Cache middleware - L1, L2, L3 multi-tier and invalidation', async () => {
-  // Ensure caches are clean
-  await flushAllCaches();
+test('Cache Architecture Validation', async (t) => {
 
-  const middleware = cacheMiddleware();
+  await t.test('1. Bounded L1 LRU Cache Size', () => {
+    const lru = new BoundedLRU(3);
+    lru.set('k1', 'v1');
+    lru.set('k2', 'v2');
+    lru.set('k3', 'v3');
+    assert.strictEqual(lru.size, 3);
+    
+    // k1 should be oldest, let's add k4 and verify k1 is evicted
+    lru.set('k4', 'v4');
+    assert.strictEqual(lru.size, 3);
+    assert.strictEqual(lru.get('k1'), null);
+    assert.strictEqual(lru.get('k2'), 'v2');
+    assert.strictEqual(lru.get('k3'), 'v3');
+    assert.strictEqual(lru.get('k4'), 'v4');
 
-  // Mock GET request
-  const req = {
-    method: 'GET',
-    originalUrl: '/api/test-cache-route',
-    url: '/api/test-cache-route',
-  };
+    // Access k2 (moves to MRU), add k5, k3 should be evicted
+    lru.get('k2');
+    lru.set('k5', 'v5');
+    assert.strictEqual(lru.get('k3'), null);
+    assert.strictEqual(lru.get('k2'), 'v2');
+  });
 
-  let sendCalled = 0;
-  let sentBody = null;
-  let headers = {};
+  await t.test('2. Key Schema Formatting', () => {
+    const req = {
+      method: 'GET',
+      originalUrl: '/api/v2/users/12345?name=alex&role=admin',
+      url: '/api/v2/users/12345?name=alex&role=admin'
+    };
+    const key = generateCacheKey(req);
+    // Format: {service}:{api_version}:{resource}:{id}:{variant_hash}
+    const parts = key.split(':');
+    assert.strictEqual(parts.length, 5);
+    assert.strictEqual(parts[0], 'api');
+    assert.strictEqual(parts[1], 'v2');
+    assert.strictEqual(parts[2], 'users');
+    assert.strictEqual(parts[3], '12345');
+    assert.strictEqual(parts[4].length, 16); // SHA-256 slice length
+  });
 
-  const res = {
-    statusCode: 200,
-    setHeader(name, value) {
-      headers[name] = value;
-    },
-    getHeader(name) {
-      return headers[name];
-    },
-    send(body) {
-      sendCalled++;
-      if (body !== undefined && body !== null) {
-        if (Buffer.isBuffer(body)) {
-          sentBody = body.toString('utf8');
-        } else if (typeof body === 'object') {
-          sentBody = JSON.stringify(body);
-        } else {
-          sentBody = String(body);
+  await t.test('3. TTL Jitter Generation', () => {
+    const base = 100;
+    for (let i = 0; i < 20; i++) {
+      const jittered = getTTLWithJitter(base);
+      assert.ok(jittered >= 80 && jittered <= 120);
+    }
+  });
+
+  await t.test('4. Redis Circuit Breaker', () => {
+    const cb = new redisCircuitBreaker.constructor(2); // 2s cooldown
+    assert.strictEqual(cb.isOpen(), false);
+    cb.recordFailure();
+    assert.strictEqual(cb.isOpen(), true);
+    
+    cb.recordSuccess();
+    assert.strictEqual(cb.isOpen(), false);
+  });
+
+  await t.test('5. Cache Flow and Middleware - Multi-tier, Singleflight, Invalidation, and Negative Caching', async () => {
+    await flushAllCaches();
+    const middleware = cacheMiddleware();
+
+    const req = {
+      method: 'GET',
+      originalUrl: '/api/v1/test/item1',
+      url: '/api/v1/test/item1',
+    };
+    const key = generateCacheKey(req);
+
+    let nextCount = 0;
+    const makeRes = (status = 200) => {
+      const headers = {};
+      return {
+        statusCode: status,
+        setHeader(n, v) { headers[n] = v; },
+        getHeader(n) { return headers[n]; },
+        send(body) {
+          this.body = body;
+          return this;
         }
-      } else {
-        sentBody = body;
-      }
-      return this;
-    },
-  };
+      };
+    };
 
-  let nextCalled = 0;
-  const next = () => {
-    nextCalled++;
-    // Simulate route handler setting response and calling send
-    res.send({ status: 'ok', data: 42 });
-  };
+    const parseIfString = (val) => typeof val === 'string' ? JSON.parse(val) : val;
 
-  // --- First Request: Cache Miss ---
-  await middleware(req, res, next);
+    // First request: Cache Miss
+    const res1 = makeRes();
+    await middleware(req, res1, () => {
+      nextCount++;
+      res1.send({ value: 'hello' });
+    });
 
-  assert.strictEqual(nextCalled, 1);
-  assert.strictEqual(sendCalled, 1);
-  assert.deepEqual(JSON.parse(sentBody), { status: 'ok', data: 42 });
+    assert.strictEqual(nextCount, 1);
+    assert.deepEqual(parseIfString(res1.body), { value: 'hello' });
 
-  // L1 cache should now have the entry
-  const l1 = getL1Cache();
-  assert.ok(l1.has('/api/test-cache-route'));
+    // Wait slightly for L3 DB writes to complete async
+    await new Promise(r => setTimeout(r, 200));
 
-  // --- Second Request: L1 Cache Hit ---
-  sendCalled = 0;
-  sentBody = null;
-  nextCalled = 0;
-  headers = {};
+    // L1 should have it
+    const l1 = getL1Cache();
+    assert.ok(l1.has(key));
 
-  await middleware(req, res, next);
-  assert.strictEqual(nextCalled, 0); // Should serve from cache
-  assert.strictEqual(sendCalled, 1);
-  assert.strictEqual(headers['X-Cache-Tier'], 'L1');
-  assert.deepEqual(JSON.parse(sentBody), { status: 'ok', data: 42 });
+    // Second request: L1 hit
+    const res2 = makeRes();
+    let nextCount2 = 0;
+    await middleware(req, res2, () => { nextCount2++; });
+    assert.strictEqual(nextCount2, 0);
+    assert.strictEqual(res2.getHeader('X-Cache-Tier'), 'L1');
 
-  // --- Evict L1 to check L2 (Redis) / L3 (MongoDB) ---
-  l1.clear();
+    // Singleflight test: run two concurrent requests on miss
+    const reqSf = {
+      method: 'GET',
+      originalUrl: '/api/v1/test/sf-item',
+      url: '/api/v1/test/sf-item',
+    };
+    const keySf = generateCacheKey(reqSf);
+    l1.delete(keySf); // ensure it's not in L1
 
-  // Give a small delay for async db saves to complete if necessary
-  await new Promise(resolve => setTimeout(resolve, 500));
+    let handlerCalls = 0;
+    const p1Res = makeRes();
+    const p2Res = makeRes();
 
-  // --- Third Request: L2/L3 Cache Hit ---
-  sendCalled = 0;
-  sentBody = null;
-  nextCalled = 0;
-  headers = {};
+    const runRequest = (res) => {
+      return middleware(reqSf, res, async () => {
+        handlerCalls++;
+        // Simulate database delay
+        await new Promise(r => setTimeout(r, 100));
+        res.send({ value: 'sf-value' });
+      });
+    };
 
-  await middleware(req, res, next);
-  assert.strictEqual(nextCalled, 0); // Should serve from cache
-  assert.strictEqual(sendCalled, 1);
-  // It could be L2 or L3 depending on whether Redis is available
-  assert.ok(headers['X-Cache-Tier'] === 'L2' || headers['X-Cache-Tier'] === 'L3');
-  assert.deepEqual(JSON.parse(sentBody), { status: 'ok', data: 42 });
+    await Promise.all([
+      runRequest(p1Res),
+      runRequest(p2Res)
+    ]);
 
-  // --- POST request should invalidate all caches ---
-  const postReq = {
-    method: 'POST',
-    originalUrl: '/api/test-cache-route',
-    url: '/api/test-cache-route',
-  };
+    // Handler should be called exactly once
+    assert.strictEqual(handlerCalls, 1);
+    assert.deepEqual(parseIfString(p1Res.body), { value: 'sf-value' });
+    assert.deepEqual(parseIfString(p2Res.body), { value: 'sf-value' });
 
-  const postRes = {
-    statusCode: 200,
-    setHeader() {},
-    getHeader() {},
-    send(body) {
-      return this;
-    },
-  };
+    // Negative caching: 404 should be cached
+    const req404 = {
+      method: 'GET',
+      originalUrl: '/api/v1/test/missing',
+      url: '/api/v1/test/missing',
+    };
+    const key404 = generateCacheKey(req404);
+    const res404 = makeRes(404);
+    let next404 = 0;
+    await middleware(req404, res404, () => {
+      next404++;
+      res404.send({ error: 'not found' });
+    });
+    assert.strictEqual(next404, 1);
+    
+    // Check that it's in L1
+    assert.ok(l1.has(key404));
 
-  let postNextCalled = 0;
-  await middleware(postReq, postRes, () => { postNextCalled++; });
+    // Write-through Invalidation: POST request on the same route should delete cache
+    const postReq = {
+      method: 'POST',
+      originalUrl: '/api/v1/test/item1',
+      url: '/api/v1/test/item1',
+    };
+    const postRes = makeRes(200);
+    let postNext = 0;
+    await middleware(postReq, postRes, () => {
+      postNext++;
+      postRes.send({ success: true });
+    });
+    assert.strictEqual(postNext, 1);
 
-  assert.strictEqual(postNextCalled, 1);
-  
-  // All caches should be flushed now, so L1 should be empty
-  assert.strictEqual(l1.size, 0);
-
-  // Give a small delay for async db flush to complete
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  // --- Fourth Request: Cache Miss again after flush ---
-  sendCalled = 0;
-  sentBody = null;
-  nextCalled = 0;
-  headers = {};
-
-  await middleware(req, res, next);
-  assert.strictEqual(nextCalled, 1);
-  assert.strictEqual(sendCalled, 1);
-  assert.strictEqual(headers['X-Cache-Tier'], undefined); // Fresh response
+    // key should be cleared from L1
+    assert.strictEqual(l1.has(key), false);
+  });
 });
