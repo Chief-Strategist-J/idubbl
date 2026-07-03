@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const ToastContext = createContext();
 
@@ -16,6 +16,17 @@ export function ToastProvider({ children }) {
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  useEffect(() => {
+    const handleShowToast = (e) => {
+      const { message, type, duration } = e.detail || {};
+      addToast(message, type, duration);
+    };
+    window.addEventListener('show_toast', handleShowToast);
+    return () => {
+      window.removeEventListener('show_toast', handleShowToast);
+    };
+  }, [addToast]);
 
   const toast = {
     success: (msg, dur) => addToast(msg, 'success', dur),

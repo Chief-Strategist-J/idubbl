@@ -127,4 +127,129 @@ describe('Frontend Fetch Cache', () => {
     expect(data1).toEqual(data2);
     expect(fetchMock).toHaveBeenCalledTimes(1); // Only 1 network request fired
   });
+
+  it('should support URL objects and custom Request objects', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ data: 'ok' })
+    });
+
+    global.fetch = fetchMock;
+    initFetchCache();
+
+    // Test with URL object
+    const urlObj = new URL('http://localhost/api/url-obj');
+    await fetch(urlObj);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Test with Request-like object
+    const requestLikeObj = { url: '/api/req-obj', method: 'GET' };
+    await fetch(requestLikeObj);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should enforce L1 cache size limits to prevent memory leaks', async () => {
+    const fetchMock = vi.fn().mockImplementation((url) => Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ url })
+    }));
+
+    global.fetch = fetchMock;
+    initFetchCache();
+
+    // Put 105 entries in the cache (limit is 100)
+    for (let i = 0; i < 105; i++) {
+      await fetch(`/api/item-${i}`);
+    }
+
+    // Clear L2 (localStorage) so it does not mask L1 cache eviction
+    global.localStorage.clear();
+
+    // First few entries should have been evicted (e.g. /api/item-0)
+    // To verify, calling it again should trigger a new network fetch
+    fetchMock.mockClear();
+    
+    // Call item-0 (which was evicted)
+    await fetch('/api/item-0');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    
+    // Call item-104 (which should still be in cache)
+    fetchMock.mockClear();
+    const promise = fetch('/api/item-104');
+    if (global.vi) {
+      global.vi.advanceTimersByTime(20);
+    }
+    await promise;
+    expect(fetchMock).toHaveBeenCalledTimes(0);
+  });
+
+  it('should intercept POST mutation when offline, queue it, and replay on online event', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ success: true })
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    global.navigator = { onLine: false };
+    
+    // Mock event listeners on window
+    const listeners = {};
+    global.window = {
+      addEventListener: vi.fn((event, cb) => {
+        listeners[event] = cb;
+      }),
+      dispatchEvent: vi.fn()
+    };
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Call mutation
+    const response = await fetch('/api/create-user', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Alice' }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const resJson = await response.json();
+    expect(resJson).toEqual({ success: true, offline: true });
+
+    // Verify it is queued in localStorage
+    const queue = getOfflineQueue();
+    expect(queue.length).toBe(1);
+    expect(queue[0].url).toBe('/api/create-user');
+    expect(queue[0].method).toBe('POST');
+    expect(JSON.parse(queue[0].body)).toEqual({ name: 'Alice' });
+
+    // Restored connection and trigger online event
+    global.navigator.onLine = true;
+    expect(listeners['online']).toBeDefined();
+
+    // Trigger the online event handler
+    await listeners['online']();
+
+    // Verify it replayed the request through the original fetch mock
+    expect(fetchMock).toHaveBeenCalledWith('/api/create-user', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ name: 'Alice' })
+    }));
+
+    // Verify queue is now empty
+    expect(getOfflineQueue().length).toBe(0);
+  });
 });
+

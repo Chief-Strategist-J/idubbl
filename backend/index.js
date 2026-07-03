@@ -13,10 +13,13 @@ import kycRouter from './routes/kyc.js';
 import { matchmakerService } from './services/matchmakerService.js';
 import { initChatSocket } from './services/chat/SocketHandler.js';
 import { initIndexes as initChatIndexes } from './services/chat/ChatService.js';
+import { initCoreIndexes } from './services/dbIndexes.js';
 import { getDb } from './services/db.js';
 import { cacheMiddleware } from './services/cacheService.js';
+import compression from 'compression';
 
 const app = express();
+app.use(compression());
 app.use(cors({
   origin: true,
   credentials: true,
@@ -259,5 +262,11 @@ server.listen(PORT, async () => {
     console.log('Chat indexes initialized');
   } catch (err) {
     console.error('Failed to initialize chat indexes:', err.message);
+  }
+  try {
+    await initCoreIndexes();
+    console.log('Core indexes initialized');
+  } catch (err) {
+    console.error('Failed to initialize core indexes:', err.message);
   }
 });
