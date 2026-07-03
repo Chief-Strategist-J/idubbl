@@ -4,14 +4,17 @@
 
 .ludo-container {
     width: min(450px, 95vw);
-    margin: 16px auto;
-    padding: 12px;
+    margin: 0 auto;
+    padding: 0;
 }
 
+/* Board fills width but never makes total height exceed viewport */
 .ludo-container .ludo {
     width: 100%;
+    /* Board side = min of full width OR available height minus ~110px footer */
+    max-width: min(95vw, calc(100dvh - 110px));
     aspect-ratio: 1 / 1;
-    max-height: 100vw;
+
     background-image: url('./ludo-bg.jpg');
     background-size: cover;
     background-position: center;

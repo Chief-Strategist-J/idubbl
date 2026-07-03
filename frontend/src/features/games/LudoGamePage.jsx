@@ -29,16 +29,31 @@ export default function LudoGamePage() {
     }
   };
 
-  /* ── MOBILE: full-screen game + slim back bar, no scroll ── */
+  /* ── MOBILE: fixed fullscreen, no scroll, no parent interference ── */
   if (isMobile) {
+    // Lock the React app body scroll while this view is mounted
+    React.useEffect(() => {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+        document.documentElement.style.overflow = '';
+      };
+    }, []);
+
     return (
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
         width: '100vw',
         height: '100dvh',
         overflow: 'hidden',
         background: '#0d1117',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        zIndex: 9999
       }}>
         {/* Slim top bar */}
         <div style={{
@@ -48,9 +63,9 @@ export default function LudoGamePage() {
           padding: '0 12px',
           height: '44px',
           minHeight: '44px',
+          flexShrink: 0,
           background: 'rgba(15,23,42,0.97)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
           <button
             onClick={() => navigate('/games')}
@@ -62,45 +77,32 @@ export default function LudoGamePage() {
               fontSize: '0.78rem',
               fontWeight: 600,
               padding: '6px 14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
+              cursor: 'pointer'
             }}
           >
             ← Back
           </button>
-          <span style={{
-            color: '#e6edf3',
-            fontWeight: 700,
-            fontSize: '0.9rem',
-            letterSpacing: '0.01em'
-          }}>🎲 Ludo Classic</span>
-          <div style={{ width: 72 }} />{/* spacer to balance title */}
+          <span style={{ color: '#e6edf3', fontWeight: 700, fontSize: '0.88rem' }}>
+            🎲 Ludo Classic
+          </span>
+          <div style={{ width: 68 }} />
         </div>
 
-        {/* Centered game area */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          background: '#0d1117'
-        }}>
-          <iframe
-            ref={iframeRef}
-            src="/ludo-game/index.html"
-            title="Ludo Classic Game"
-            style={{
-              width: '100vw',
-              height: 'calc(100dvh - 44px)',
-              border: 'none',
-              display: 'block'
-            }}
-            allow="fullscreen"
-          />
-        </div>
+        {/* Game iframe — fills remaining height exactly, centered */}
+        <iframe
+          ref={iframeRef}
+          src="/ludo-game/index.html"
+          title="Ludo Classic Game"
+          style={{
+            flex: 1,
+            width: '100%',
+            border: 'none',
+            display: 'block',
+            overflow: 'hidden'
+          }}
+          scrolling="no"
+          allow="fullscreen"
+        />
       </div>
     );
   }
