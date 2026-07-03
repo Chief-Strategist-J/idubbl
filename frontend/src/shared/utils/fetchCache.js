@@ -23,6 +23,15 @@ function isBypassedRoute(url) {
          lowercaseUrl.includes('/withdraw');
 }
 
+// Helper to check if request body is not serializable for offline storage
+function isUnsupportedOfflineBody(body) {
+  if (!body) return false;
+  if (typeof FormData !== 'undefined' && body instanceof FormData) return true;
+  if (typeof Blob !== 'undefined' && body instanceof Blob) return true;
+  if (typeof ArrayBuffer !== 'undefined' && body instanceof ArrayBuffer) return true;
+  return false;
+}
+
 // Helper to serialize headers into a plain object
 function serializeHeaders(headers) {
   if (!headers) return {};
@@ -366,6 +375,9 @@ export function initFetchCache() {
       if (isOffline) {
         let headers = (init && init.headers) || (input && input.headers);
         let body = (init && init.body) || (input && input.body);
+        if (isUnsupportedOfflineBody(body)) {
+          return originalFetch.apply(this, arguments);
+        }
         await enqueueRequest(url, method, headers, body);
         return new Response(JSON.stringify({ success: true, offline: true }), {
           status: 200,

@@ -683,5 +683,61 @@ describe('Frontend Fetch Cache', () => {
     expect(store['offline_sync_lock']).toBeUndefined();
     expect(getOfflineQueue().length).toBe(0);
   });
+
+  it('should bypass offline queueing for FormData and Blob request bodies', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      clone: function() { return this; },
+      text: async () => JSON.stringify({ success: true })
+    });
+
+    global.fetch = fetchMock;
+    
+    // Simulate offline
+    if (globalThis.navigator) {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
+        get: () => false,
+        configurable: true
+      });
+    } else {
+      globalThis.navigator = { onLine: false };
+    }
+    
+    const store = {};
+    global.localStorage = {
+      getItem: vi.fn((key) => store[key] || null),
+      setItem: vi.fn((key, value) => { store[key] = value.toString(); }),
+      removeItem: vi.fn((key) => { delete store[key]; }),
+      clear: vi.fn(() => { for (const k in store) delete store[k]; }),
+      key: vi.fn((index) => Object.keys(store)[index] || null),
+      get length() { return Object.keys(store).length; }
+    };
+
+    // Polyfill simple FormData class for node environment testing
+    global.FormData = class FormData {};
+
+    const { getOfflineQueue, initFetchCache } = await import('./fetchCache.js');
+    initFetchCache();
+
+    // Trigger upload with FormData while offline
+    const formData = new FormData();
+    try {
+      await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+    } catch (e) {
+      // Expect fail
+    }
+
+    // Verify it was NOT enqueued in localStorage
+    const queue = getOfflineQueue();
+    expect(queue.length).toBe(0);
+    
+    delete global.FormData;
+  });
 });
 
