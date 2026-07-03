@@ -45,7 +45,9 @@ describe('Frontend Fetch Cache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     // 2nd call (cache hit -> within 15s threshold -> no network fetch)
-    const res2 = await fetch('/api/test');
+    const promise2 = fetch('/api/test');
+    vi.advanceTimersByTime(20); // Resolve the 10-15ms timeout
+    const res2 = await promise2;
     const data2 = await res2.text();
     expect(JSON.parse(data2)).toEqual(mockResponse);
     expect(fetchMock).toHaveBeenCalledTimes(1); 
@@ -54,7 +56,9 @@ describe('Frontend Fetch Cache', () => {
     vi.advanceTimersByTime(20000);
 
     // 3rd call (cache hit -> stale -> triggers background revalidation fetch)
-    const res3 = await fetch('/api/test');
+    const promise3 = fetch('/api/test');
+    vi.advanceTimersByTime(20); // Resolve the 10-15ms timeout
+    const res3 = await promise3;
     const data3 = await res3.text();
     expect(JSON.parse(data3)).toEqual(mockResponse);
     
