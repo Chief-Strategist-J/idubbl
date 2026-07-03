@@ -304,9 +304,6 @@ export function initFetchCache() {
         // Only trigger background refresh if older than revalidation threshold
         revalidateInBackground(url, init, cacheKey, l1Entry.body, originalFetch);
       }
-      
-      // Enforce strict 10-20ms response time window
-      await new Promise(resolve => setTimeout(resolve, 10 + Math.random() * 5));
 
       return new Response(l1Entry.body, {
         status: l1Entry.status,
@@ -329,9 +326,6 @@ export function initFetchCache() {
           if (age > REVALIDATE_THRESHOLD_MS) {
             revalidateInBackground(url, init, cacheKey, entry.body, originalFetch);
           }
-
-          // Enforce strict 10-20ms response time window
-          await new Promise(resolve => setTimeout(resolve, 10 + Math.random() * 5));
 
           return new Response(entry.body, {
             status: entry.status,
