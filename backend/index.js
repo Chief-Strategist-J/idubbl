@@ -14,6 +14,7 @@ import { matchmakerService } from './services/matchmakerService.js';
 import { initChatSocket } from './services/chat/SocketHandler.js';
 import { initIndexes as initChatIndexes } from './services/chat/ChatService.js';
 import { getDb } from './services/db.js';
+import { cacheMiddleware } from './services/cacheService.js';
 
 const app = express();
 app.use(cors({
@@ -22,6 +23,7 @@ app.use(cors({
   exposedHeaders: ['set-auth-token']
 }));
 app.use(express.json());
+app.use(cacheMiddleware());
 
 app.use('/api/auth', authRouter);
 app.use('/api/payment', paymentRouter);
