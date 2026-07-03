@@ -29,7 +29,7 @@ export default function LudoGamePage() {
     }
   };
 
-  /* ── MOBILE: full-screen iframe, no scroll, no header ── */
+  /* ── MOBILE: full-screen game + slim back bar, no scroll ── */
   if (isMobile) {
     return (
       <div style={{
@@ -40,19 +40,67 @@ export default function LudoGamePage() {
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <iframe
-          ref={iframeRef}
-          src="/ludo-game/index.html"
-          title="Ludo Classic Game"
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            display: 'block',
-            flex: 1
-          }}
-          allow="fullscreen"
-        />
+        {/* Slim top bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 12px',
+          height: '44px',
+          minHeight: '44px',
+          background: 'rgba(15,23,42,0.97)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          flexShrink: 0
+        }}>
+          <button
+            onClick={() => navigate('/games')}
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '8px',
+              color: '#e6edf3',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              padding: '6px 14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            ← Back
+          </button>
+          <span style={{
+            color: '#e6edf3',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            letterSpacing: '0.01em'
+          }}>🎲 Ludo Classic</span>
+          <div style={{ width: 72 }} />{/* spacer to balance title */}
+        </div>
+
+        {/* Centered game area */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          background: '#0d1117'
+        }}>
+          <iframe
+            ref={iframeRef}
+            src="/ludo-game/index.html"
+            title="Ludo Classic Game"
+            style={{
+              width: '100vw',
+              height: 'calc(100dvh - 44px)',
+              border: 'none',
+              display: 'block'
+            }}
+            allow="fullscreen"
+          />
+        </div>
       </div>
     );
   }
