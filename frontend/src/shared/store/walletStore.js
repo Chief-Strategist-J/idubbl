@@ -79,7 +79,13 @@ const useWalletStore = create((set, get) => ({
       const localTxs = localData.transactions ?? [];
       const mergedTx = [
         ...transactions,
-        ...localTxs.filter(lt => !transactions.some(mt => mt._id === lt._id || mt.refId === lt.refId))
+        ...localTxs.filter(lt => {
+          return !transactions.some(mt => {
+            const hasSameId = (mt._id && lt._id && mt._id === lt._id) || (mt.id && lt.id && mt.id === lt.id);
+            const hasSameRef = (mt.refId && lt.refId && mt.refId === lt.refId) || (mt.txHash && lt.txHash && mt.txHash === lt.txHash);
+            return hasSameId || hasSameRef;
+          });
+        })
       ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       const syncedState = { depositBalance, winningsBalance, lockedBalance, idubbuBalance, pendingWithdrawals, transactions: mergedTx };

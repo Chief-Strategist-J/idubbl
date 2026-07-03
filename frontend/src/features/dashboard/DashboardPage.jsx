@@ -117,17 +117,24 @@ export default function DashboardPage() {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No wallet activity yet. Make your first deposit to begin.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {transactions.slice(0, 10).map((tx, i) => (
-                <div key={tx.refId || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: i < 9 ? '1px solid var(--border)' : 'none' }}>
-                  <div>
-                    <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{tx.description}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(tx.date).toLocaleDateString()}</p>
+              {transactions.slice(0, 10).map((tx, i) => {
+                const isTxPositive = tx.type === 'deposit' || tx.type === 'win' || tx.type === 'refund';
+                return (
+                  <div key={tx._id || tx.id || tx.refId || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: i < 9 ? '1px solid var(--border)' : 'none' }}>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                        {tx.description || tx.note || (tx.type ? tx.type.charAt(0).toUpperCase() + tx.type.slice(1).replace('_', ' ') : 'Transaction')}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {new Date(tx.createdAt || tx.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: isTxPositive ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                      {isTxPositive ? '+' : '-'}{tx.amount} USDT
+                    </span>
                   </div>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: tx.amount > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                    {tx.amount > 0 ? '+' : ''}{tx.amount} USDT
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
