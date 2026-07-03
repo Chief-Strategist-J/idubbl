@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card } from '../../shared/components/ui/index.js';
@@ -6,6 +6,7 @@ import TierCard from './components/TierCard.jsx';
 import useMatchStore from '../../shared/store/matchStore.js';
 import useAuthStore from '../../shared/store/authStore.js';
 import usePlatformStore, { ALL_GAMES } from '../../shared/store/platformStore.js';
+import useWalletStore from '../../shared/store/walletStore.js';
 import { GAME_META } from '../../shared/data/gameMeta.js';
 
 // Game list is driven by platformStore so admin hide/show is respected
@@ -16,8 +17,16 @@ export default function LobbyPage() {
   const navigate = useNavigate();
   const { tiers } = useMatchStore();
   const { user } = useAuthStore();
+  const { fetchWalletData } = useWalletStore();
   const { gameVisibility } = usePlatformStore();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const uid = user?.id || user?._id;
+    if (uid) {
+      fetchWalletData(uid);
+    }
+  }, [user, fetchWalletData]);
   const activeTiers = tiers.filter((t) => t.active);
 
   // Only lobby-compatible (non-freePlay) visible games
