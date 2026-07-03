@@ -27,6 +27,7 @@ describe('Auth Store tests', () => {
     const mockUser = { id: 'u1', firstName: 'Alex', lastName: 'Storm', email: 'alex@demo.com', role: 'player' };
     vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
+      headers: { get: vi.fn(() => null) },
       json: async () => ({ user: mockUser }),
     });
 
@@ -58,6 +59,7 @@ describe('Auth Store tests', () => {
     const mockUser = { id: 'u_new', firstName: 'John', lastName: 'Doe', email: 'john@example.com', role: 'player' };
     vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
+      headers: { get: vi.fn(() => null) },
       json: async () => ({ user: mockUser }),
     });
 
