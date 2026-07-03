@@ -27,19 +27,6 @@ services:
       - key: ETHERSCAN_API_KEY
         sync: false
 
-  # Keep-alive: Render free-tier web services spin down after ~15 min of
-  # inactivity; the next request then pays a multi-second cold start
-  # (measured ~7s) on top of normal latency. Ping /health every 10 min to
-  # keep the backend warm.
-  - type: cron
-    name: idubbl-backend-keepalive
-    env: node
-    plan: free
-    rootDir: backend
-    schedule: "*/10 * * * *"
-    buildCommand: npm install
-    startCommand: node scripts/keepAlive.js
-
   # Frontend Service (Static Site)
   - type: web
     name: idubbl-frontend

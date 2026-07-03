@@ -269,4 +269,17 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error('Failed to initialize core indexes:', err.message);
   }
+
+  // Self-ping to keep the Render free tier instance warm (every 10 minutes)
+  const selfPing = () => {
+    const baseUrl = process.env.BETTER_AUTH_URL || `http://localhost:${PORT}`;
+    fetch(`${baseUrl}/health`)
+      .then(res => console.log(`Keepalive self-ping status: ${res.status}`))
+      .catch(err => console.error(`Keepalive self-ping failed: ${err.message}`));
+  };
+  // Start pings (initial delay of 1 minute, then every 10 minutes)
+  setTimeout(() => {
+    selfPing();
+    setInterval(selfPing, 10 * 60 * 1000);
+  }, 60000);
 });
