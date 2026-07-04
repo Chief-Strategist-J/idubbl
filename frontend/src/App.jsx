@@ -131,7 +131,7 @@ export default function App() {
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
         <Route path="/profile"      element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-        <Route path="/support"      element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+        <Route path="/support"      element={<SupportPage />} />
         <Route path="/chat"         element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
 
         {/* Admin routes */}
