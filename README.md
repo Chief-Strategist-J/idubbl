@@ -145,3 +145,23 @@ Before launching the service to real users:
 2. Configure `TRON_HOT_WALLET_PRIVATE_KEY` and `ETH_HOT_WALLET_PRIVATE_KEY` inside Render Environment variables to allow automatic payout execution.
 3. Fund both hot wallets with TRX (for TRC-20 gas), ETH (for ERC-20 gas), and standard USDT.
 4. Set up Render cron health pings to prevent cold-starts.
+
+---
+
+## 🔗 External References & API Endpoints
+
+The system integrates with the following external services and API endpoints:
+
+* **Database (MongoDB Atlas):**
+  * Connection URI template: `mongodb+srv://<username>:<password>@<cluster-domain>.mongodb.net`
+* **Authentication (Better-Auth):**
+  * Local Endpoint: `http://localhost:5000/api/auth`
+* **Tron Blockchain Verification & signing (TRC-20 USDT):**
+  * Shasta Testnet API: `https://api.shasta.trongrid.io`
+  * Mainnet API: `https://api.trongrid.io`
+* **Ethereum Blockchain Verification & RPC (ERC-20 USDT):**
+  * Etherscan API: `https://api.etherscan.io`
+  * Alchemy RPC Gateway template: `https://eth-mainnet.g.alchemy.com/v2/<api-key>`
+* **Payment Gateway Endpoints:**
+  * Juspay API: `https://api.juspay.in`
+  * Flutterwave API: `https://api.flutterwave.com`
