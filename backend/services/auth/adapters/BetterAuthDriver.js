@@ -153,6 +153,8 @@ export class BetterAuthDriver extends AuthDriver {
         baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === 'production' ? 'https://idubbl-backend.onrender.com' : 'http://localhost:5000'),
         trustedOrigins: [
           'https://idubbl-frontend.onrender.com',
+          'https://idubbl.com.ng',
+          'http://idubbl.com.ng',
           'http://localhost:5173',
           'http://localhost:5174',
           'http://localhost:5175',
