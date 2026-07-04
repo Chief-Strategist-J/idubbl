@@ -17,13 +17,86 @@ Our platform relies on a distributed architecture split into Frontend and Backen
 * **Frontend Hosting:** React + Vite static build hosted on [Render.com](https://render.com) or custom static hosts.
 * **Database:** MongoDB Atlas (Cloud database) for secure and scalable persistence.
 * **Websockets:** Socket.io for real-time score tracking, instant duel matching, and chat notifications.
-* **Blockchain Integrations:**
-  * **Tron Network (TRC-20):** Checked via TronGrid APIs; signed using `TronWeb`.
-  * **Ethereum Network (ERC-20):** Checked via Etherscan API; signed using `Ethers.js` with Alchemy RPC nodes.
+* **Supported Crypto:**
+  * **USDT (TRC-20):** Signed using `TronWeb` and tracked via the TronGrid API.
+  * **USDT (ERC-20):** Signed using `Ethers.js` with Alchemy RPC nodes, tracked via the Etherscan API.
+* **Caching System:**
+  * **L1 Cache (Hot):** Bounded In-Process Memory LRU Cache (max size of 1000 items) for ultra-fast, single-process reads.
+  * **L2 Cache (Warm):** Redis cache layer (`ioredis` client) equipped with a `RedisCircuitBreaker` wrapper that fails-safe to the L3 cache if Redis is down.
+  * **L3 Cache (Cold):** Persistent database-backed API caching storing values inside the `api_cache` MongoDB collection.
+* **Payment Gateways:**
+  * **Juspay:** Integrated adapter for processing card and local payment methods.
+  * **Flutterwave:** Integrated adapter for African payments and currency support.
+* **Authentication:**
+  * Powered by **Better-Auth** using standard email and password credentials, storing details inside the `user`, `session`, `account`, and `verification` MongoDB collections.
 
 ### 2. Stack Summary
 * **Frontend:** React, Zustand (State Management), TailwindCSS, React Router, Socket.io-client.
-* **Backend:** Node.js (ESM), Express, Socket.io, Better-Auth (Authentication framework), MongoDB driver.
+* **Backend:** Node.js (ESM), Express, Socket.io, Better-Auth, MongoDB driver, Redis (`ioredis`), Ethers.js, TronWeb.
+
+---
+
+## 🌲 Business Decision Trees
+
+### A. Deposit Verification Flow
+```
+               [ User submits TxHash ]
+                          │
+                          ▼
+                  [ Identify Network ]
+                   /              \
+                  /                \
+        [ TRC-20 (Tron) ]     [ ERC-20 (Ethereum) ]
+                │                      │
+                ▼                      ▼
+        Query TronGrid API     Query Etherscan API
+                │                      │
+                └──────────┬───────────┘
+                           │
+                           ▼
+                  [ Is Transaction Valid? ]
+                  /                     \
+                 /                       \
+             ( YES )                   ( NO )
+               │                         │
+               ▼                         ▼
+      [ Auto-Approve ]            [ Mark 'Pending' ]
+     Credit user wallet.                 │
+     status: 'approved'                  ▼
+                               [ Admin Manual Review ]
+                                /                 \
+                               /                   \
+                           ( Approve )          ( Reject )
+                               │                     │
+                               ▼                     ▼
+                       Credit user wallet.     Keep suspended.
+                       status: 'approved'      status: 'rejected'
+```
+
+### B. Withdrawal / Payout Flow
+```
+            [ User requests Withdrawal ]
+                         │
+                         ▼
+      [ Lock Winnings & Set Status 'Pending' ]
+                         │
+                         ▼
+              [ Admin Manual Review ]
+               /                 \
+              /                   \
+          ( Reject )           ( Approve )
+              │                     │
+              ▼                     ▼
+      Refund user wallet      [ Private Key Set? ]
+      (unlock balance).        /              \
+     status: 'rejected'       /                \
+                           ( YES )             ( NO )
+                             │                   │
+                             ▼                   ▼
+                     [ Live On-Chain ]    [ Demo Simulation ]
+                      Broad cast tx.      Generate simulated
+                     payout completed       USDT txHash.
+```
 
 ---
 
