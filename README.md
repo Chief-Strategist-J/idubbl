@@ -39,63 +39,29 @@ Our platform relies on a distributed architecture split into Frontend and Backen
 ## 🌲 Business Decision Trees
 
 ### A. Deposit Verification Flow
-```
-               [ User submits TxHash ]
-                          │
-                          ▼
-                  [ Identify Network ]
-                   /              \
-                  /                \
-        [ TRC-20 (Tron) ]     [ ERC-20 (Ethereum) ]
-                │                      │
-                ▼                      ▼
-        Query TronGrid API     Query Etherscan API
-                │                      │
-                └──────────┬───────────┘
-                           │
-                           ▼
-                  [ Is Transaction Valid? ]
-                  /                     \
-                 /                       \
-             ( YES )                   ( NO )
-               │                         │
-               ▼                         ▼
-      [ Auto-Approve ]            [ Mark 'Pending' ]
-     Credit user wallet.                 │
-     status: 'approved'                  ▼
-                               [ Admin Manual Review ]
-                                /                 \
-                               /                   \
-                           ( Approve )          ( Reject )
-                               │                     │
-                               ▼                     ▼
-                       Credit user wallet.     Keep suspended.
-                       status: 'approved'      status: 'rejected'
+```mermaid
+graph TD
+    A[User submits TxHash] --> B{Identify Network}
+    B -->|TRC-20| C[Query TronGrid API]
+    B -->|ERC-20| D[Query Etherscan API]
+    C --> E{Is Tx Valid?}
+    D --> E
+    E -->|Yes| F[Auto-Approve & Credit Wallet]
+    E -->|No| G[Mark 'Pending' & Await Admin Review]
+    G --> H{Admin Decision}
+    H -->|Approve| I[Credit Wallet & status = approved]
+    H -->|Reject| J[Keep Suspended & status = rejected]
 ```
 
 ### B. Withdrawal / Payout Flow
-```
-            [ User requests Withdrawal ]
-                         │
-                         ▼
-      [ Lock Winnings & Set Status 'Pending' ]
-                         │
-                         ▼
-              [ Admin Manual Review ]
-               /                 \
-              /                   \
-          ( Reject )           ( Approve )
-              │                     │
-              ▼                     ▼
-      Refund user wallet      [ Private Key Set? ]
-      (unlock balance).        /              \
-     status: 'rejected'       /                \
-                           ( YES )             ( NO )
-                             │                   │
-                             ▼                   ▼
-                     [ Live On-Chain ]    [ Demo Simulation ]
-                      Broad cast tx.      Generate simulated
-                     payout completed       USDT txHash.
+```mermaid
+graph TD
+    A[User requests Withdrawal] --> B[Lock Winnings & Set Status 'Pending']
+    B --> C{Admin Manual Review}
+    C -->|Reject| D[Refund Winnings & status = rejected]
+    C -->|Approve| E{Hot Wallet Key Configured?}
+    E -->|Yes - Live| F[On-Chain Payout & Broadcast Tx]
+    E -->|No - Demo| G[Generate Simulated USDT TxHash]
 ```
 
 ---
