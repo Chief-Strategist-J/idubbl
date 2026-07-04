@@ -393,16 +393,18 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
     const updateQuery = {};
     updateQuery[targetType] = Number(amount);
 
+    const setOnInsertFields = {
+      lockedBalance: 0,
+      pendingWithdrawals: 0
+    };
+    if (targetType !== 'depositBalance') setOnInsertFields.depositBalance = 0;
+    if (targetType !== 'winningsBalance') setOnInsertFields.winningsBalance = 0;
+
     const updateResult = await walletCol.updateOne(
       { userId: resolvedUserId },
       { 
         $inc: updateQuery,
-        $setOnInsert: {
-          depositBalance: targetType === 'depositBalance' ? 0 : 0,
-          winningsBalance: targetType === 'winningsBalance' ? 0 : 0,
-          lockedBalance: 0,
-          pendingWithdrawals: 0
-        }
+        $setOnInsert: setOnInsertFields
       },
       { upsert: true }
     );
@@ -442,7 +444,7 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error manual top up admin:', error);
-    res.status(500).json({ error: 'Database error topping up user account' });
+    res.status(500).json({ error: 'Database error topping up user account', details: error.message });
   }
 });
 

@@ -9,22 +9,24 @@ import adminRouter from '../routes/admin.js';
 const app = express();
 app.use(express.json());
 
-// Mock Admin Auth Middleware to bypass session checks for unit tests
-app.use((req, res, next) => {
-  req.user = {
-    id: 'mock_admin_id',
-    role: 'admin',
-    email: 'admin@example.com'
-  };
-  next();
-});
-
+// Set header to bypass auth using req.headers['x-user-id'] checked in adminAuth
 app.use('/api/admin', adminRouter);
 
 test('Admin Manual Top-up Flow Integration Test', async () => {
   const db = await getDb();
   
   const testUserId = 'test_topup_user_' + Date.now();
+  const testAdminId = 'test_admin_id_' + Date.now();
+
+  // Create an admin user in DB
+  await db.collection('user').insertOne({
+    id: testAdminId,
+    email: `admin_${Date.now()}@example.com`,
+    name: 'Test Admin User',
+    role: 'admin',
+    status: 'active',
+    createdAt: new Date()
+  });
 
   // Create a player user
   await db.collection('user').insertOne({
@@ -49,6 +51,7 @@ test('Admin Manual Top-up Flow Integration Test', async () => {
     // 1. Test top-up of depositBalance
     const res1 = await supertest(app)
       .post(`/api/admin/users/${testUserId}/topup`)
+      .set('x-user-id', testAdminId)
       .send({
         amount: 25.5,
         balanceType: 'depositBalance',
@@ -70,11 +73,12 @@ test('Admin Manual Top-up Flow Integration Test', async () => {
     assert.ok(tx, 'Manual topup transaction should be logged');
     assert.strictEqual(tx.amount, 25.5);
     assert.strictEqual(tx.balanceType, 'depositBalance');
-    assert.strictEqual(tx.adminId, 'mock_admin_id');
+    assert.strictEqual(tx.adminId, testAdminId);
 
     // 3. Test top-up of winningsBalance
     const res2 = await supertest(app)
       .post(`/api/admin/users/${testUserId}/topup`)
+      .set('x-user-id', testAdminId)
       .send({
         amount: 15,
         balanceType: 'winningsBalance',
@@ -89,6 +93,7 @@ test('Admin Manual Top-up Flow Integration Test', async () => {
     // 4. Test invalid balance type validation
     const resInvalidType = await supertest(app)
       .post(`/api/admin/users/${testUserId}/topup`)
+      .set('x-user-id', testAdminId)
       .send({
         amount: 10,
         balanceType: 'invalidBalanceType'
@@ -98,6 +103,7 @@ test('Admin Manual Top-up Flow Integration Test', async () => {
     // 5. Test invalid amount validation
     const resInvalidAmount = await supertest(app)
       .post(`/api/admin/users/${testUserId}/topup`)
+      .set('x-user-id', testAdminId)
       .send({
         amount: -5,
         balanceType: 'depositBalance'
@@ -106,7 +112,7 @@ test('Admin Manual Top-up Flow Integration Test', async () => {
 
   } finally {
     // Clean up database modifications
-    await db.collection('user').deleteOne({ id: testUserId });
+    await db.collection('user').deleteMany({ id: { $in: [testUserId, testAdminId] } });
     await db.collection('wallets').deleteOne({ userId: testUserId });
     await db.collection('transactions').deleteMany({ userId: testUserId });
   }

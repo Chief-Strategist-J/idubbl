@@ -3,54 +3,18 @@ import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../shared/components/ui/index.js';
 import useWalletStore from '../../../../shared/store/walletStore.js';
 
-const COLUMNS = (onSuspend) => [
-  { key: 'id', label: 'ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{(v || row._id || '').substring(0, 8)}</code> },
-  { key: 'name', label: 'Name', render: (_, row) => row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'No Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'referralCode', label: 'Ref Code', render: (v) => v ? <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-display)', fontSize: '0.85rem' }}>{v}</strong> : '—' },
-  { key: 'referredBy', label: 'Referred By', render: (v) => v ? <code style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>{v}</code> : '—' },
-  {
-    key: 'referredUsersList',
-    label: 'Referrals (Total / Funded)',
-    render: (v) => {
-      const list = v || [];
-      const fundedCount = list.filter(r => r.funded).length;
-      return (
-        <span style={{ fontSize: '0.85rem' }}>
-          <strong>{list.length}</strong> referred / <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{fundedCount}</span> funded
-        </span>
-      );
-    }
-  },
-  { 
-    key: 'balances', 
-    label: 'Balances (USDT)', 
-    render: (v) => v ? (
-      <div style={{ fontSize: '0.85rem' }}>
-        <span style={{ color: 'var(--accent-green)' }}>{v.availableBalance || 0}</span> avail / <span style={{ color: 'var(--text-muted)' }}>{v.lockedBalance || 0}</span> lock / <span style={{ color: 'var(--accent-warning)' }}>{v.pendingWithdrawals || 0}</span> pend
-      </div>
-    ) : '—' 
-  },
-  { key: 'role', label: 'Role', render: (v) => <Badge status={v === 'admin' ? 'approved' : 'pending'} label={v} /> },
-  { key: 'status', label: 'Status', render: (v) => <Badge status={v || 'active'} /> },
-  { key: 'createdAt', label: 'Joined', render: (v) => new Date(v).toLocaleDateString() },
-  {
-    key: 'actions', label: 'Actions',
-    render: (_, row) => {
-      const status = row.status || 'active';
-      return (
-        <Button variant={status === 'active' ? 'danger' : 'secondary'} onClick={() => onSuspend(row.id || row._id)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
-          {status === 'active' ? 'Suspend' : 'Reactivate'}
-        </Button>
-      );
-    },
-  },
-];
-
 export default function AdminUsersPage() {
-  const { adminUsers, fetchAdminUsers, loading } = useWalletStore();
+  const { adminUsers, fetchAdminUsers, loading, manualTopup } = useWalletStore();
   const [search, setSearch] = useState('');
   const [localUsers, setLocalUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [topupAmount, setTopupAmount] = useState('');
+  const [balanceType, setBalanceType] = useState('depositBalance');
+  const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
+  const [topupLoading, setTopupLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     fetchAdminUsers();
@@ -72,6 +36,90 @@ export default function AdminUsersPage() {
       })
     );
   };
+
+  const handleTopupSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    if (!topupAmount || isNaN(Number(topupAmount)) || Number(topupAmount) <= 0) {
+      setErrorMsg('Please enter a valid positive amount.');
+      return;
+    }
+
+    setTopupLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const res = await manualTopup(selectedUser.id || selectedUser._id, {
+      amount: Number(topupAmount),
+      balanceType,
+      reference,
+      notes
+    });
+
+    setTopupLoading(false);
+    if (res.success) {
+      setSuccessMsg(res.message || 'Account successfully topped up!');
+      setTopupAmount('');
+      setReference('');
+      setNotes('');
+      // Delay closing modal slightly so user sees success message
+      setTimeout(() => {
+        setSelectedUser(null);
+        setSuccessMsg('');
+      }, 1500);
+    } else {
+      setErrorMsg(res.error || 'Failed to complete top up.');
+    }
+  };
+
+  const COLUMNS = [
+    { key: 'id', label: 'ID', render: (v, row) => <code style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{(v || row._id || '').substring(0, 8)}</code> },
+    { key: 'name', label: 'Name', render: (_, row) => row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'No Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'referralCode', label: 'Ref Code', render: (v) => v ? <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-display)', fontSize: '0.85rem' }}>{v}</strong> : '—' },
+    { key: 'referredBy', label: 'Referred By', render: (v) => v ? <code style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>{v}</code> : '—' },
+    {
+      key: 'referredUsersList',
+      label: 'Referrals (Total / Funded)',
+      render: (v) => {
+        const list = v || [];
+        const fundedCount = list.filter(r => r.funded).length;
+        return (
+          <span style={{ fontSize: '0.85rem' }}>
+            <strong>{list.length}</strong> referred / <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{fundedCount}</span> funded
+          </span>
+        );
+      }
+    },
+    { 
+      key: 'balances', 
+      label: 'Balances (USDT)', 
+      render: (v) => v ? (
+        <div style={{ fontSize: '0.85rem' }}>
+          <span style={{ color: 'var(--accent-green)' }}>{v.availableBalance || 0}</span> avail / <span style={{ color: 'var(--text-muted)' }}>{v.lockedBalance || 0}</span> lock / <span style={{ color: 'var(--accent-warning)' }}>{v.pendingWithdrawals || 0}</span> pend
+        </div>
+      ) : '—' 
+    },
+    { key: 'role', label: 'Role', render: (v) => <Badge status={v === 'admin' ? 'approved' : 'pending'} label={v} /> },
+    { key: 'status', label: 'Status', render: (v) => <Badge status={v || 'active'} /> },
+    { key: 'createdAt', label: 'Joined', render: (v) => new Date(v).toLocaleDateString() },
+    {
+      key: 'actions', label: 'Actions',
+      render: (_, row) => {
+        const status = row.status || 'active';
+        return (
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="primary" onClick={() => setSelectedUser(row)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
+              Top Up
+            </Button>
+            <Button variant={status === 'active' ? 'danger' : 'secondary'} onClick={() => toggleSuspend(row.id || row._id)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
+              {status === 'active' ? 'Suspend' : 'Reactivate'}
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
 
   const filtered = localUsers.filter((u) => {
     const name = u.name || `${u.firstName || ''} ${u.lastName || ''}`;
@@ -107,9 +155,81 @@ export default function AdminUsersPage() {
             <span>Loading users...</span>
           </div>
         ) : (
-          <Table columns={COLUMNS(toggleSuspend)} rows={filtered} emptyMessage="No users found." />
+          <Table columns={COLUMNS} rows={filtered} emptyMessage="No users found." />
         )}
       </Card>
+
+      {/* Manual Top-up Modal Dialog */}
+      {selectedUser && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: 'var(--card-bg, #1a1a1a)', border: '1px solid var(--border, #333)', borderRadius: '12px', padding: '2rem', width: '90%', maxWidth: '500px', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text, #fff)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.25rem', fontWeight: 700 }}>Manual Top Up</h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary, #aaa)', marginBottom: '1.5rem' }}>
+              Crediting account for: <strong>{selectedUser.name || selectedUser.email}</strong>
+            </p>
+
+            <form onSubmit={handleTopupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount (USDT)</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  placeholder="0.00"
+                  value={topupAmount}
+                  onChange={(e) => setTopupAmount(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Balance Target</label>
+                <select
+                  value={balanceType}
+                  onChange={(e) => setBalanceType(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                >
+                  <option value="depositBalance">Deposit Balance (e.g. Crypto Buy/Deposits)</option>
+                  <option value="winningsBalance">Winnings Balance (e.g. Manual adjustments)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Reference / Tx Hash</label>
+                <input
+                  type="text"
+                  placeholder="e.g. TRON transaction hash or payment reference"
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Admin Notes</label>
+                <textarea
+                  placeholder="Reason for manual credit, e.g. 'Manually verified TRC20 deposit'"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem', minHeight: '60px', resize: 'vertical' }}
+                />
+              </div>
+
+              {errorMsg && <div style={{ color: 'var(--accent-danger, #ff4d4d)', fontSize: '0.875rem', fontWeight: 500 }}>{errorMsg}</div>}
+              {successMsg && <div style={{ color: 'var(--accent-green, #4dff4d)', fontSize: '0.875rem', fontWeight: 500 }}>{successMsg}</div>}
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                <Button type="button" variant="secondary" onClick={() => setSelectedUser(null)} disabled={topupLoading}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" disabled={topupLoading}>
+                  {topupLoading ? 'Processing...' : 'Confirm Top Up'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

@@ -475,6 +475,30 @@ const useWalletStore = create((set, get) => ({
       console.error('Error rejecting withdrawal:', error);
     }
   },
+
+  manualTopup: async (userId, data) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    try {
+      const response = await fetch(`${ADMIN_BASE_URL}/users/${userId}/topup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(currentUserId ? { 'x-user-id': currentUserId } : {})
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+      const json = await response.json();
+      if (json.success) {
+        await get().fetchAdminUsers();
+        return { success: true, message: json.message };
+      }
+      return { success: false, error: json.error || 'Failed to top up account' };
+    } catch (error) {
+      console.error('Error in manualTopup store call:', error);
+      return { success: false, error: 'Network error performing manual top-up' };
+    }
+  },
 }));
 
 export default useWalletStore;
