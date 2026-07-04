@@ -214,33 +214,37 @@ export default function SupportPage() {
                   <div>
                     <strong style={{ color: 'var(--text-primary)' }}>Email:</strong>
                     <br />
-                    <a href="mailto:support@idubbl.com" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>support@idubbl.com</a>
+                    <a href="mailto:Support@idubbl.com.ng" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>Support@idubbl.com.ng</a>
+                    <br />
+                    <a href="mailto:info@swaddigitalsolutions.com" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>info@swaddigitalsolutions.com</a>
                   </div>
                   <div>
-                    <strong style={{ color: 'var(--text-primary)' }}>Support Hours:</strong>
+                    <strong style={{ color: 'var(--text-primary)' }}>Phone:</strong>
                     <br />
-                    Monday – Friday
-                    <br />
-                    9:00 AM – 6:00 PM
+                    <a href="tel:+2347011914628" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>+234 701 191 4628</a>
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--text-primary)' }}>Global Offices:</strong>
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.25rem', borderLeft: '2px solid var(--border)' }}>
+                      Lagos, Nigeria<br />
+                      London, UK<br />
+                      New York, USA
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.5rem' }}>Before Contacting Support</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                Please include:
-              </p>
-              <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-                <li>Your registered email or phone number</li>
-                <li>Transaction reference (if applicable)</li>
-                <li>Match ID (if applicable)</li>
-                <li>A description of the issue</li>
-              </ul>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.75rem', fontStyle: 'italic' }}>
-                We aim to respond as quickly as possible and provide clear assistance.
-              </p>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.5rem' }}>Before Contacting Support</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                  Please include your registered email/phone and transaction details.
+                </p>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                © 2026 SWAD Digital Solutions Ltd. All rights reserved.
+              </div>
             </div>
           </div>
         </Card>
