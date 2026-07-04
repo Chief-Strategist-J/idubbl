@@ -1,11 +1,22 @@
 User-agent: *
 Allow: /
 
-# Block auth/dashboard/admin pages from indexing
+# Block auth/dashboard/admin/private player pages from indexing
 Disallow: /dashboard
 Disallow: /admin
+Disallow: /admin/
 Disallow: /profile
 Disallow: /wallet
+Disallow: /deposit
+Disallow: /withdraw
+Disallow: /lobby
+Disallow: /queue/
+Disallow: /game/
+Disallow: /result
+Disallow: /transactions
+Disallow: /notifications
+Disallow: /support
+Disallow: /chat
 Disallow: /kyc
 
 Sitemap: https://idubbl.com.ng/sitemap.xml
