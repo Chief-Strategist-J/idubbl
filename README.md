@@ -152,16 +152,13 @@ Before launching the service to real users:
 
 The system integrates with the following external services and API endpoints:
 
-* **Database (MongoDB Atlas):**
-  * Connection URI template: `mongodb+srv://<username>:<password>@<cluster-domain>.mongodb.net`
-* **Authentication (Better-Auth):**
-  * Local Endpoint: `http://localhost:5000/api/auth`
-* **Tron Blockchain Verification & signing (TRC-20 USDT):**
-  * Shasta Testnet API: `https://api.shasta.trongrid.io`
-  * Mainnet API: `https://api.trongrid.io`
-* **Ethereum Blockchain Verification & RPC (ERC-20 USDT):**
-  * Etherscan API: `https://api.etherscan.io`
-  * Alchemy RPC Gateway template: `https://eth-mainnet.g.alchemy.com/v2/<api-key>`
-* **Payment Gateway Endpoints:**
-  * Juspay API: `https://api.juspay.in`
-  * Flutterwave API: `https://api.flutterwave.com`
+| Service / Resource | Purpose | API Endpoint / URI Template | Reference Links |
+| :--- | :--- | :--- | :--- |
+| **MongoDB Atlas** | Primary Database | `mongodb+srv://<username>:<password>@<cluster-domain>.mongodb.net` | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) |
+| **Better-Auth** | Authentication Backend | `http://localhost:5000/api/auth` (Local) | [Better-Auth Docs](https://www.better-auth.com/) |
+| **TronGrid (Shasta)** | Tron Testnet Verification | `https://api.shasta.trongrid.io` | [TronGrid Shasta](https://trongrid.io) |
+| **TronGrid (Mainnet)** | Tron Mainnet Verification | `https://api.trongrid.io` | [TronGrid Mainnet](https://trongrid.io) |
+| **Etherscan** | Ethereum Transaction Verification | `https://api.etherscan.io` | [Etherscan](https://etherscan.io) |
+| **Alchemy RPC** | Ethereum RPC Gateway | `https://eth-mainnet.g.alchemy.com/v2/<api-key>` | [Alchemy](https://www.alchemy.com/) |
+| **Juspay** | Core Card Payment Gateway | `https://api.juspay.in` | [Juspay](https://juspay.in/) |
+| **Flutterwave** | Regional Payments | `https://api.flutterwave.com` | [Flutterwave](https://flutterwave.com/) |
