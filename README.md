@@ -119,12 +119,14 @@ Inside the `backend/scripts` directory are several useful utilities:
 
 * **Reset Database:** Drops all existing collections (accounts, wallets, transactions, sessions) to start from clean state.
   ```bash
-  node scripts/resetDb.js
+  node backend/scripts/resetDb.js
   ```
+  Script source: [resetDb.js](backend/scripts/resetDb.js)
 * **Seed Admin Account:** Registers and promotes a clean admin account.
   ```bash
-  node scripts/seedAdmin.js
+  node backend/scripts/seedAdmin.js
   ```
+  Script source: [seedAdmin.js](backend/scripts/seedAdmin.js)
 
 ---
 
@@ -133,7 +135,7 @@ Inside the `backend/scripts` directory are several useful utilities:
 We deploy backend & frontend services to **Render.com**. 
 
 ### 1. Render Deployment Config
-The configuration is declared in [render.yaml](file:///home/btpl-lap-22/live/idubbl/render.yaml):
+The configuration is declared in [render.yaml](render.yaml):
 * **Web Service (Backend):** Deployed via node entry point, listening on dynamic port environment variable.
 * **Static Site (Frontend):** Builds React bundle (`npm run build`) and publishes the `dist/` output.
 
