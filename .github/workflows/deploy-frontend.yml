@@ -87,7 +87,7 @@ jobs:
       # ── 8. Remove parking page & deploy via rsync ─────────────────────────
       - name: 🗑️ Remove parking page on server
         env:
-          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
         run: |
           sshpass -e ssh \
             -o StrictHostKeyChecking=no \
@@ -98,7 +98,7 @@ jobs:
 
       - name: 📤 Upload dist/ to server
         env:
-          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
         run: |
           sshpass -e rsync -avz --progress --delete \
             -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 21098' \
@@ -108,7 +108,7 @@ jobs:
       # ── 9. Fix permissions ─────────────────────────────────────────────────
       - name: 🔐 Fix permissions on server
         env:
-          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
         run: |
           sshpass -e ssh \
             -o StrictHostKeyChecking=no \
