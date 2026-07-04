@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Block auth/dashboard/admin pages from indexing
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /wallet
+Disallow: /kyc
+
+Sitemap: https://idubbl.com.ng/sitemap.xml
