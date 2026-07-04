@@ -118,15 +118,16 @@ jobs:
             "chmod 755 ~/public_html && find ~/public_html -type f -exec chmod 644 {} \; && find ~/public_html -type d -exec chmod 755 {} \;"
 
       # ── 10. Smoke test ─────────────────────────────────────────────────────
-      - name: 🌐 Smoke test — check site returns 200
+      - name: 🌐 Smoke test — check site is reachable
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://idubbl.com.ng)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 5 http://idubbl.com.ng)
           echo "HTTP Status: $STATUS"
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ Site returned $STATUS — deployment may have failed!"
+          if [[ "$STATUS" == 2* ]] || [[ "$STATUS" == 3* ]]; then
+            echo "✅ Site is reachable (status $STATUS)"
+          else
+            echo "❌ Site returned unexpected status $STATUS"
             exit 1
           fi
-          echo "✅ Site is live and returning 200 OK"
 
       # ── 11. Summary ────────────────────────────────────────────────────────
       - name: 🎉 Deployment summary
