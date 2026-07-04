@@ -176,8 +176,18 @@ export function cacheMiddleware() {
     const urlPath = req.originalUrl || req.url || '';
     const cleanPath = urlPath.split('?')[0];
 
-    const isCacheable = cleanPath === '/api/admin/settings/platform' || 
-                        cleanPath === '/health' || 
+    // Never cache auth or payment routes — always bypass
+    const isNeverCache = cleanPath.startsWith('/api/auth') ||
+                         cleanPath.startsWith('/api/payment');
+
+    if (isNeverCache) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      return next();
+    }
+
+    const isCacheable = cleanPath === '/api/admin/settings/platform' ||
+                        cleanPath === '/health' ||
                         cleanPath.startsWith('/api/v1/test/') ||
                         cleanPath.startsWith('/api/v2/test/');
 
