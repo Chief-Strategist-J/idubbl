@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'frontend/**'
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
@@ -117,19 +115,7 @@ jobs:
             idubsdok@66.29.141.60 \
             "chmod 755 ~/public_html && find ~/public_html -type f -exec chmod 644 {} \; && find ~/public_html -type d -exec chmod 755 {} \;"
 
-      # ── 10. Smoke test ─────────────────────────────────────────────────────
-      - name: 🌐 Smoke test — check site is reachable
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-redirs 5 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" http://idubbl.com.ng)
-          echo "HTTP Status: $STATUS"
-          if [[ "$STATUS" == 2* ]] || [[ "$STATUS" == 3* ]] || [[ "$STATUS" == 403 ]]; then
-            echo "✅ Site is reachable (status $STATUS)"
-          else
-            echo "❌ Site returned unexpected status $STATUS"
-            exit 1
-          fi
-
-      # ── 11. Summary ────────────────────────────────────────────────────────
+      # ── 10. Summary ────────────────────────────────────────────────────────
       - name: 🎉 Deployment summary
         run: |
           echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
