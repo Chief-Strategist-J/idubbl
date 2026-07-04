@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Plus, X } from 'lucide-react';
 import useChatStore from '../../../shared/store/chatStore.js';
 import ConversationItem from './ConversationItem.jsx';

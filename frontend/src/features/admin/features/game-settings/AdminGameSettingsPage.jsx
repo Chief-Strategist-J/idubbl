@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { Card, Button, PageHeader } from '../../../../shared/components/ui/index.js';
 import usePlatformStore, { ALL_GAMES } from '../../../../shared/store/platformStore.js';
@@ -48,11 +48,11 @@ export default function AdminGameSettingsPage() {
   const [showSecret, setShowSecret] = useState(false);
 
   const [kycRequired, setKycRequired] = useState(true);
-  const [kycLoading, setKycLoading] = useState(true);
+  const [, setKycLoading] = useState(true);
   const [kycSaved, setKycSaved] = useState(false);
   const [chatSaved, setChatSaved] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchPlatformSettings();
     const uid = user?.id || user?._id;
     if (!uid) return;

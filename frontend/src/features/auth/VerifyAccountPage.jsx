@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
@@ -15,7 +15,6 @@ export default function VerifyAccountPage() {
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [canResend, setCanResend] = useState(false);
   const [successToast, setSuccessToast] = useState(false);

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
-import { PageHeader, Card, Table, Badge, Button, Modal, SearchBar } from '../../../../shared/components/ui/index.js';
+import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../shared/components/ui/index.js';
 import useWalletStore from '../../../../shared/store/walletStore.js';
 
 const COLUMNS = (onApprove, onReject) => [
@@ -26,7 +26,7 @@ export default function AdminDepositsPage() {
   const { deposits, approveDeposit, rejectDeposit, fetchAdminDeposits, loading } = useWalletStore();
   const [search, setSearch] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchAdminDeposits();
   }, [fetchAdminDeposits]);
 

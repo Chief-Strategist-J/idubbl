@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from './shared/store/authStore.js';
 
@@ -50,7 +50,7 @@ function ScrollToTop() {
 }
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, user, sessionChecked } = useAuthStore();
+  const { isAuthenticated, user: _user, sessionChecked } = useAuthStore();
   if (!sessionChecked) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', background: 'var(--bg-darker)' }}>

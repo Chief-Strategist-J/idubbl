@@ -1,6 +1,6 @@
-import React from 'react';
+import { useEffect } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
-import { PageHeader, Card, Table, Badge, Button, Stat } from '../../../../shared/components/ui/index.js';
+import { PageHeader, Card, Table, Badge, Stat } from '../../../../shared/components/ui/index.js';
 import useMatchStore from '../../../../shared/store/matchStore.js';
 
 const COLUMNS = [
@@ -17,7 +17,7 @@ const COLUMNS = [
 export default function AdminMatchesPage() {
   const { matches, tiers, fetchAdminMatches, loading } = useMatchStore();
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchAdminMatches();
   }, [fetchAdminMatches]);
 

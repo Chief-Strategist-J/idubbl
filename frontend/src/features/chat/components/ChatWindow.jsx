@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, Users, Info, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Users, Info } from 'lucide-react';
 import useChatStore from '../../../shared/store/chatStore.js';
-import { getSocket } from '../../../shared/services/socketService.js';
 import MessageBubble from './MessageBubble.jsx';
 import MessageInput from './MessageInput.jsx';
 import GroupInfoPanel from './GroupInfoPanel.jsx';

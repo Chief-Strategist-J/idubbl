@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
       } else {
         setError(result.error || 'Access denied.');
       }
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       setError('An error occurred. Please try again.');
     }

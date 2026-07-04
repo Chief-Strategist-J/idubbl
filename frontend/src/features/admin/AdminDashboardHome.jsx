@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import AdminLayout from '../../shared/components/layout/AdminLayout.jsx';
 import { Stat, Card, PageHeader, Badge } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
 
 export default function AdminDashboardHome() {
-  const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, loading: walletLoading } = useWalletStore();
-  const { matches, tiers, fetchAdminMatches, loading: matchLoading } = useMatchStore();
+  const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, loading: _walletLoading } = useWalletStore();
+  const { matches, tiers, fetchAdminMatches, loading: _matchLoading } = useMatchStore();
 
   useEffect(() => {
     fetchAdminDeposits();
@@ -18,7 +18,7 @@ export default function AdminDashboardHome() {
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
   const pendingWithdrawals = withdrawals.filter((w) => w.status === 'pending').length;
   const activeMatches = matches.filter((m) => m.status === 'active').length;
-  const revenueToday = matches.filter((m) => m.status === 'completed').reduce((acc, m) => acc + m.rake, 0);
+  matches.filter((m) => m.status === 'completed').reduce((acc, m) => acc + m.rake, 0);
 
   const totalPersonalWallets = adminUsers.filter(u => u.personalWallets && (u.personalWallets.tron || u.personalWallets.ethereum)).length;
 

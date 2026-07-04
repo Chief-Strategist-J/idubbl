@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
@@ -37,7 +37,7 @@ export default function SignupPage() {
       } else {
         setErrors({ submit: result.error });
       }
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       setErrors({ submit: 'An error occurred during signup.' });
     }

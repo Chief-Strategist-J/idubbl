@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
 
 export default function ResetPasswordPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { resetPassword } = useAuthStore();
   const token = searchParams.get('token');
@@ -44,7 +43,7 @@ export default function ResetPasswordPage() {
       } else {
         setError(res.error);
       }
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       setError('An error occurred resetting your password.');
     }

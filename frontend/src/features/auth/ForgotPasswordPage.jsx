@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input, Card } from '../../shared/components/ui/index.js';
 import useAuthStore from '../../shared/store/authStore.js';
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(res.error);
       }
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       setError('An error occurred. Please try again.');
     }
