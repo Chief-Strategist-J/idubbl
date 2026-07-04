@@ -22,7 +22,8 @@ async function resetDb() {
     await client.connect();
     const db = client.db();
     
-    const collections = ['wallets', 'user', 'session', 'account', 'verification', 'transactions', 'matches', 'matchmaking_queue'];
+    const collectionsInfo = await db.listCollections().toArray();
+    const collections = collectionsInfo.map(c => c.name);
     
     console.log('Dropping collections...');
     for (const colName of collections) {

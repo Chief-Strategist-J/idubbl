@@ -360,5 +360,91 @@ router.post('/settings/platform', adminAuth, async (req, res) => {
   }
 });
 
+// 15. POST /api/admin/users/:userId/topup - Manual wallet top up (points/credit) for user accounts
+router.post('/users/:userId/topup', adminAuth, async (req, res) => {
+  const { userId } = req.params;
+  const { amount, balanceType, reference, notes } = req.body;
+
+  if (amount === undefined || isNaN(Number(amount)) || Number(amount) <= 0) {
+    return res.status(400).json({ error: 'Invalid top-up amount. Must be a positive number.' });
+  }
+
+  const targetType = balanceType || 'depositBalance';
+  if (!['depositBalance', 'winningsBalance'].includes(targetType)) {
+    return res.status(400).json({ error: 'Invalid balance type. Must be depositBalance or winningsBalance.' });
+  }
+
+  try {
+    const db = await getDb();
+    
+    // Find the user to verify they exist
+    const userQuery = userId.length === 24 
+      ? { $or: [{ _id: new ObjectId(userId) }, { id: userId }] }
+      : { id: userId };
+    const targetUser = await db.collection('user').findOne(userQuery);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const resolvedUserId = targetUser.id || targetUser._id.toString();
+
+    // Perform transaction update
+    const walletCol = db.collection('wallets');
+    const updateQuery = {};
+    updateQuery[targetType] = Number(amount);
+
+    const updateResult = await walletCol.updateOne(
+      { userId: resolvedUserId },
+      { 
+        $inc: updateQuery,
+        $setOnInsert: {
+          depositBalance: targetType === 'depositBalance' ? 0 : 0,
+          winningsBalance: targetType === 'winningsBalance' ? 0 : 0,
+          lockedBalance: 0,
+          pendingWithdrawals: 0
+        }
+      },
+      { upsert: true }
+    );
+
+    // Record the manual transaction in the transactions log
+    const transaction = {
+      userId: resolvedUserId,
+      amount: Number(amount),
+      type: 'manual_topup',
+      balanceType: targetType,
+      status: 'approved',
+      reference: reference || 'manual-admin-topup',
+      notes: notes || `Admin manually credited ${amount} to ${targetType}.`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      adminId: req.user.id || req.user._id.toString()
+    };
+
+    await db.collection('transactions').insertOne(transaction);
+
+    // Get the updated wallet to return new balances
+    const updatedWallet = await walletCol.findOne({ userId: resolvedUserId });
+
+    res.json({
+      success: true,
+      message: `Successfully topped up ${targetType} by ${amount} for user ${resolvedUserId}`,
+      data: {
+        userId: resolvedUserId,
+        creditedAmount: Number(amount),
+        balanceType: targetType,
+        wallet: {
+          depositBalance: updatedWallet.depositBalance,
+          winningsBalance: updatedWallet.winningsBalance,
+          availableBalance: (updatedWallet.depositBalance || 0) + (updatedWallet.winningsBalance || 0)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error manual top up admin:', error);
+    res.status(500).json({ error: 'Database error topping up user account' });
+  }
+});
+
 export default router;
 
