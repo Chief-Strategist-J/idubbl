@@ -1,0 +1,141 @@
+name: 🚀 Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to idubbl.com.ng
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node ──────────────────────────────────────────────────────
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # ── 3. Install dependencies ────────────────────────────────────────────
+      - name: 📦 Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # ── 4. Lint ────────────────────────────────────────────────────────────
+      - name: 🔍 Lint
+        working-directory: frontend
+        run: npm run lint --if-present
+        continue-on-error: true  # Don't block deploy on lint warnings
+
+      # ── 5. Build ───────────────────────────────────────────────────────────
+      - name: 🔨 Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://idubbl-backend.onrender.com
+        run: npm run build
+
+      # ── 6. Write .htaccess for SPA routing ────────────────────────────────
+      - name: 📝 Write .htaccess
+        run: |
+          cat > frontend/dist/.htaccess << 'HTEOF'
+          Options -MultiViews -Indexes
+          DirectoryIndex index.html
+
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+
+            # Don't rewrite actual files or directories
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+
+            # Rewrite everything else to index.html for React Router
+            RewriteRule ^ index.html [QSA,L]
+          </IfModule>
+
+          # Proper MIME types for JS modules
+          <IfModule mod_mime.c>
+            AddType application/javascript .js .mjs
+            AddType text/css .css
+          </IfModule>
+
+          # Cache static assets
+          <IfModule mod_expires.c>
+            ExpiresActive On
+            ExpiresByType text/html "access plus 0 seconds"
+            ExpiresByType application/javascript "access plus 1 year"
+            ExpiresByType text/css "access plus 1 year"
+            ExpiresByType image/jpeg "access plus 1 year"
+            ExpiresByType image/svg+xml "access plus 1 year"
+          </IfModule>
+          HTEOF
+
+      # ── 7. Install sshpass & rsync ─────────────────────────────────────────
+      - name: 🔧 Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      # ── 8. Remove parking page & deploy via rsync ─────────────────────────
+      - name: 🗑️ Remove parking page on server
+        env:
+          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -p 21098 \
+            idubsdok@66.29.141.60 \
+            "rm -f ~/public_html/parking-page.shtml"
+
+      - name: 📤 Upload dist/ to server
+        env:
+          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          sshpass -e rsync -avz --progress --delete \
+            -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 21098' \
+            frontend/dist/ \
+            idubsdok@66.29.141.60:~/public_html/
+
+      # ── 9. Fix permissions ─────────────────────────────────────────────────
+      - name: 🔐 Fix permissions on server
+        env:
+          SSH_PASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -p 21098 \
+            idubsdok@66.29.141.60 \
+            "chmod 755 ~/public_html && find ~/public_html -type f -exec chmod 644 {} \; && find ~/public_html -type d -exec chmod 755 {} \;"
+
+      # ── 10. Smoke test ─────────────────────────────────────────────────────
+      - name: 🌐 Smoke test — check site returns 200
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://idubbl.com.ng)
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Site returned $STATUS — deployment may have failed!"
+            exit 1
+          fi
+          echo "✅ Site is live and returning 200 OK"
+
+      # ── 11. Summary ────────────────────────────────────────────────────────
+      - name: 🎉 Deployment summary
+        run: |
+          echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 Live URL | http://idubbl.com.ng |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔧 Backend  | https://idubbl-backend.onrender.com |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Commit   | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 👤 Deployed by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
