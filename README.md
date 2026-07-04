@@ -8,6 +8,8 @@ The platform provides a player-facing game/wallet dashboard alongside a fully-fe
 
 ## 🛠️ Architecture & Tech Stack
 
+For a detailed deep-dive into transaction pipelines, internal/external wallets design, database schemas, and system flows, please refer to the [Architecture & Flow Documentation](ARCHITECTURE.md).
+
 Our platform relies on a distributed architecture split into Frontend and Backend layers:
 
 ### 1. Servers & Services
