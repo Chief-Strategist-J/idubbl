@@ -555,6 +555,7 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
+  try {
     const userIdHeader = req.headers['x-user-id'];
     const db = await getDb();
     
@@ -598,6 +599,7 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
+  try {
     const userIdHeader = req.headers['x-user-id'];
     const db = await getDb();
     
@@ -625,6 +627,7 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
+  try {
     const userIdHeader = req.headers['x-user-id'];
     const db = await getDb();
     
@@ -697,6 +700,7 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
+  try {
     const userIdHeader = req.headers['x-user-id'];
     const db = await getDb();
     
