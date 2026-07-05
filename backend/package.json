@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.6.19",
+    "@better-auth/passkey": "^1.6.23",
     "better-auth": "^1.6.19",
     "compression": "^1.8.1",
     "cors": "^2.8.6",

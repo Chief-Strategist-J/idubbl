@@ -225,6 +225,64 @@ const useAuthStore = create(
         }
         set({ user: null, isAuthenticated: false, loading: false, sessionChecked: true });
       },
+
+      signInWithSocial: async (provider) => {
+        set({ loading: true });
+        try {
+          const callbackURL = `${window.location.origin}/dashboard`;
+          const res = await fetch(`${AUTH_API}/sign-in/social`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider, callbackURL })
+          });
+          const data = await res.json();
+          set({ loading: false });
+          if (res.ok && data.url) {
+            window.location.href = data.url;
+            return { success: true };
+          }
+          return { success: false, error: data.message || 'Social sign-in initiation failed' };
+        } catch (err) {
+          console.error('Social login error:', err);
+          set({ loading: false });
+          return { success: false, error: 'Network error during social login' };
+        }
+      },
+
+      registerPasskey: async (name = 'My Device') => {
+        try {
+          const { authClient } = await import('../utils/authClient.js');
+          const result = await authClient.passkey.addPasskey({ name });
+          if (result?.error) {
+            return { success: false, error: result.error.message || 'Failed to add passkey' };
+          }
+          return { success: true };
+        } catch (err) {
+          console.error('Passkey registration error:', err);
+          return { success: false, error: err.message || 'Error registering passkey' };
+        }
+      },
+
+      loginWithPasskey: async (email) => {
+        set({ loading: true });
+        try {
+          const { authClient } = await import('../utils/authClient.js');
+          const result = await authClient.signIn.passkey({
+            email,
+            callbackURL: `${window.location.origin}/dashboard`
+          });
+          set({ loading: false });
+          if (result?.error) {
+            return { success: false, error: result.error.message || 'Passkey login failed' };
+          }
+          await get().checkSession();
+          return { success: true };
+        } catch (err) {
+          console.error('Passkey login error:', err);
+          set({ loading: false });
+          return { success: false, error: err.message || 'Error logging in with passkey' };
+        }
+      },
     }),
     {
       name: 'idubbl-auth',          // localStorage key

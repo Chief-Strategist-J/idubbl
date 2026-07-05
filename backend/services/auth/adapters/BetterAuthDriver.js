@@ -5,7 +5,8 @@ import { toNodeHandler } from 'better-auth/node';
 import { APIError } from 'better-auth/api';
 import { AuthDriver } from '../ports/AuthDriver.js';
 import { sendEmail } from '../../emailService.js';
-import { bearer } from 'better-auth/plugins';
+import { bearer, genericOAuth } from 'better-auth/plugins';
+import { passkey } from '@better-auth/passkey';
 
 export class BetterAuthDriver extends AuthDriver {
   constructor(config) {
@@ -83,6 +84,22 @@ export class BetterAuthDriver extends AuthDriver {
         },
         plugins: [
           bearer(),
+          passkey(),
+          ...(process.env.SSO_CLIENT_ID ? [
+            genericOAuth({
+              config: [
+                {
+                  providerId: process.env.SSO_PROVIDER_ID || 'sso',
+                  clientId: process.env.SSO_CLIENT_ID,
+                  clientSecret: process.env.SSO_CLIENT_SECRET || '',
+                  discoveryUrl: process.env.SSO_DISCOVERY_URL,
+                  authorizationEndpoint: process.env.SSO_AUTHORIZATION_ENDPOINT,
+                  tokenEndpoint: process.env.SSO_TOKEN_ENDPOINT,
+                  userInfoEndpoint: process.env.SSO_USER_INFO_ENDPOINT,
+                }
+              ]
+            })
+          ] : []),
           {
             id: 'admin-roles',
             schema: {
@@ -195,6 +212,23 @@ export class BetterAuthDriver extends AuthDriver {
               `
             });
           }
+        },
+        socialProviders: {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+            enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+          },
+          apple: {
+            clientId: process.env.APPLE_CLIENT_ID || '',
+            clientSecret: process.env.APPLE_CLIENT_SECRET || '',
+            enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
+          },
+          microsoft: {
+            clientId: process.env.MICROSOFT_CLIENT_ID || '',
+            clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
+            enabled: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET),
+          },
         },
       };
 
