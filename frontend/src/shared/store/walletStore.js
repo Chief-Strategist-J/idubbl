@@ -558,6 +558,22 @@ const useWalletStore = create((set, get) => ({
       return { success: false, error: 'Network error resolving ticket' };
     }
   },
+
+  currencies: [],
+
+  fetchCurrencies: async () => {
+    try {
+      const res = await fetch(`${apiBase}/api/payment/currencies`, {
+        credentials: 'include'
+      });
+      const json = await res.json();
+      if (json.success) {
+        set({ currencies: json.data || [] });
+      }
+    } catch (error) {
+      console.error('Error fetching currencies from DB:', error);
+    }
+  },
 }));
 
 export default useWalletStore;

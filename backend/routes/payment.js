@@ -7,6 +7,18 @@ const router = express.Router();
 
 const IDUBBU_RATE = 1;
 
+// GET /api/payment/currencies - Retrieve supported currencies from database
+router.get('/currencies', async (req, res) => {
+  try {
+    const db = await getDb();
+    const list = await db.collection('currencies').find({}).toArray();
+    res.json({ success: true, data: list });
+  } catch (error) {
+    console.error('Error fetching currencies:', error);
+    res.status(500).json({ success: false, error: 'Database error fetching currencies.' });
+  }
+});
+
 async function getUserIdFromReq(req) {
   try {
     const userIdHeader = req.headers['x-user-id'];

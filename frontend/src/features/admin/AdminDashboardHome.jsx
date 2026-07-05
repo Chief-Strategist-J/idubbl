@@ -5,7 +5,7 @@ import useWalletStore from '../../shared/store/walletStore.js';
 import useMatchStore from '../../shared/store/matchStore.js';
 
 export default function AdminDashboardHome() {
-  const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, loading: _walletLoading } = useWalletStore();
+  const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, currencies, fetchCurrencies, loading: _walletLoading } = useWalletStore();
   const { matches, tiers, fetchAdminMatches, loading: _matchLoading } = useMatchStore();
   const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92 });
   const [loadingRates, setLoadingRates] = useState(true);
@@ -15,24 +15,31 @@ export default function AdminDashboardHome() {
     fetchAdminWithdrawals();
     fetchAdminMatches();
     fetchAdminUsers();
+    fetchCurrencies();
     
     fetch('https://api.exchangerate-api.com/v4/latest/USD')
       .then(res => res.json())
       .then(data => {
         if (data && data.rates) {
-          setExchangeRates({
-            USD: 1,
-            NGN: data.rates.NGN || 1500,
-            GHS: data.rates.GHS || 15,
-            KES: data.rates.KES || 130,
-            ZAR: data.rates.ZAR || 18,
-            EUR: data.rates.EUR || 0.92
-          });
+          const updatedRates = { USD: 1 };
+          if (currencies && currencies.length > 0) {
+            currencies.forEach(c => {
+              updatedRates[c.value] = data.rates[c.value] || 1;
+            });
+          } else {
+            updatedRates.NGN = data.rates.NGN || 1500;
+            updatedRates.GHS = data.rates.GHS || 15;
+            updatedRates.KES = data.rates.KES || 130;
+            updatedRates.ZAR = data.rates.ZAR || 18;
+            updatedRates.EUR = data.rates.EUR || 0.92;
+            updatedRates.GBP = data.rates.GBP || 0.79;
+          }
+          setExchangeRates(updatedRates);
         }
       })
       .catch(err => console.warn(err))
       .finally(() => setLoadingRates(false));
-  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches, fetchAdminUsers]);
+  }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches, fetchAdminUsers, fetchCurrencies, currencies.length]);
 
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
   const pendingWithdrawals = withdrawals.filter((w) => w.status === 'pending').length;
@@ -72,7 +79,11 @@ export default function AdminDashboardHome() {
         <Card style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.50rem' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, fontWeight: 600 }}>USD Exchange Rates (Reference for Fiat/Bank payouts)</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.5rem', marginTop: '0.25rem' }}>
-            {[
+            {(currencies.length > 0 ? currencies.map(c => ({
+              code: c.value,
+              symbol: c.value === 'NGN' ? '₦' : c.value === 'GHS' ? 'GH₵' : c.value === 'KES' ? 'KSh' : c.value === 'ZAR' ? 'R' : c.value === 'EUR' ? '€' : c.value === 'GBP' ? '£' : c.value === 'TZS' ? 'TSh' : c.value === 'UGX' ? 'USh' : c.value === 'RWF' ? 'RF' : c.value === 'ZMW' ? 'ZK' : c.value === 'XOF' ? 'CFA' : '$',
+              label: c.label.split(' - ')[1] || c.label
+            })) : [
               { code: 'NGN', symbol: '₦', label: 'Nigeria' },
               { code: 'GHS', symbol: 'GH₵', label: 'Ghana' },
               { code: 'KES', symbol: 'KSh', label: 'Kenya' },
@@ -84,7 +95,7 @@ export default function AdminDashboardHome() {
               { code: 'XOF', symbol: 'CFA', label: 'West CFA' },
               { code: 'EUR', symbol: '€', label: 'Euro' },
               { code: 'GBP', symbol: '£', label: 'GBP' }
-            ].map(curr => {
+            ]).map(curr => {
               const rate = exchangeRates[curr.code] || 1;
               return (
                 <div key={curr.code} style={{ padding: '0.4rem 0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>

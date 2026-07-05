@@ -66,6 +66,50 @@ async function migrate() {
       console.log(`⚠️ User with email "${targetAdminEmail}" not found in database. Create the account on the frontend first, then run this script again to promote them.`);
     }
 
+    // --- 3. Seed / Populate Currencies Collection ---
+    console.log('Seeding currencies collection...');
+    const currenciesCol = db.collection('currencies');
+    
+    const currenciesList = [
+      { value: 'USD', label: 'USD - US Dollar', flag: '🇺🇸' },
+      { value: 'NGN', label: 'NGN - Nigerian Naira', flag: '🇳🇬' },
+      { value: 'GHS', label: 'GHS - Ghanaian Cedi', flag: '🇬🇭' },
+      { value: 'KES', label: 'KES - Kenyan Shilling', flag: '🇰🇪' },
+      { value: 'ZAR', label: 'ZAR - South African Rand', flag: '🇿🇦' },
+      { value: 'EUR', label: 'EUR - Euro', flag: '🇪🇺' },
+      { value: 'GBP', label: 'GBP - British Pound', flag: '🇬🇧' },
+      { value: 'TZS', label: 'TZS - Tanzanian Shilling', flag: '🇹🇿' },
+      { value: 'UGX', label: 'UGX - Ugandan Shilling', flag: '🇺🇬' },
+      { value: 'RWF', label: 'RWF - Rwandan Franc', flag: '🇷🇼' },
+      { value: 'ZMW', label: 'ZMW - Zambian Kwacha', flag: '🇿🇲' },
+      { value: 'XOF', label: 'XOF - West African CFA', flag: '🇨🇮' },
+      { value: 'XAF', label: 'XAF - Central African CFA', flag: '🇨🇲' },
+      { value: 'CAD', label: 'CAD - Canadian Dollar', flag: '🇨🇦' },
+      { value: 'AUD', label: 'AUD - Australian Dollar', flag: '🇦🇺' },
+      { value: 'INR', label: 'INR - Indian Rupee', flag: '🇮🇳' },
+      { value: 'AED', label: 'AED - UAE Dirham', flag: '🇦🇪' },
+      { value: 'CNY', label: 'CNY - Chinese Yuan', flag: '🇨🇳' },
+      { value: 'SLL', label: 'SLL - Sierra Leonean Leone', flag: '🇸🇱' },
+      { value: 'LRD', label: 'LRD - Liberian Dollar', flag: '🇱🇷' },
+      { value: 'MWK', label: 'MWK - Malawian Kwacha', flag: '🇲🇼' },
+      { value: 'MAD', label: 'MAD - Moroccan Dirham', flag: '🇲🇦' },
+      { value: 'EGP', label: 'EGP - Egyptian Pound', flag: '🇪🇬' },
+      { value: 'CVE', label: 'CVE - Cape Verdean Escudo', flag: '🇨🇻' },
+      { value: 'MUR', label: 'MUR - Mauritian Rupee', flag: '🇲🇺' },
+      { value: 'GMD', label: 'GMD - Gambian Dalasi', flag: '🇬🇲' },
+      { value: 'BIF', label: 'BIF - Burundian Franc', flag: '🇧🇮' },
+      { value: 'CDF', label: 'CDF - Congolese Franc', flag: '🇨🇩' }
+    ];
+
+    for (const currency of currenciesList) {
+      await currenciesCol.updateOne(
+        { value: currency.value },
+        { $set: currency },
+        { upsert: true }
+      );
+    }
+    console.log('✅ Currencies collection seeded successfully.');
+
   } catch (error) {
     console.error('❌ Migration failed:', error);
   } finally {

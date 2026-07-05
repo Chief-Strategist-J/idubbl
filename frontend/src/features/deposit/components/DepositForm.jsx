@@ -22,10 +22,7 @@ import useAuthStore from '../../../shared/store/authStore.js';
 import { PLATFORM_WALLET, SUPPORTED_NETWORKS, MIN_DEPOSIT } from '../../../shared/mock/index.js';
 
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
-const IDUBBU_RATE = 1;
-
-// Full list of currencies officially supported by Flutterwave with custom flag emojis
-const CURRENCY_LIST = [
+const FALLBACK_CURRENCY_LIST = [
   { value: 'USD', label: 'USD - US Dollar', flag: '🇺🇸' },
   { value: 'NGN', label: 'NGN - Nigerian Naira', flag: '🇳🇬' },
   { value: 'GHS', label: 'GHS - Ghanaian Cedi', flag: '🇬🇭' },
@@ -38,29 +35,16 @@ const CURRENCY_LIST = [
   { value: 'RWF', label: 'RWF - Rwandan Franc', flag: '🇷🇼' },
   { value: 'ZMW', label: 'ZMW - Zambian Kwacha', flag: '🇿🇲' },
   { value: 'XOF', label: 'XOF - West African CFA', flag: '🇨🇮' },
-  { value: 'XAF', label: 'XAF - Central African CFA', flag: '🇨🇲' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar', flag: '🇨🇦' },
-  { value: 'AUD', label: 'AUD - Australian Dollar', flag: '🇦🇺' },
-  { value: 'INR', label: 'INR - Indian Rupee', flag: '🇮🇳' },
-  { value: 'AED', label: 'AED - UAE Dirham', flag: '🇦🇪' },
-  { value: 'CNY', label: 'CNY - Chinese Yuan', flag: '🇨🇳' },
-  { value: 'SLL', label: 'SLL - Sierra Leonean Leone', flag: '🇸🇱' },
-  { value: 'LRD', label: 'LRD - Liberian Dollar', flag: '🇱🇷' },
-  { value: 'MWK', label: 'MWK - Malawian Kwacha', flag: '🇲🇼' },
-  { value: 'MAD', label: 'MAD - Moroccan Dirham', flag: '🇲🇦' },
-  { value: 'EGP', label: 'EGP - Egyptian Pound', flag: '🇪🇬' },
-  { value: 'CVE', label: 'CVE - Cape Verdean Escudo', flag: '🇨🇻' },
-  { value: 'MUR', label: 'MUR - Mauritian Rupee', flag: '🇲🇺' },
-  { value: 'GMD', label: 'GMD - Gambian Dalasi', flag: '🇬🇲' },
-  { value: 'BIF', label: 'BIF - Burundian Franc', flag: '🇧🇮' },
-  { value: 'CDF', label: 'CDF - Congolese Franc', flag: '🇨🇩' }
+  { value: 'XAF', label: 'XAF - Central African CFA', flag: '🇨🇲' }
 ];
 
 export default function DepositForm() {
-  const { submitDeposit } = useWalletStore();
+  const { submitDeposit, currencies, fetchCurrencies } = useWalletStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   
+  const CURRENCY_LIST = currencies.length > 0 ? currencies : FALLBACK_CURRENCY_LIST;
+
   const [method, setMethod] = useState('crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
   const [flwCurrency, setFlwCurrency] = useState('USD');
@@ -76,6 +60,10 @@ export default function DepositForm() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    fetchCurrencies();
+  }, [fetchCurrencies]);
 
   useEffect(() => {
     setLoadingRates(true);

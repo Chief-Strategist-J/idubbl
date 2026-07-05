@@ -5,7 +5,7 @@ import useWalletStore from '../../../../shared/store/walletStore.js';
 import useAuthStore from '../../../../shared/store/authStore.js';
 
 export default function AdminWithdrawalsPage() {
-  const { withdrawals, approveWithdrawal, rejectWithdrawal, fetchAdminWithdrawals, loading } = useWalletStore();
+  const { withdrawals, approveWithdrawal, rejectWithdrawal, fetchAdminWithdrawals, currencies, fetchCurrencies, loading } = useWalletStore();
   const { user, updateUserPreferences } = useAuthStore();
   const [search, setSearch] = useState('');
   const [actionId, setActionId] = useState(null);
@@ -20,23 +20,31 @@ export default function AdminWithdrawalsPage() {
 
   React.useEffect(() => {
     fetchAdminWithdrawals();
+    fetchCurrencies();
     fetch('https://api.exchangerate-api.com/v4/latest/USD')
       .then(res => res.json())
       .then(data => {
         if (data && data.rates) {
-          setExchangeRates({
-            USD: 1,
-            NGN: data.rates.NGN || 1500,
-            GHS: data.rates.GHS || 15,
-            KES: data.rates.KES || 130,
-            ZAR: data.rates.ZAR || 18,
-            EUR: data.rates.EUR || 0.92
-          });
+          // Fill exchangeRates dynamically for all currencies we might support
+          const updatedRates = { USD: 1 };
+          if (currencies && currencies.length > 0) {
+            currencies.forEach(c => {
+              updatedRates[c.value] = data.rates[c.value] || 1;
+            });
+          } else {
+            updatedRates.NGN = data.rates.NGN || 1500;
+            updatedRates.GHS = data.rates.GHS || 15;
+            updatedRates.KES = data.rates.KES || 130;
+            updatedRates.ZAR = data.rates.ZAR || 18;
+            updatedRates.EUR = data.rates.EUR || 0.92;
+            updatedRates.GBP = data.rates.GBP || 0.79;
+          }
+          setExchangeRates(updatedRates);
         }
       })
       .catch(err => console.warn(err))
       .finally(() => setLoadingRates(false));
-  }, [fetchAdminWithdrawals]);
+  }, [fetchAdminWithdrawals, fetchCurrencies, currencies.length]);
 
   const handleApprove = async (id) => {
     if (!window.confirm('Are you sure you want to approve this withdrawal request? This will trigger the payout.')) {
@@ -103,7 +111,11 @@ export default function AdminWithdrawalsPage() {
     },
   ];
 
-  const TARGET_CURRENCIES = [
+  const TARGET_CURRENCIES = currencies.length > 0 ? currencies.map(c => ({
+    code: c.value,
+    symbol: c.value === 'NGN' ? '₦' : c.value === 'GHS' ? 'GH₵' : c.value === 'KES' ? 'KSh' : c.value === 'ZAR' ? 'R' : c.value === 'EUR' ? '€' : c.value === 'GBP' ? '£' : c.value === 'TZS' ? 'TSh' : c.value === 'UGX' ? 'USh' : c.value === 'RWF' ? 'RF' : c.value === 'ZMW' ? 'ZK' : c.value === 'XOF' ? 'CFA' : '$',
+    label: c.label.split(' - ')[1] || c.label
+  })) : [
     { code: 'NGN', symbol: '₦', label: 'Nigeria' },
     { code: 'GHS', symbol: 'GH₵', label: 'Ghana' },
     { code: 'KES', symbol: 'KSh', label: 'Kenya' },
