@@ -59,6 +59,37 @@ async function getUserIdFromReq(req) {
   return 'u1'; // Fallback for testing/demo
 }
 
+async function checkIsAdmin(userIdHeader, req) {
+  if (userIdHeader) {
+    try {
+      const db = await getDb();
+      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
+      if (!dbUser) {
+        const { ObjectId } = await import('mongodb');
+        const query = userIdHeader.length === 24 
+          ? { $or: [{ _id: new ObjectId(userIdHeader) }, { _id: userIdHeader }] }
+          : { _id: userIdHeader };
+        dbUser = await db.collection('user').findOne(query);
+      }
+      if (dbUser && dbUser.role === 'admin') {
+        return true;
+      }
+    } catch (err) {
+      console.error('Error in checkIsAdmin:', err);
+    }
+  }
+  
+  try {
+    const sessionData = await authService.getSession(req);
+    if (sessionData && sessionData.user && sessionData.user.role === 'admin') {
+      return true;
+    }
+  } catch (err) {
+    console.error('Session admin check error:', err);
+  }
+  return false;
+}
+
 // 1. Get Wallet Balance
 router.get('/balance', async (req, res) => {
   try {
@@ -524,26 +555,12 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
-  try {
     const userIdHeader = req.headers['x-user-id'];
-    let isAdmin = false;
     const db = await getDb();
-    if (userIdHeader) {
-      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
-      if (!dbUser && userIdHeader.length === 24) {
-        try {
-          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
-        } catch (err) {}
-      }
-      if (dbUser && dbUser.role === 'admin') {
-        isAdmin = true;
-      }
-    }
+    
+    const isAdmin = await checkIsAdmin(userIdHeader, req);
     if (!isAdmin) {
-      const sessionData = await authService.getSession(req);
-      if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden: Admin access required' });
-      }
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
@@ -581,26 +598,12 @@ router.post('/admin/deposit/:id/reject', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
-  try {
     const userIdHeader = req.headers['x-user-id'];
-    let isAdmin = false;
     const db = await getDb();
-    if (userIdHeader) {
-      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
-      if (!dbUser && userIdHeader.length === 24) {
-        try {
-          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
-        } catch (err) {}
-      }
-      if (dbUser && dbUser.role === 'admin') {
-        isAdmin = true;
-      }
-    }
+    
+    const isAdmin = await checkIsAdmin(userIdHeader, req);
     if (!isAdmin) {
-      const sessionData = await authService.getSession(req);
-      if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden: Admin access required' });
-      }
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
     const result = await db.collection('transactions').updateOne(
@@ -622,26 +625,12 @@ router.post('/admin/withdraw/:id/approve', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
-  try {
     const userIdHeader = req.headers['x-user-id'];
-    let isAdmin = false;
     const db = await getDb();
-    if (userIdHeader) {
-      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
-      if (!dbUser && userIdHeader.length === 24) {
-        try {
-          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
-        } catch (err) {}
-      }
-      if (dbUser && dbUser.role === 'admin') {
-        isAdmin = true;
-      }
-    }
+    
+    const isAdmin = await checkIsAdmin(userIdHeader, req);
     if (!isAdmin) {
-      const sessionData = await authService.getSession(req);
-      if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden: Admin access required' });
-      }
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
@@ -708,26 +697,12 @@ router.post('/admin/withdraw/:id/reject', async (req, res) => {
   const { id } = req.params;
   const { ObjectId } = await import('mongodb');
 
-  try {
     const userIdHeader = req.headers['x-user-id'];
-    let isAdmin = false;
     const db = await getDb();
-    if (userIdHeader) {
-      let dbUser = await db.collection('user').findOne({ id: userIdHeader });
-      if (!dbUser && userIdHeader.length === 24) {
-        try {
-          dbUser = await db.collection('user').findOne({ _id: new ObjectId(userIdHeader) });
-        } catch (err) {}
-      }
-      if (dbUser && dbUser.role === 'admin') {
-        isAdmin = true;
-      }
-    }
+    
+    const isAdmin = await checkIsAdmin(userIdHeader, req);
     if (!isAdmin) {
-      const sessionData = await authService.getSession(req);
-      if (!sessionData || !sessionData.user || sessionData.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden: Admin access required' });
-      }
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
     const tx = await db.collection('transactions').findOne({ _id: new ObjectId(id) });
