@@ -185,6 +185,31 @@ const useAuthStore = create(
         }
       },
 
+      updateUserPreferences: async (preferences) => {
+        const token = localStorage.getItem('idubbl_bearer_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        try {
+          const res = await fetch(`${AUTH_API}/update-user`, {
+            method: 'POST',
+            headers,
+            credentials: 'include',
+            body: JSON.stringify(preferences)
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            set({ user: { ...get().user, ...data.user } });
+            return { success: true };
+          }
+          return { success: false, error: data.message || 'Failed to update preferences' };
+        } catch (err) {
+          console.error('Update preferences error:', err);
+          return { success: false, error: 'Network error updating preferences' };
+        }
+      },
+
       logout: async () => {
         localStorage.removeItem('idubbl_login_portal');
         localStorage.removeItem('idubbl_role');

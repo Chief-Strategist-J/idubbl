@@ -2,20 +2,19 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { PageHeader, Card, Table, Button, SearchBar } from '../../../../shared/components/ui/index.js';
 import useWalletStore from '../../../../shared/store/walletStore.js';
+import useAuthStore from '../../../../shared/store/authStore.js';
 
 export default function AdminWalletsPage() {
   const { adminUsers, fetchAdminUsers, loading } = useWalletStore();
+  const { user, updateUserPreferences } = useAuthStore();
   const [search, setSearch] = useState('');
   const [balances, setBalances] = useState({});
   const [checkingId, setCheckingId] = useState(null);
-  const [showFullAddresses, setShowFullAddresses] = useState(
-    localStorage.getItem('idubbl_show_addresses') === 'true'
-  );
 
-  const toggleShowAddresses = () => {
-    const newVal = !showFullAddresses;
-    setShowFullAddresses(newVal);
-    localStorage.setItem('idubbl_show_addresses', String(newVal));
+  const showFullAddresses = user?.showFullAddresses ?? false;
+
+  const toggleShowAddresses = async () => {
+    await updateUserPreferences({ showFullAddresses: !showFullAddresses });
   };
 
   useEffect(() => {

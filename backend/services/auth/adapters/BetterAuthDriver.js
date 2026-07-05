@@ -94,6 +94,11 @@ export class BetterAuthDriver extends AuthDriver {
                   enteredReferralCode: {
                     type: 'string',
                     required: false
+                  },
+                  showFullAddresses: {
+                    type: 'boolean',
+                    required: false,
+                    defaultValue: false
                   }
                 }
               }

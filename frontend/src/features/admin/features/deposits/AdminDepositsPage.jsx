@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../shared/components/ui/index.js';
 import useWalletStore from '../../../../shared/store/walletStore.js';
+import useAuthStore from '../../../../shared/store/authStore.js';
 
 const COLUMNS = (onApprove, onReject, showFullAddresses) => [
   { key: 'id', label: 'Ref', render: (v) => <code style={{ fontSize: '0.8rem' }}>{v.toUpperCase()}</code> },
@@ -32,15 +33,13 @@ const COLUMNS = (onApprove, onReject, showFullAddresses) => [
 
 export default function AdminDepositsPage() {
   const { deposits, approveDeposit, rejectDeposit, fetchAdminDeposits, loading } = useWalletStore();
+  const { user, updateUserPreferences } = useAuthStore();
   const [search, setSearch] = useState('');
-  const [showFullAddresses, setShowFullAddresses] = useState(
-    localStorage.getItem('idubbl_show_addresses') === 'true'
-  );
+  
+  const showFullAddresses = user?.showFullAddresses ?? false;
 
-  const toggleShowAddresses = () => {
-    const newVal = !showFullAddresses;
-    setShowFullAddresses(newVal);
-    localStorage.setItem('idubbl_show_addresses', String(newVal));
+  const toggleShowAddresses = async () => {
+    await updateUserPreferences({ showFullAddresses: !showFullAddresses });
   };
 
   useEffect(() => {
