@@ -8,6 +8,15 @@ export default function AdminWalletsPage() {
   const [search, setSearch] = useState('');
   const [balances, setBalances] = useState({});
   const [checkingId, setCheckingId] = useState(null);
+  const [showFullAddresses, setShowFullAddresses] = useState(
+    localStorage.getItem('idubbl_show_addresses') === 'true'
+  );
+
+  const toggleShowAddresses = () => {
+    const newVal = !showFullAddresses;
+    setShowFullAddresses(newVal);
+    localStorage.setItem('idubbl_show_addresses', String(newVal));
+  };
 
   useEffect(() => {
     fetchAdminUsers();
@@ -60,25 +69,31 @@ export default function AdminWalletsPage() {
     {
       key: 'personalWallets',
       label: 'Tron Address (TRC-20)',
-      render: (v, row) => (
-        <div>
-          <code style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{v.tron || '—'}</code>
-          {balances[row.id || row._id] !== undefined && (
-            <div style={{ fontSize: '0.8rem', color: 'var(--accent-green)', fontWeight: 600, marginTop: '2px' }}>
-              Balance: {balances[row.id || row._id].tron} USDT
-            </div>
-          )}
-        </div>
-      )
+      render: (v, row) => {
+        const addr = v.tron || '—';
+        const displayVal = (addr === '—' || showFullAddresses) ? addr : `${addr.substring(0, 6)}...${addr.substring(addr.length - 6)}`;
+        return (
+          <div>
+            <code style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{displayVal}</code>
+            {balances[row.id || row._id] !== undefined && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--accent-green)', fontWeight: 600, marginTop: '2px' }}>
+                Balance: {balances[row.id || row._id].tron} USDT
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'personalWallets_eth',
       label: 'Ethereum Address (ERC-20)',
       render: (_, row) => {
-        const v = row.personalWallets;
+        const v = row.personalWallets || {};
+        const addr = v.ethereum || '—';
+        const displayVal = (addr === '—' || showFullAddresses) ? addr : `${addr.substring(0, 6)}...${addr.substring(addr.length - 6)}`;
         return (
           <div>
-            <code style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{v.ethereum || '—'}</code>
+            <code style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{displayVal}</code>
             {balances[row.id || row._id] !== undefined && (
               <div style={{ fontSize: '0.8rem', color: 'var(--accent-green)', fontWeight: 600, marginTop: '2px' }}>
                 Balance: {balances[row.id || row._id].ethereum} USDT
@@ -116,8 +131,17 @@ export default function AdminWalletsPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search by name, email, or address..." />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search by name, email, or address..." style={{ flex: 1 }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <input 
+              type="checkbox" 
+              checked={showFullAddresses} 
+              onChange={toggleShowAddresses} 
+              style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+            />
+            Show full crypto addresses
+          </label>
         </div>
 
         {loading ? (

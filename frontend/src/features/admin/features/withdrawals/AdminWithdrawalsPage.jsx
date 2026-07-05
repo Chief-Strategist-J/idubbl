@@ -7,6 +7,15 @@ export default function AdminWithdrawalsPage() {
   const { withdrawals, approveWithdrawal, rejectWithdrawal, fetchAdminWithdrawals, loading } = useWalletStore();
   const [search, setSearch] = useState('');
   const [actionId, setActionId] = useState(null);
+  const [showFullAddresses, setShowFullAddresses] = useState(
+    localStorage.getItem('idubbl_show_addresses') === 'true'
+  );
+
+  const toggleShowAddresses = () => {
+    const newVal = !showFullAddresses;
+    setShowFullAddresses(newVal);
+    localStorage.setItem('idubbl_show_addresses', String(newVal));
+  };
 
   React.useEffect(() => {
     fetchAdminWithdrawals();
@@ -40,7 +49,15 @@ export default function AdminWithdrawalsPage() {
     { key: 'id', label: 'Ref', render: (v) => <code style={{ fontSize: '0.8rem' }}>{v.toUpperCase()}</code> },
     { key: 'user', label: 'User' },
     { key: 'amount', label: 'Amount', render: (v) => `${v} USDT` },
-    { key: 'address', label: 'Address', render: (v) => <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{v}</code> },
+    { 
+      key: 'address', 
+      label: 'Address', 
+      render: (v) => {
+        if (!v) return '—';
+        const displayVal = showFullAddresses ? v : `${v.substring(0, 6)}...${v.substring(v.length - 6)}`;
+        return <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{displayVal}</code>;
+      }
+    },
     { key: 'network', label: 'Network' },
     { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
     { key: 'createdAt', label: 'Requested', render: (v) => new Date(v).toLocaleDateString() },
@@ -79,8 +96,17 @@ export default function AdminWithdrawalsPage() {
     <AdminLayout>
       <PageHeader title="Withdrawal Requests" subtitle="Review and approve withdrawal requests before payout." />
       <Card>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search by user or address..." />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search by user or address..." style={{ flex: 1 }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <input 
+              type="checkbox" 
+              checked={showFullAddresses} 
+              onChange={toggleShowAddresses} 
+              style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+            />
+            Show full crypto addresses
+          </label>
         </div>
 
         {loading ? (

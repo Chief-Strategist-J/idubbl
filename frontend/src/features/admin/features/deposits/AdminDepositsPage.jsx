@@ -3,12 +3,20 @@ import AdminLayout from '../../../../shared/components/layout/AdminLayout.jsx';
 import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../shared/components/ui/index.js';
 import useWalletStore from '../../../../shared/store/walletStore.js';
 
-const COLUMNS = (onApprove, onReject) => [
+const COLUMNS = (onApprove, onReject, showFullAddresses) => [
   { key: 'id', label: 'Ref', render: (v) => <code style={{ fontSize: '0.8rem' }}>{v.toUpperCase()}</code> },
   { key: 'user', label: 'User' },
   { key: 'amount', label: 'Amount', render: (v) => `${v} USDT` },
   { key: 'network', label: 'Network' },
-  { key: 'txHash', label: 'TX Hash', render: (v) => <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all', maxWidth: '200px', display: 'inline-block' }}>{v}</code> },
+  { 
+    key: 'txHash', 
+    label: 'TX Hash', 
+    render: (v) => {
+      if (!v) return '—';
+      const displayVal = showFullAddresses ? v : `${v.substring(0, 6)}...${v.substring(v.length - 6)}`;
+      return <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all', maxWidth: '200px', display: 'inline-block' }}>{displayVal}</code>;
+    }
+  },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
   { key: 'createdAt', label: 'Date', render: (v) => new Date(v).toLocaleDateString() },
   {
@@ -25,6 +33,15 @@ const COLUMNS = (onApprove, onReject) => [
 export default function AdminDepositsPage() {
   const { deposits, approveDeposit, rejectDeposit, fetchAdminDeposits, loading } = useWalletStore();
   const [search, setSearch] = useState('');
+  const [showFullAddresses, setShowFullAddresses] = useState(
+    localStorage.getItem('idubbl_show_addresses') === 'true'
+  );
+
+  const toggleShowAddresses = () => {
+    const newVal = !showFullAddresses;
+    setShowFullAddresses(newVal);
+    localStorage.setItem('idubbl_show_addresses', String(newVal));
+  };
 
   useEffect(() => {
     fetchAdminDeposits();
@@ -42,8 +59,17 @@ export default function AdminDepositsPage() {
       <PageHeader title="Deposit Requests" subtitle="Review, approve, or reject USDT deposit submissions." />
 
       <Card>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search by user, tx hash, ref ID..." />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search by user, tx hash, ref ID..." style={{ flex: 1 }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <input 
+              type="checkbox" 
+              checked={showFullAddresses} 
+              onChange={toggleShowAddresses} 
+              style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+            />
+            Show full TX Hashes
+          </label>
         </div>
         
         {loading ? (
@@ -53,7 +79,7 @@ export default function AdminDepositsPage() {
           </div>
         ) : (
           <Table
-            columns={COLUMNS(approveDeposit, rejectDeposit)}
+            columns={COLUMNS(approveDeposit, rejectDeposit, showFullAddresses)}
             rows={filtered}
             emptyMessage="No deposit requests found."
           />
