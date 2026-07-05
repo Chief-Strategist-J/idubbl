@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from '@better-auth/mongo-adapter';
-import { MongoClient } from 'mongodb';
+import { client as sharedClient, db as sharedDb } from '../../db.js';
 import { toNodeHandler } from 'better-auth/node';
 import { APIError } from 'better-auth/api';
 import { AuthDriver } from '../ports/AuthDriver.js';
@@ -11,19 +11,9 @@ export class BetterAuthDriver extends AuthDriver {
   constructor(config) {
     super(config);
     
-    const dbConfig = config.database || { provider: 'mongodb', url: 'mongodb://localhost:27017/idubbl' };
-    const mongoUrl = process.env.MONGODB_URI || dbConfig.url;
-    
     try {
-      // Connect to MongoDB
-      this.client = new MongoClient(mongoUrl);
-      
-      // Initialize connection in background
-      this.client.connect()
-        .then(() => console.log('MongoDB Client Connected for BetterAuth'))
-        .catch(err => console.error('MongoDB connection error in BetterAuth:', err));
-        
-      this.db = this.client.db();
+      this.client = sharedClient;
+      this.db = sharedDb;
 
       const authOptions = {
         secret: process.env.BETTER_AUTH_SECRET || config.secret || 'SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME',
@@ -155,6 +145,8 @@ export class BetterAuthDriver extends AuthDriver {
           'https://idubbl-frontend.onrender.com',
           'https://idubbl.com.ng',
           'http://idubbl.com.ng',
+          'https://www.idubbl.com.ng',
+          'http://www.idubbl.com.ng',
           'http://localhost:5173',
           'http://localhost:5174',
           'http://localhost:5175',
