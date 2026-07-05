@@ -148,7 +148,7 @@ const useAuthStore = create(
       forgotPassword: async (email, redirectTo) => {
         set({ loading: true });
         try {
-          const res = await fetch(`${AUTH_API}/forget-password`, {
+          const res = await fetch(`${AUTH_API}/request-password-reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
