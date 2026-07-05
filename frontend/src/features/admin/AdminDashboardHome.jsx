@@ -68,26 +68,33 @@ export default function AdminDashboardHome() {
 
       <PageHeader title="Admin Dashboard" subtitle="Monitor deposits, matches, withdrawals, and platform health in real time." />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <Card style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Card style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.50rem' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, fontWeight: 600 }}>USD Exchange Rates (Reference for Fiat/Bank payouts)</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.75rem', marginTop: '0.25rem' }}>
-            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>NGN</div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `₦${exchangeRates.NGN.toFixed(2)}`}</div>
-            </div>
-            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GHS</div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `GH₵${exchangeRates.GHS.toFixed(2)}`}</div>
-            </div>
-            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>KES</div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `KSh${exchangeRates.KES.toFixed(2)}`}</div>
-            </div>
-            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ZAR</div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `R${exchangeRates.ZAR.toFixed(2)}`}</div>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.5rem', marginTop: '0.25rem' }}>
+            {[
+              { code: 'NGN', symbol: '₦', label: 'Nigeria' },
+              { code: 'GHS', symbol: 'GH₵', label: 'Ghana' },
+              { code: 'KES', symbol: 'KSh', label: 'Kenya' },
+              { code: 'ZAR', symbol: 'R', label: 'South Africa' },
+              { code: 'TZS', symbol: 'TSh', label: 'Tanzania' },
+              { code: 'UGX', symbol: 'USh', label: 'Uganda' },
+              { code: 'RWF', symbol: 'RF', label: 'Rwanda' },
+              { code: 'ZMW', symbol: 'ZK', label: 'Zambia' },
+              { code: 'XOF', symbol: 'CFA', label: 'West CFA' },
+              { code: 'EUR', symbol: '€', label: 'Euro' },
+              { code: 'GBP', symbol: '£', label: 'GBP' }
+            ].map(curr => {
+              const rate = exchangeRates[curr.code] || 1;
+              return (
+                <div key={curr.code} style={{ padding: '0.4rem 0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{curr.code} ({curr.label})</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--accent-green)' }}>
+                    {loadingRates ? '...' : `${curr.symbol}${rate.toFixed(2)}`}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>
