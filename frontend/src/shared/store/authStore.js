@@ -227,27 +227,15 @@ const useAuthStore = create(
       },
 
       signInWithSocial: async (provider) => {
-        set({ loading: true });
         try {
           const callbackURL = `${window.location.origin}/dashboard`;
           const errorCallbackURL = `${window.location.origin}/login`;
-          const res = await fetch(`${AUTH_API}/sign-in/social`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ provider, callbackURL, errorCallbackURL })
-          });
-          const data = await res.json();
-          set({ loading: false });
-          if (res.ok && data.url) {
-            window.location.href = data.url;
-            return { success: true };
-          }
-          return { success: false, error: data.message || 'Social sign-in initiation failed' };
+          // Direct navigation to the custom GET route to ensure cookies are set in first-party context
+          window.location.href = `${AUTH_API}/social-login?provider=${provider}&callbackURL=${encodeURIComponent(callbackURL)}&errorCallbackURL=${encodeURIComponent(errorCallbackURL)}`;
+          return { success: true };
         } catch (err) {
-          console.error('Social login error:', err);
-          set({ loading: false });
-          return { success: false, error: 'Network error during social login' };
+          console.error('Social login redirect error:', err);
+          return { success: false, error: 'Failed to redirect to login provider' };
         }
       },
 
