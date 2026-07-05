@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from '@better-auth/mongo-adapter';
 import { client as sharedClient, db as sharedDb } from '../../db.js';
 import { toNodeHandler } from 'better-auth/node';
-import { APIError } from 'better-auth/api';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { AuthDriver } from '../ports/AuthDriver.js';
 import { sendEmail } from '../../emailService.js';
 import { bearer, genericOAuth } from 'better-auth/plugins';
@@ -35,6 +35,28 @@ export class BetterAuthDriver extends AuthDriver {
         }),
         account: {
           storeStateStrategy: "database",
+        },
+        hooks: {
+          after: createAuthMiddleware(async (ctx) => {
+            if (ctx.path.startsWith('/callback/')) {
+              const user = ctx.context.user || ctx.context.newSession?.user || ctx.context.session?.user;
+              if (user) {
+                const token = ctx.context.newSession?.session?.token || ctx.context.session?.token || (await this.db.collection('session').findOne({ userId: user.id }, { sort: { createdAt: -1 } }))?.token;
+                if (token) {
+                  let callbackURL = ctx.query?.callbackURL || '/dashboard';
+                  let fullURL;
+                  if (callbackURL.startsWith('http://') || callbackURL.startsWith('https://')) {
+                    fullURL = new URL(callbackURL);
+                  } else {
+                    const origin = ctx.headers.origin || (ctx.headers.host ? `${ctx.headers['x-forwarded-proto'] || 'https'}://${ctx.headers.host}` : 'https://idubbl.com.ng');
+                    fullURL = new URL(callbackURL, origin);
+                  }
+                  fullURL.searchParams.set('token', token);
+                  throw ctx.redirect(fullURL.toString());
+                }
+              }
+            }
+          })
         },
         advanced: {
           cookie: {

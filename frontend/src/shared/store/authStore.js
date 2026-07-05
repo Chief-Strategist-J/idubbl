@@ -19,6 +19,17 @@ const useAuthStore = create(
       // Shows user as logged-in instantly from localStorage, then confirms
       // with the server in background. Only logs out if server rejects.
       checkSession: async () => {
+        // Parse token from URL if redirected from social callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToken = urlParams.get('token');
+        if (urlToken) {
+          localStorage.setItem('idubbl_bearer_token', urlToken);
+          // Remove token from query parameters to keep the URL clean
+          const cleanSearch = window.location.search.replace(/[?&]token=[^&]+/, '').replace(/^&/, '?').replace(/^\?$/, '');
+          const newUrl = window.location.pathname + cleanSearch;
+          window.history.replaceState({}, document.title, newUrl);
+        }
+
         // If we already have a user in localStorage, mark as checked immediately
         // so the app renders without a loading flash. Then verify with server.
         const { user: cachedUser } = get();
