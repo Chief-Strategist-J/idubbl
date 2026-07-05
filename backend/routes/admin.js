@@ -365,7 +365,7 @@ router.post('/settings/platform', adminAuth, async (req, res) => {
 // 15. POST /api/admin/users/:userId/topup - Manual wallet top up (points/credit) for user accounts
 router.post('/users/:userId/topup', adminAuth, async (req, res) => {
   const { userId } = req.params;
-  const { amount, balanceType, reference, notes, method } = req.body;
+  const { amount, balanceType, reference, notes, method, currency, usdAmount } = req.body;
 
   if (amount === undefined || isNaN(Number(amount)) || Number(amount) <= 0) {
     return res.status(400).json({ error: 'Invalid top-up amount. Must be a positive number.' });
@@ -390,17 +390,16 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
 
     const resolvedUserId = targetUser.id || targetUser._id.toString();
 
+    // The amount credited to the wallet is in USDT (usdAmount if passed, otherwise default to amount)
+    const creditAmount = usdAmount !== undefined ? Number(usdAmount) : Number(amount);
+
     // Perform transaction update
     const walletCol = db.collection('wallets');
     const updateQuery = {};
-    updateQuery[targetType] = Number(amount);
+    updateQuery[targetType] = creditAmount;
 
-    // Also update idubbuBalance if depositing to depositBalance
-    if (targetType === 'depositBalance') {
-      updateQuery.idubbuBalance = Number(amount) * IDUBBU_RATE;
-    } else if (targetType === 'winningsBalance') {
-      updateQuery.idubbuBalance = Number(amount) * IDUBBU_RATE;
-    }
+    // Also update idubbuBalance
+    updateQuery.idubbuBalance = creditAmount * IDUBBU_RATE;
 
     const setOnInsertFields = {
       lockedBalance: 0,
@@ -421,13 +420,15 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
     // Record the manual transaction in the transactions log
     const transaction = {
       userId: resolvedUserId,
-      amount: Number(amount),
+      amount: Number(amount), // Save input amount
+      currency: currency || 'USDT', // Save input currency (e.g. NGN)
+      usdAmount: creditAmount, // Save credited USD value
       type: (method === 'flutterwave' || method === 'crypto') ? 'deposit' : 'manual_topup',
       balanceType: targetType,
       status: 'approved',
       reference: reference || (method === 'flutterwave' ? 'flw-admin-topup' : 'manual-admin-topup'),
       network: method === 'flutterwave' ? 'FLUTTERWAVE' : (method === 'crypto' ? 'TRC20' : 'INTERNAL'),
-      notes: notes || `Admin manually credited ${amount} to ${targetType} via ${method || 'internal'}.`,
+      notes: notes || `Admin manually credited ${amount} ${currency || 'USDT'} (Credited: ${creditAmount} USDT) to ${targetType} via ${method || 'internal'}.`,
       createdAt: new Date(),
       updatedAt: new Date(),
       adminId: req.user.id || req.user._id.toString()

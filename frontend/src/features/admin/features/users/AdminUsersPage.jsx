@@ -4,13 +4,15 @@ import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../s
 import useWalletStore from '../../../../shared/store/walletStore.js';
 
 export default function AdminUsersPage() {
-  const { adminUsers, fetchAdminUsers, loading, manualTopup } = useWalletStore();
+  const { adminUsers, fetchAdminUsers, loading, manualTopup, currencies, fetchCurrencies } = useWalletStore();
   const [search, setSearch] = useState('');
   const [localUsers, setLocalUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [topupAmount, setTopupAmount] = useState('');
   const [balanceType, setBalanceType] = useState('depositBalance');
   const [topupMethod, setTopupMethod] = useState('manual'); // 'manual' | 'crypto' | 'flutterwave'
+  const [topupCurrency, setTopupCurrency] = useState('USD');
+  const [exchangeRates, setExchangeRates] = useState({});
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [topupLoading, setTopupLoading] = useState(false);
@@ -19,7 +21,19 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchAdminUsers();
-  }, [fetchAdminUsers]);
+    fetchCurrencies();
+  }, [fetchAdminUsers, fetchCurrencies]);
+
+  useEffect(() => {
+    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setExchangeRates(data.rates);
+        }
+      })
+      .catch(err => console.error('Error fetching exchange rates:', err));
+  }, []);
 
   useEffect(() => {
     setLocalUsers(adminUsers);
@@ -50,12 +64,17 @@ export default function AdminUsersPage() {
     setErrorMsg('');
     setSuccessMsg('');
 
+    const rate = exchangeRates[topupCurrency] || 1;
+    const usdAmount = Number(topupAmount) / rate;
+
     const res = await manualTopup(selectedUser.id || selectedUser._id, {
       amount: Number(topupAmount),
       balanceType,
       reference,
       notes,
-      method: topupMethod
+      method: topupMethod,
+      currency: topupCurrency,
+      usdAmount: Number(usdAmount.toFixed(4))
     });
 
     setTopupLoading(false);
@@ -65,6 +84,7 @@ export default function AdminUsersPage() {
       setReference('');
       setNotes('');
       setTopupMethod('manual');
+      setTopupCurrency('USD');
       // Delay closing modal slightly so user sees success message
       setTimeout(() => {
         setSelectedUser(null);
@@ -132,6 +152,14 @@ export default function AdminUsersPage() {
 
   const totalPersonalWallets = localUsers.filter(u => u.personalWallets && (u.personalWallets.tron || u.personalWallets.ethereum)).length;
 
+  const CURRENCY_LIST = currencies && currencies.length > 0 ? currencies : [
+    { value: 'USD', label: 'USD - US Dollar', flag: '🇺🇸' },
+    { value: 'NGN', label: 'NGN - Nigerian Naira', flag: '🇳🇬' },
+    { value: 'GHS', label: 'GHS - Ghanaian Cedi', flag: '🇬🇭' },
+    { value: 'KES', label: 'KES - Kenyan Shilling', flag: '🇰🇪' },
+    { value: 'ZAR', label: 'ZAR - South African Rand', flag: '🇿🇦' }
+  ];
+
   return (
     <AdminLayout>
       <PageHeader title="Users" subtitle="Search, view, and manage player accounts." />
@@ -173,7 +201,7 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleTopupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount (USDT)</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount ({topupCurrency})</label>
                 <input
                   type="number"
                   step="any"
@@ -184,6 +212,39 @@ export default function AdminUsersPage() {
                   style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
                 />
               </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Currency</label>
+                <select
+                  value={topupCurrency}
+                  onChange={(e) => setTopupCurrency(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                >
+                  {CURRENCY_LIST.map((curr) => (
+                    <option key={curr.value} value={curr.value}>
+                      {curr.flag} {curr.label || curr.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {topupCurrency !== 'USD' && topupCurrency !== 'USDT' && (
+                <div style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)', backgroundColor: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Live Exchange Rate:</span>
+                    <strong style={{ color: '#fff' }}>1 USD ≈ {exchangeRates[topupCurrency] || '...'} {topupCurrency}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '0.25rem', marginTop: '0.25rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Estimated Credit:</span>
+                    <strong style={{ color: 'var(--secondary)' }}>
+                      {topupAmount && !isNaN(Number(topupAmount))
+                        ? (Number(topupAmount) / (exchangeRates[topupCurrency] || 1)).toFixed(2)
+                        : '0.00'}{' '}
+                      USDT
+                    </strong>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Balance Target</label>
