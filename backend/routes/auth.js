@@ -24,10 +24,17 @@ router.get('/social-login', async (req, res) => {
 
     // Copy cookies and headers from Web Response to Express res
     authResponse.headers.forEach((value, key) => {
-      if (key.toLowerCase() !== 'content-encoding') {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey !== 'content-encoding' && lowerKey !== 'set-cookie') {
         res.setHeader(key, value);
       }
     });
+
+    // Handle Set-Cookie separately to prevent comma-joining issues
+    const setCookies = authResponse.headers.getSetCookie();
+    if (setCookies && setCookies.length > 0) {
+      res.setHeader('Set-Cookie', setCookies);
+    }
 
     if (authResponse.status === 302 || authResponse.status === 307 || authResponse.status === 301) {
       const location = authResponse.headers.get('location');
