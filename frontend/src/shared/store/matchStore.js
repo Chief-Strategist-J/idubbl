@@ -26,7 +26,9 @@ const useMatchStore = create((set, get) => ({
   fetchAdminMatches: async () => {
     set({ loading: true });
     try {
+      const currentUserId = useAuthStore.getState().user?.id;
       const res = await fetch(`${ADMIN_BASE_URL}/matches`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
         credentials: 'include'
       });
       const json = await res.json();
