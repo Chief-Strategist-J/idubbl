@@ -122,15 +122,31 @@ export default function SupportPage() {
       f.a.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.subject || !form.description) return;
     setSubmitLoading(true);
-    setTimeout(() => {
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+      const cleanApiBase = apiBase.startsWith('http') ? apiBase : `https://${apiBase}`;
+      const res = await fetch(`${cleanApiBase}/api/support/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        setForm({ subject: '', description: '', refId: '' });
+      } else {
+        alert('Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error sending message.');
+    } finally {
       setSubmitLoading(false);
-      setSubmitted(true);
-      setForm({ subject: '', description: '', refId: '' });
-    }, 800);
+    }
   };
 
   return (
