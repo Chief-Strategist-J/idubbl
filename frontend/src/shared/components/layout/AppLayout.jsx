@@ -44,6 +44,14 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
     navigate('/');
   };
 
+  const handleLogoClick = () => {
+    if (location.pathname === '/') {
+      window.location.reload();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="app-container">
       <OfflineBanner />
@@ -51,7 +59,7 @@ export default function AppLayout({ children, noPadding = false, hideBottomNav =
 
       <header className="header">
         <div className="header-container">
-          <div className="logo" onClick={() => navigate('/dashboard')}>
+          <div className="logo" style={{ cursor: 'pointer' }} onClick={handleLogoClick}>
             <img className="logo-img" src="/black-logo.jpeg" alt="iDubbl" style={{ height: '40px', borderRadius: '8px' }} />
           </div>
 
