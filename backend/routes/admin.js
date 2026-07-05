@@ -180,8 +180,8 @@ router.get('/users', adminAuth, async (req, res) => {
           pendingWithdrawals: wallet.pendingWithdrawals
         },
         personalWallets: personalWalletMap[userId] ? {
-          tron: personalWalletMap[userId].tron?.address || '',
-          ethereum: personalWalletMap[userId].ethereum?.address || ''
+          tron: u.hideCryptoWallet ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].tron?.address || ''),
+          ethereum: u.hideCryptoWallet ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].ethereum?.address || '')
         } : null
       };
     });
@@ -496,6 +496,36 @@ router.post('/support-tickets/:id/resolve', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error resolving support ticket:', error);
     res.status(500).json({ error: 'Database error resolving support ticket.' });
+  }
+});
+
+// 18. POST /api/admin/users/:userId/toggle-wallet-visibility - Toggle crypto wallet address visibility
+router.post('/users/:userId/toggle-wallet-visibility', adminAuth, async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const db = await getDb();
+    const userQuery = userId.length === 24 
+      ? { $or: [{ _id: new ObjectId(userId) }, { id: userId }] }
+      : { id: userId };
+      
+    const targetUser = await db.collection('user').findOne(userQuery);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const resolvedUserId = targetUser.id || targetUser._id.toString();
+    const newHiddenVal = !targetUser.hideCryptoWallet;
+
+    await db.collection('user').updateOne(
+      { _id: targetUser._id },
+      { $set: { hideCryptoWallet: newHiddenVal } }
+    );
+
+    res.json({ success: true, hideCryptoWallet: newHiddenVal });
+  } catch (error) {
+    console.error('Error toggling wallet visibility:', error);
+    res.status(500).json({ error: 'Database error toggling wallet visibility' });
   }
 });
 

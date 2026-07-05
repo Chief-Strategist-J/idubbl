@@ -5,16 +5,23 @@ import useWalletStore from '../../../../shared/store/walletStore.js';
 import useAuthStore from '../../../../shared/store/authStore.js';
 
 export default function AdminWalletsPage() {
-  const { adminUsers, fetchAdminUsers, loading } = useWalletStore();
+  const { adminUsers, fetchAdminUsers, loading, toggleWalletVisibility } = useWalletStore();
   const { user, updateUserPreferences } = useAuthStore();
   const [search, setSearch] = useState('');
   const [balances, setBalances] = useState({});
   const [checkingId, setCheckingId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
 
   const showFullAddresses = user?.showFullAddresses ?? false;
 
   const toggleShowAddresses = async () => {
     await updateUserPreferences({ showFullAddresses: !showFullAddresses });
+  };
+
+  const handleToggleVisibility = async (userId) => {
+    setTogglingId(userId);
+    await toggleWalletVisibility(userId);
+    setTogglingId(null);
   };
 
   useEffect(() => {
@@ -106,14 +113,29 @@ export default function AdminWalletsPage() {
       key: 'actions',
       label: 'Actions',
       render: (_, row) => (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => checkLiveBalance(row.id || row._id)}
-          loading={checkingId === (row.id || row._id)}
-        >
-          Check On-Chain Balance
-        </Button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => checkLiveBalance(row.id || row._id)}
+            loading={checkingId === (row.id || row._id)}
+          >
+            Check On-Chain Balance
+          </Button>
+          <Button
+            variant={row.hideCryptoWallet ? "primary" : "secondary"}
+            size="sm"
+            onClick={() => handleToggleVisibility(row.id || row._id)}
+            loading={togglingId === (row.id || row._id)}
+            style={{
+              borderColor: row.hideCryptoWallet ? 'var(--primary)' : 'var(--border)',
+              background: row.hideCryptoWallet ? 'rgba(20, 241, 149, 0.1)' : 'transparent',
+              color: row.hideCryptoWallet ? 'var(--primary)' : 'var(--text-primary)'
+            }}
+          >
+            {row.hideCryptoWallet ? "Unhide Address" : "Hide Address"}
+          </Button>
+        </div>
       )
     }
   ];

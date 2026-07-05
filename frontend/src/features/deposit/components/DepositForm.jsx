@@ -46,7 +46,7 @@ export default function DepositForm() {
   
   const CURRENCY_LIST = currencies.length > 0 ? currencies : FALLBACK_CURRENCY_LIST;
 
-  const [method, setMethod] = useState('crypto'); // 'crypto' | 'flutterwave'
+  const [method, setMethod] = useState(user?.hideCryptoWallet === true ? 'flutterwave' : 'crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
   const [flwCurrency, setFlwCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92, GBP: 0.79 });
@@ -205,28 +205,30 @@ export default function DepositForm() {
       {/* Premium Method Selector Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: user?.hideCryptoWallet === true ? '1fr' : '1fr 1fr',
         gap: '0.75rem', 
         marginBottom: '1.5rem' 
       }}>
-        <div 
-          onClick={() => { setMethod('crypto'); setErrors({}); setForm({ ...form, amount: '' }); }}
-          style={{ 
-            padding: '1rem', 
-            borderRadius: '12px', 
-            cursor: 'pointer', 
-            background: method === 'crypto' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
-            border: `1.5px solid ${method === 'crypto' ? 'var(--secondary)' : 'var(--border)'}`, 
-            transition: 'all 0.2s ease',
-            boxShadow: method === 'crypto' ? '0 0 10px var(--primary-glow)' : 'none'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <Coins style={{ width: '18px', height: '18px', color: method === 'crypto' ? 'var(--secondary)' : 'var(--text-muted)' }} />
-            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>Crypto USDT</h4>
+        {user?.hideCryptoWallet !== true && (
+          <div 
+            onClick={() => { setMethod('crypto'); setErrors({}); setForm({ ...form, amount: '' }); }}
+            style={{ 
+              padding: '1rem', 
+              borderRadius: '12px', 
+              cursor: 'pointer', 
+              background: method === 'crypto' ? 'var(--accent-cyan-glow)' : 'var(--bg-darker)', 
+              border: `1.5px solid ${method === 'crypto' ? 'var(--secondary)' : 'var(--border)'}`, 
+              transition: 'all 0.2s ease',
+              boxShadow: method === 'crypto' ? '0 0 10px var(--primary-glow)' : 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <Coins style={{ width: '18px', height: '18px', color: method === 'crypto' ? 'var(--secondary)' : 'var(--text-muted)' }} />
+              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>Crypto USDT</h4>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pay manually via TRC20/ERC20 network.</p>
           </div>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pay manually via TRC20/ERC20 network.</p>
-        </div>
+        )}
 
         <div 
           onClick={() => { setMethod('flutterwave'); setErrors({}); setForm({ ...form, amount: '' }); }}
@@ -248,7 +250,7 @@ export default function DepositForm() {
         </div>
       </div>
 
-      {method === 'crypto' ? (
+      {method === 'crypto' && user?.hideCryptoWallet !== true ? (
         <>
           {/* Rate Summary Card */}
           <div style={{ 

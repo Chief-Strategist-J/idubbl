@@ -547,6 +547,29 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
+  toggleWalletVisibility: async (userId) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    try {
+      const response = await fetch(`${ADMIN_BASE_URL}/users/${userId}/toggle-wallet-visibility`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(currentUserId ? { 'x-user-id': currentUserId } : {})
+        },
+        credentials: 'include'
+      });
+      const json = await response.json();
+      if (json.success) {
+        await get().fetchAdminUsers();
+        return { success: true, hideCryptoWallet: json.hideCryptoWallet };
+      }
+      return { success: false, error: json.error || 'Failed to toggle wallet visibility' };
+    } catch (error) {
+      console.error('Error in toggleWalletVisibility store call:', error);
+      return { success: false, error: 'Network error toggling wallet visibility' };
+    }
+  },
+
   supportTickets: [],
 
   fetchAdminSupportTickets: async () => {
