@@ -9,6 +9,8 @@ export default function AdminWithdrawalsPage() {
   const { user, updateUserPreferences } = useAuthStore();
   const [search, setSearch] = useState('');
   const [actionId, setActionId] = useState(null);
+  const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92 });
+  const [loadingRates, setLoadingRates] = useState(true);
 
   const showFullAddresses = user?.showFullAddresses ?? false;
 
@@ -18,6 +20,22 @@ export default function AdminWithdrawalsPage() {
 
   React.useEffect(() => {
     fetchAdminWithdrawals();
+    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setExchangeRates({
+            USD: 1,
+            NGN: data.rates.NGN || 1500,
+            GHS: data.rates.GHS || 15,
+            KES: data.rates.KES || 130,
+            ZAR: data.rates.ZAR || 18,
+            EUR: data.rates.EUR || 0.92
+          });
+        }
+      })
+      .catch(err => console.warn(err))
+      .finally(() => setLoadingRates(false));
   }, [fetchAdminWithdrawals]);
 
   const handleApprove = async (id) => {
@@ -94,6 +112,31 @@ export default function AdminWithdrawalsPage() {
   return (
     <AdminLayout>
       <PageHeader title="Withdrawal Requests" subtitle="Review and approve withdrawal requests before payout." />
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <Card style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, fontWeight: 600 }}>USD Exchange Rates (Reference for Fiat/Bank payouts)</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.75rem', marginTop: '0.25rem' }}>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>NGN</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `₦${exchangeRates.NGN.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GHS</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `GH₵${exchangeRates.GHS.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>KES</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `KSh${exchangeRates.KES.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ZAR</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `R${exchangeRates.ZAR.toFixed(2)}`}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search by user or address..." style={{ flex: 1 }} />

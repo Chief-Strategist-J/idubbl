@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '../../shared/components/layout/AdminLayout.jsx';
 import { Stat, Card, PageHeader, Badge } from '../../shared/components/ui/index.js';
 import useWalletStore from '../../shared/store/walletStore.js';
@@ -7,12 +7,31 @@ import useMatchStore from '../../shared/store/matchStore.js';
 export default function AdminDashboardHome() {
   const { deposits, withdrawals, adminUsers, fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminUsers, loading: _walletLoading } = useWalletStore();
   const { matches, tiers, fetchAdminMatches, loading: _matchLoading } = useMatchStore();
+  const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92 });
+  const [loadingRates, setLoadingRates] = useState(true);
 
   useEffect(() => {
     fetchAdminDeposits();
     fetchAdminWithdrawals();
     fetchAdminMatches();
     fetchAdminUsers();
+    
+    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setExchangeRates({
+            USD: 1,
+            NGN: data.rates.NGN || 1500,
+            GHS: data.rates.GHS || 15,
+            KES: data.rates.KES || 130,
+            ZAR: data.rates.ZAR || 18,
+            EUR: data.rates.EUR || 0.92
+          });
+        }
+      })
+      .catch(err => console.warn(err))
+      .finally(() => setLoadingRates(false));
   }, [fetchAdminDeposits, fetchAdminWithdrawals, fetchAdminMatches, fetchAdminUsers]);
 
   const pendingDeposits = deposits.filter((d) => d.status === 'pending').length;
@@ -48,6 +67,30 @@ export default function AdminDashboardHome() {
       </Card>
 
       <PageHeader title="Admin Dashboard" subtitle="Monitor deposits, matches, withdrawals, and platform health in real time." />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <Card style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, fontWeight: 600 }}>USD Exchange Rates (Reference for Fiat/Bank payouts)</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.75rem', marginTop: '0.25rem' }}>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>NGN</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `₦${exchangeRates.NGN.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GHS</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `GH₵${exchangeRates.GHS.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>KES</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `KSh${exchangeRates.KES.toFixed(2)}`}</div>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'var(--bg-darker)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ZAR</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent-green)' }}>{loadingRates ? '...' : `R${exchangeRates.ZAR.toFixed(2)}`}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <div className="admin-stats-grid">
         <Stat label="Pending Deposits" value={pendingDeposits} highlight />
