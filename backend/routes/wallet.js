@@ -445,6 +445,80 @@ router.post('/withdraw', async (req, res) => {
   }
 });
 
+// 4b. Transfer Winnings to Deposit
+router.post('/transfer-winnings', async (req, res) => {
+  const { amount } = req.body;
+
+  if (!amount || Number(amount) <= 0) {
+    return errorRegistry.send(res, 'INVALID_AMOUNT', 'A valid positive amount is required to transfer.');
+  }
+
+  try {
+    const userId = await getUserIdFromReq(req);
+    const db = await getDb();
+
+    const wallet = await getOrCreateWallet(db, userId);
+
+    const totalAvailable = wallet.winningsBalance || 0;
+    if (totalAvailable < Number(amount)) {
+      return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient winnings balance to complete the transfer.');
+    }
+
+    // Atomically decrement winnings and increment deposit
+    await db.collection('wallets').updateOne(
+      { userId },
+      {
+        $inc: {
+          winningsBalance: -Number(amount),
+          depositBalance: Number(amount)
+        }
+      }
+    );
+
+    // Record the transfer transaction
+    const newTransfer = {
+      userId,
+      amount: Number(amount),
+      currency: 'USDT',
+      address: 'Internal Transfer',
+      network: 'INTERNAL',
+      note: 'Transferred winnings to deposit balance',
+      status: 'approved',
+      type: 'deposit',
+      description: 'Transfer Winnings to Deposit',
+      createdAt: new Date(),
+    };
+    
+    // Also record a deduction transaction so history is perfectly matched
+    const newTransferDeduction = {
+      userId,
+      amount: -Number(amount),
+      currency: 'USDT',
+      address: 'Internal Transfer',
+      network: 'INTERNAL',
+      note: 'Transferred winnings to deposit balance',
+      status: 'approved',
+      type: 'withdrawal',
+      description: 'Transfer Winnings to Deposit',
+      createdAt: new Date(),
+    };
+
+    await db.collection('transactions').insertMany([newTransfer, newTransferDeduction]);
+
+    res.json({
+      success: true,
+      message: 'Funds transferred successfully.',
+      data: {
+        winningsBalance: totalAvailable - Number(amount),
+        depositBalance: (wallet.depositBalance || 0) + Number(amount)
+      }
+    });
+  } catch (error) {
+    console.error('Error transferring winnings to deposit:', error);
+    return errorRegistry.send(res, 'DATABASE_ERROR', 'Database error transferring winnings.');
+  }
+});
+
 // 5. Admin Approve Deposit
 router.post('/admin/deposit/:id/approve', async (req, res) => {
   const { id } = req.params;

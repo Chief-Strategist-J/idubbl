@@ -397,6 +397,32 @@ const useWalletStore = create((set, get) => ({
     }
   },
 
+  transferWinningsToDeposit: async (amount, userId) => {
+    const currentUserId = userId || useAuthStore.getState().user?.id;
+    if (!currentUserId) return { success: false, error: 'User session not found' };
+    try {
+      const response = await fetch(`${BASE_URL}/transfer-winnings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUserId
+        },
+        credentials: 'include',
+        body: JSON.stringify({ amount: Number(amount) }),
+      });
+
+      if (response.ok) {
+        await get().fetchWalletData(currentUserId);
+        return { success: true };
+      }
+      const errData = await response.json();
+      return { success: false, error: errData.message || errData.error };
+    } catch (error) {
+      console.error('Transfer internal error:', error);
+      return { success: false, error: 'Network error completing internal transfer' };
+    }
+  },
+
   approveDeposit: async (depositId, userId) => {
     const currentUserId = userId || useAuthStore.getState().user?.id;
     try {

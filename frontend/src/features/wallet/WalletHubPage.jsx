@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Card } from '../../shared/components/ui/index.js';
@@ -35,7 +35,33 @@ function isPositive(type, amount) {
 export default function WalletHubPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { availableBalance, lockedBalance, idubbuBalance, depositBalance, winningsBalance, pendingWithdrawals, transactions, fetchWalletData } = useWalletStore();
+  const { availableBalance, lockedBalance, idubbuBalance, depositBalance, winningsBalance, pendingWithdrawals, transactions, fetchWalletData, transferWinningsToDeposit } = useWalletStore();
+
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferError, setTransferError] = useState('');
+  const [transferSuccess, setTransferSuccess] = useState('');
+
+  const handleTransferSubmit = async () => {
+    if (!transferAmount || Number(transferAmount) <= 0) return;
+    setTransferLoading(true);
+    setTransferError('');
+    setTransferSuccess('');
+    
+    const result = await transferWinningsToDeposit(Number(transferAmount));
+    setTransferLoading(false);
+    if (result.success) {
+      setTransferSuccess('Transfer completed successfully!');
+      setTransferAmount('');
+      setTimeout(() => {
+        setTransferModalOpen(false);
+        setTransferSuccess('');
+      }, 1500);
+    } else {
+      setTransferError(result.error || 'Failed to complete transfer.');
+    }
+  };
 
   useEffect(() => {
     if (user?.id) {
@@ -110,27 +136,55 @@ export default function WalletHubPage() {
               border: '1px solid rgba(0, 227, 122, 0.15)',
               borderRadius: 12,
               padding: '1rem 1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: '110px'
             }}>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>
-                Winning Balance
-              </p>
-              <p style={{
-                fontSize: '1.8rem',
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                color: 'var(--secondary)',
-                margin: 0,
-                lineHeight: '1.3',
-                letterSpacing: '0.02em',
-                paddingLeft: '2px',
-                display: 'flex',
-                alignItems: 'baseline',
-                flexWrap: 'wrap',
-                gap: '0.25rem 0.5rem'
-              }}>
-                <span>{Number(winningsBalance || 0).toFixed(2)}</span>
-                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7 }}>USDT</span>
-              </p>
+              <div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>
+                  Winning Balance
+                </p>
+                <p style={{
+                  fontSize: '1.8rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-display)',
+                  color: 'var(--secondary)',
+                  margin: 0,
+                  lineHeight: '1.3',
+                  letterSpacing: '0.02em',
+                  paddingLeft: '2px',
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  flexWrap: 'wrap',
+                  gap: '0.25rem 0.5rem'
+                }}>
+                  <span>{Number(winningsBalance || 0).toFixed(2)}</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.7 }}>USDT</span>
+                </p>
+              </div>
+              {Number(winningsBalance || 0) > 0 && (
+                <button
+                  onClick={() => setTransferModalOpen(true)}
+                  style={{
+                    alignSelf: 'flex-start',
+                    marginTop: '0.65rem',
+                    background: 'rgba(0, 227, 122, 0.08)',
+                    border: '1.5px solid rgba(0, 227, 122, 0.25)',
+                    color: 'var(--accent-green)',
+                    borderRadius: '6px',
+                    padding: '0.3rem 0.6rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => { e.target.style.background = 'rgba(0, 227, 122, 0.15)'; }}
+                  onMouseLeave={(e) => { e.target.style.background = 'rgba(0, 227, 122, 0.08)'; }}
+                >
+                  🔄 Transfer to Deposit
+                </button>
+              )}
             </div>
 
             {/* Locked balance */}
@@ -299,6 +353,47 @@ export default function WalletHubPage() {
         </Card>
 
       </div>
+
+      {/* Transfer Winnings to Deposit Modal */}
+      {transferModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '90%', maxWidth: '400px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '16px', padding: '1.5rem', boxShadow: 'var(--shadow-card)', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => { setTransferModalOpen(false); setTransferError(''); setTransferSuccess(''); setTransferAmount(''); }}>✕</div>
+            
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Transfer Winnings to Deposit</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+              Move funds instantly from your winnings wallet to your deposit wallet so you can keep playing.
+            </p>
+
+            <div style={{ background: 'var(--bg-darker)', padding: '0.75rem 1rem', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Available Winnings:</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-green)' }}>{Number(winningsBalance || 0).toFixed(2)} USDT</span>
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Amount to Transfer (USDT)</label>
+              <input
+                type="number"
+                value={transferAmount}
+                onChange={e => setTransferAmount(e.target.value)}
+                placeholder="0.00"
+                max={winningsBalance}
+                min={0.01}
+                step="0.01"
+                style={{ width: '100%', padding: '0.65rem 0.75rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '1rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {transferError && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', margin: '0 0 1rem 0' }}>{transferError}</p>}
+            {transferSuccess && <p style={{ color: 'var(--accent-green)', fontSize: '0.8rem', margin: '0 0 1rem 0' }}>{transferSuccess}</p>}
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button variant="ghost" onClick={() => { setTransferModalOpen(false); setTransferError(''); setTransferSuccess(''); setTransferAmount(''); }} style={{ flex: 1 }}>Cancel</Button>
+              <Button variant="primary" onClick={handleTransferSubmit} loading={transferLoading} disabled={!transferAmount || Number(transferAmount) <= 0 || Number(transferAmount) > winningsBalance} style={{ flex: 1 }}>Transfer</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
