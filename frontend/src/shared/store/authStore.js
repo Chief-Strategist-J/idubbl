@@ -230,11 +230,12 @@ const useAuthStore = create(
         set({ loading: true });
         try {
           const callbackURL = `${window.location.origin}/dashboard`;
+          const errorCallbackURL = `${window.location.origin}/login`;
           const res = await fetch(`${AUTH_API}/sign-in/social`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ provider, callbackURL })
+            body: JSON.stringify({ provider, callbackURL, errorCallbackURL })
           });
           const data = await res.json();
           set({ loading: false });
