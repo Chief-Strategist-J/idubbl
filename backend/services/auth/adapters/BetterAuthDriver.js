@@ -15,6 +15,16 @@ export class BetterAuthDriver extends AuthDriver {
       this.client = sharedClient;
       this.db = sharedDb;
 
+      let betterAuthUrl = process.env.BETTER_AUTH_URL || config.baseURL;
+      if (!betterAuthUrl) {
+        betterAuthUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://idubbl-backend.onrender.com/api/auth' 
+          : 'http://localhost:5000/api/auth';
+      }
+      if (betterAuthUrl && !betterAuthUrl.includes('/api/auth')) {
+        betterAuthUrl = `${betterAuthUrl.replace(/\/$/, '')}/api/auth`;
+      }
+
       const authOptions = {
         secret: process.env.BETTER_AUTH_SECRET || config.secret || 'SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME',
         database: mongodbAdapter(this.db, {
@@ -145,7 +155,7 @@ export class BetterAuthDriver extends AuthDriver {
             }
           }
         ],
-        baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === 'production' ? 'https://idubbl-backend.onrender.com' : 'http://localhost:5000'),
+        baseURL: betterAuthUrl,
         trustedOrigins: [
           'https://idubbl-frontend.onrender.com',
           'https://idubbl.com.ng',
