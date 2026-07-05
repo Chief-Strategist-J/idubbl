@@ -410,9 +410,14 @@ const useWalletStore = create((set, get) => ({
         } else {
           await get().fetchWalletData(currentUserId);
         }
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.error || 'Failed to approve deposit' };
       }
     } catch (error) {
       console.error('Error approving deposit:', error);
+      return { success: false, error: 'Network error approving deposit' };
     }
   },
 
@@ -430,9 +435,14 @@ const useWalletStore = create((set, get) => ({
         } else {
           await get().fetchWalletData(currentUserId);
         }
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.error || 'Failed to reject deposit' };
       }
     } catch (error) {
       console.error('Error rejecting deposit:', error);
+      return { success: false, error: 'Network error rejecting deposit' };
     }
   },
 
@@ -450,9 +460,14 @@ const useWalletStore = create((set, get) => ({
         } else {
           await get().fetchWalletData(currentUserId);
         }
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.error || 'Failed to approve withdrawal' };
       }
     } catch (error) {
       console.error('Error approving withdrawal:', error);
+      return { success: false, error: 'Network error approving withdrawal' };
     }
   },
 
@@ -470,9 +485,14 @@ const useWalletStore = create((set, get) => ({
         } else {
           await get().fetchWalletData(currentUserId);
         }
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.error || 'Failed to reject withdrawal' };
       }
     } catch (error) {
       console.error('Error rejecting withdrawal:', error);
+      return { success: false, error: 'Network error rejecting withdrawal' };
     }
   },
 
