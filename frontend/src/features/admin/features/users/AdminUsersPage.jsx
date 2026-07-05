@@ -240,64 +240,8 @@ export default function AdminUsersPage() {
             </p>
 
             <form onSubmit={handleTopupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount ({topupCurrency})</label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  placeholder="0.00"
-                  value={topupAmount}
-                  onChange={(e) => setTopupAmount(e.target.value)}
-                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
-                />
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Currency</label>
-                <select
-                  value={topupCurrency}
-                  onChange={(e) => setTopupCurrency(e.target.value)}
-                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
-                >
-                  {CURRENCY_LIST.map((curr) => (
-                    <option key={curr.value} value={curr.value}>
-                      {curr.flag} {curr.label || curr.value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {topupCurrency !== 'USD' && topupCurrency !== 'USDT' && (
-                <div style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)', backgroundColor: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Live Exchange Rate:</span>
-                    <strong style={{ color: '#fff' }}>1 USD ≈ {exchangeRates[topupCurrency] || '...'} {topupCurrency}</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '0.25rem', marginTop: '0.25rem' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Estimated Credit:</span>
-                    <strong style={{ color: 'var(--secondary)' }}>
-                      {topupAmount && !isNaN(Number(topupAmount))
-                        ? (Number(topupAmount) / (exchangeRates[topupCurrency] || 1)).toFixed(2)
-                        : '0.00'}{' '}
-                      USDT
-                    </strong>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Balance Target</label>
-                <select
-                  value={balanceType}
-                  onChange={(e) => setBalanceType(e.target.value)}
-                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
-                >
-                  <option value="depositBalance">Deposit Balance (e.g. Crypto Buy/Deposits)</option>
-                  <option value="winningsBalance">Winnings Balance (e.g. Manual adjustments)</option>
-                </select>
-              </div>
-
+              {/* Method selector — always shown first */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Top Up Method</label>
                 <select
@@ -311,26 +255,101 @@ export default function AdminUsersPage() {
                 </select>
               </div>
 
+              {/* Amount — always shown */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Reference / Tx Hash</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Amount {topupMethod !== 'flutterwave' ? `(${topupCurrency})` : '(USD)'}
+                </label>
                 <input
-                  type="text"
-                  placeholder="e.g. TRON transaction hash or payment reference"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
+                  type="number"
+                  step="any"
+                  required
+                  placeholder="0.00"
+                  value={topupAmount}
+                  onChange={(e) => setTopupAmount(e.target.value)}
                   style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Admin Notes</label>
-                <textarea
-                  placeholder="Reason for manual credit, e.g. 'Manually verified TRC20 deposit'"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem', minHeight: '60px', resize: 'vertical' }}
-                />
-              </div>
+              {/* Flutterwave info banner — shown only for flutterwave */}
+              {topupMethod === 'flutterwave' && (
+                <div style={{ padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(100, 200, 255, 0.06)', border: '1px solid rgba(100, 200, 255, 0.2)', fontSize: '0.83rem', color: 'var(--text-secondary)' }}>
+                  💳 This will open a <strong style={{ color: '#fff' }}>Flutterwave Checkout</strong> page for the user. The amount above will be charged in USD via card/bank. No extra fields needed.
+                </div>
+              )}
+
+              {/* Fields only shown for manual / crypto */}
+              {topupMethod !== 'flutterwave' && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Currency</label>
+                    <select
+                      value={topupCurrency}
+                      onChange={(e) => setTopupCurrency(e.target.value)}
+                      style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                    >
+                      {CURRENCY_LIST.map((curr) => (
+                        <option key={curr.value} value={curr.value}>
+                          {curr.flag} {curr.label || curr.value}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {topupCurrency !== 'USD' && topupCurrency !== 'USDT' && (
+                    <div style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--border)', backgroundColor: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Live Exchange Rate:</span>
+                        <strong style={{ color: '#fff' }}>1 USD ≈ {exchangeRates[topupCurrency] || '...'} {topupCurrency}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '0.25rem', marginTop: '0.25rem' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Estimated Credit:</span>
+                        <strong style={{ color: 'var(--secondary)' }}>
+                          {topupAmount && !isNaN(Number(topupAmount))
+                            ? (Number(topupAmount) / (exchangeRates[topupCurrency] || 1)).toFixed(2)
+                            : '0.00'}{' '}
+                          USDT
+                        </strong>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Balance Target</label>
+                    <select
+                      value={balanceType}
+                      onChange={(e) => setBalanceType(e.target.value)}
+                      style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                    >
+                      <option value="depositBalance">Deposit Balance (e.g. Crypto Buy/Deposits)</option>
+                      <option value="winningsBalance">Winnings Balance (e.g. Manual adjustments)</option>
+                    </select>
+                  </div>
+
+                  {topupMethod === 'crypto' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Reference / Tx Hash</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. TRON transaction hash or payment reference"
+                        value={reference}
+                        onChange={(e) => setReference(e.target.value)}
+                        style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Admin Notes</label>
+                    <textarea
+                      placeholder="Reason for manual credit, e.g. 'Manually verified TRC20 deposit'"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem', minHeight: '60px', resize: 'vertical' }}
+                    />
+                  </div>
+                </>
+              )}
 
               {errorMsg && <div style={{ color: 'var(--accent-danger, #ff4d4d)', fontSize: '0.875rem', fontWeight: 500 }}>{errorMsg}</div>}
               {successMsg && <div style={{ color: 'var(--accent-green, #4dff4d)', fontSize: '0.875rem', fontWeight: 500 }}>{successMsg}</div>}
@@ -340,7 +359,7 @@ export default function AdminUsersPage() {
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" disabled={topupLoading}>
-                  {topupLoading ? 'Processing...' : 'Confirm Top Up'}
+                  {topupLoading ? 'Processing...' : topupMethod === 'flutterwave' ? 'Open Flutterwave' : 'Confirm Top Up'}
                 </Button>
               </div>
             </form>
