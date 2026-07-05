@@ -22,6 +22,7 @@ import useAuthStore from '../../../shared/store/authStore.js';
 import { PLATFORM_WALLET, SUPPORTED_NETWORKS, MIN_DEPOSIT } from '../../../shared/mock/index.js';
 
 const NETWORK_OPTIONS = SUPPORTED_NETWORKS.map((n) => ({ value: n, label: n }));
+const IDUBBU_RATE = 1;
 const FALLBACK_CURRENCY_LIST = [
   { value: 'USD', label: 'USD - US Dollar', flag: '🇺🇸' },
   { value: 'NGN', label: 'NGN - Nigerian Naira', flag: '🇳🇬' },
@@ -189,7 +190,7 @@ export default function DepositForm() {
     curr.value.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedCurrencyObj = CURRENCY_LIST.find(curr => curr.value === flwCurrency) || CURRENCY_LIST[0];
+  const selectedCurrencyObj = CURRENCY_LIST.find(curr => curr.value === flwCurrency) || CURRENCY_LIST[0] || { flag: '🇺🇸', value: 'USD' };
 
   return (
     <Card hover={false}>
