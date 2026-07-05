@@ -233,6 +233,7 @@ const useAuthStore = create(
           const res = await fetch(`${AUTH_API}/sign-in/social`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ provider, callbackURL })
           });
           const data = await res.json();
