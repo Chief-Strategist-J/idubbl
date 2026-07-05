@@ -50,7 +50,8 @@ const COLUMNS = [
       const isNegative = row.type === 'withdrawal' || row.type === 'loss' || row.type === 'match_loss' || row.type === 'match_entry' || row.type === 'match_reserve';
       const color = isNegative ? 'var(--accent-red)' : 'var(--accent-green)';
       const prefix = isNegative ? '-' : '+';
-      return <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color }}>{prefix}{v || 0} USDT</span>;
+      const currency = row.currency || 'USDT';
+      return <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color }}>{prefix}{v || 0} {currency}</span>;
   }},
   { key: 'status', label: 'Status', render: (v) => <Badge status={v} /> },
   { key: 'date', label: 'Date', render: (v, row) => new Date(v || row.createdAt).toLocaleString() },
