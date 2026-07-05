@@ -231,8 +231,6 @@ export default function SupportPage() {
                     <strong style={{ color: 'var(--text-primary)' }}>Email:</strong>
                     <br />
                     <a href="mailto:Support@idubbl.com.ng" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>Support@idubbl.com.ng</a>
-                    <br />
-                    <a href="mailto:info@swaddigitalsolutions.com" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>info@swaddigitalsolutions.com</a>
                   </div>
                   <div>
                     <strong style={{ color: 'var(--text-primary)' }}>Phone:</strong>
@@ -241,10 +239,22 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <strong style={{ color: 'var(--text-primary)' }}>Global Offices:</strong>
-                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.25rem', borderLeft: '2px solid var(--border)' }}>
-                      Lagos, Nigeria<br />
-                      London, UK<br />
-                      New York, USA
+                    <div style={{ paddingLeft: '0.5rem', marginTop: '0.25rem', borderLeft: '2px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div>
+                        <strong>Lagos, Nigeria</strong>
+                        <br />
+                        12 Joel Ogunnaike Street, Ikeja GRA, Lagos
+                      </div>
+                      <div>
+                        <strong>London, UK</strong>
+                        <br />
+                        85 Great Portland Street, London, W1W 7LT
+                      </div>
+                      <div>
+                        <strong>New York, USA</strong>
+                        <br />
+                        1460 Broadway, New York, NY 10036
+                      </div>
                     </div>
                   </div>
                 </div>
