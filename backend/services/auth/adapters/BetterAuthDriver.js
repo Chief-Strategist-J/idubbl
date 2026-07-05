@@ -26,15 +26,20 @@ export class BetterAuthDriver extends AuthDriver {
         betterAuthUrl = `${betterAuthUrl.replace(/\/$/, '')}/api/auth`;
       }
 
+      const isProd = betterAuthUrl.startsWith('https://');
+
       const authOptions = {
         secret: process.env.BETTER_AUTH_SECRET || config.secret || 'SUPER_SECRET_BETTER_AUTH_KEY_CHANGE_ME',
         database: mongodbAdapter(this.db, {
           client: this.client,
         }),
+        account: {
+          storeStateStrategy: "database",
+        },
         advanced: {
           cookie: {
-            sameSite: (process.env.NODE_ENV === 'production' || (process.env.BETTER_AUTH_URL && process.env.BETTER_AUTH_URL.startsWith('https://'))) ? "none" : "lax",
-            secure: process.env.NODE_ENV === 'production' || (process.env.BETTER_AUTH_URL && process.env.BETTER_AUTH_URL.startsWith('https://'))
+            sameSite: isProd ? "none" : "lax",
+            secure: isProd
           }
         },
         session: {
