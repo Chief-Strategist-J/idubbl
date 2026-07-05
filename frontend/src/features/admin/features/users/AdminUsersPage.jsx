@@ -10,6 +10,7 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [topupAmount, setTopupAmount] = useState('');
   const [balanceType, setBalanceType] = useState('depositBalance');
+  const [topupMethod, setTopupMethod] = useState('manual'); // 'manual' | 'crypto' | 'flutterwave'
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [topupLoading, setTopupLoading] = useState(false);
@@ -53,7 +54,8 @@ export default function AdminUsersPage() {
       amount: Number(topupAmount),
       balanceType,
       reference,
-      notes
+      notes,
+      method: topupMethod
     });
 
     setTopupLoading(false);
@@ -62,6 +64,7 @@ export default function AdminUsersPage() {
       setTopupAmount('');
       setReference('');
       setNotes('');
+      setTopupMethod('manual');
       // Delay closing modal slightly so user sees success message
       setTimeout(() => {
         setSelectedUser(null);
@@ -191,6 +194,19 @@ export default function AdminUsersPage() {
                 >
                   <option value="depositBalance">Deposit Balance (e.g. Crypto Buy/Deposits)</option>
                   <option value="winningsBalance">Winnings Balance (e.g. Manual adjustments)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Top Up Method</label>
+                <select
+                  value={topupMethod}
+                  onChange={(e) => setTopupMethod(e.target.value)}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg, #222)', color: '#fff', fontSize: '1rem' }}
+                >
+                  <option value="manual">Manual Credit (Internal)</option>
+                  <option value="crypto">USDT Crypto Deposit</option>
+                  <option value="flutterwave">Flutterwave Checkout Deposit</option>
                 </select>
               </div>
 

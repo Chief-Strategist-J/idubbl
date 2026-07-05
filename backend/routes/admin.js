@@ -5,6 +5,8 @@ import { authService } from '../services/index.js';
 
 const router = express.Router();
 
+const IDUBBU_RATE = 1;
+
 async function adminAuth(req, res, next) {
   try {
     const userIdHeader = req.headers['x-user-id'];
@@ -363,7 +365,7 @@ router.post('/settings/platform', adminAuth, async (req, res) => {
 // 15. POST /api/admin/users/:userId/topup - Manual wallet top up (points/credit) for user accounts
 router.post('/users/:userId/topup', adminAuth, async (req, res) => {
   const { userId } = req.params;
-  const { amount, balanceType, reference, notes } = req.body;
+  const { amount, balanceType, reference, notes, method } = req.body;
 
   if (amount === undefined || isNaN(Number(amount)) || Number(amount) <= 0) {
     return res.status(400).json({ error: 'Invalid top-up amount. Must be a positive number.' });
@@ -393,6 +395,13 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
     const updateQuery = {};
     updateQuery[targetType] = Number(amount);
 
+    // Also update idubbuBalance if depositing to depositBalance
+    if (targetType === 'depositBalance') {
+      updateQuery.idubbuBalance = Number(amount) * IDUBBU_RATE;
+    } else if (targetType === 'winningsBalance') {
+      updateQuery.idubbuBalance = Number(amount) * IDUBBU_RATE;
+    }
+
     const setOnInsertFields = {
       lockedBalance: 0,
       pendingWithdrawals: 0
@@ -413,11 +422,12 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
     const transaction = {
       userId: resolvedUserId,
       amount: Number(amount),
-      type: 'manual_topup',
+      type: (method === 'flutterwave' || method === 'crypto') ? 'deposit' : 'manual_topup',
       balanceType: targetType,
       status: 'approved',
-      reference: reference || 'manual-admin-topup',
-      notes: notes || `Admin manually credited ${amount} to ${targetType}.`,
+      reference: reference || (method === 'flutterwave' ? 'flw-admin-topup' : 'manual-admin-topup'),
+      network: method === 'flutterwave' ? 'FLUTTERWAVE' : (method === 'crypto' ? 'TRC20' : 'INTERNAL'),
+      notes: notes || `Admin manually credited ${amount} to ${targetType} via ${method || 'internal'}.`,
       createdAt: new Date(),
       updatedAt: new Date(),
       adminId: req.user.id || req.user._id.toString()
