@@ -67,6 +67,46 @@ export default function AdminUsersPage() {
     const rate = exchangeRates[topupCurrency] || 1;
     const usdAmount = Number(topupAmount) / rate;
 
+    if (topupMethod === 'flutterwave') {
+      try {
+        const apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+        const targetUserId = selectedUser.id || selectedUser._id;
+        const res = await fetch(`${apiBase}/api/payment/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': targetUserId
+          },
+          body: JSON.stringify({
+            amount: Number(topupAmount),
+            currency: topupCurrency,
+            usdAmount: Number(usdAmount.toFixed(4)),
+            gateway: 'flutterwave',
+            customer: {
+              email: selectedUser.email,
+              name: selectedUser.name || selectedUser.email?.split('@')[0] || 'Player',
+              phone: selectedUser.phone || ''
+            },
+            description: `Admin Topup for ${selectedUser.email} - ${topupCurrency} ${topupAmount}`
+          })
+        });
+        const data = await res.json();
+        setTopupLoading(false);
+        if (res.ok && data.success && data.paymentLink) {
+          setSuccessMsg('Redirecting to Flutterwave checkout...');
+          setTimeout(() => {
+            window.location.href = data.paymentLink;
+          }, 1000);
+        } else {
+          setErrorMsg(data.error || 'Failed to create Flutterwave checkout session.');
+        }
+      } catch (err) {
+        setTopupLoading(false);
+        setErrorMsg('Network error initializing Flutterwave checkout.');
+      }
+      return;
+    }
+
     const res = await manualTopup(selectedUser.id || selectedUser._id, {
       amount: Number(topupAmount),
       balanceType,
