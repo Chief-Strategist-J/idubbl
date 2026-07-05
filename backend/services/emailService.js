@@ -13,7 +13,7 @@ export async function sendEmail({ to, subject, html }) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'iDubbl <onboarding@resend.dev>',
+        from: 'iDubbl <no-reply@idubbl.com.ng>',
         to: to,
         subject: subject,
         html: html
