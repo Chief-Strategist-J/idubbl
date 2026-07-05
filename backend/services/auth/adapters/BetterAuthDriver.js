@@ -169,6 +169,9 @@ export class BetterAuthDriver extends AuthDriver {
         ],
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
+          requireEmailVerification: false,
+          autoSignIn: false,
+          resetPasswordTokenExpiresIn: 3600, // 1 hour
           sendResetPassword: async ({ user, url, token }) => {
             console.log('--------------------------------------------------');
             console.log(`[PASSWORD RESET] For user: ${user.email}`);
@@ -187,6 +190,7 @@ export class BetterAuthDriver extends AuthDriver {
                     <a href="${url}" style="background-color: #00f5a0; color: #04130d; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-family: sans-serif;">Reset Password</a>
                   </div>
                   <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">If you did not request a password reset, you can safely ignore this email.</p>
+                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">This link expires in 1 hour.</p>
                 </div>
               `
             });
