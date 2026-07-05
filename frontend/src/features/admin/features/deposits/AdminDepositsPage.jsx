@@ -22,12 +22,23 @@ const COLUMNS = (onApprove, onReject, showFullAddresses) => [
   { key: 'createdAt', label: 'Date', render: (v) => new Date(v).toLocaleDateString() },
   {
     key: 'actions', label: 'Actions',
-    render: (_, row) => row.status === 'pending' ? (
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <Button variant="primary" onClick={() => onApprove(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Approve</Button>
-        <Button variant="danger" onClick={() => onReject(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Reject</Button>
-      </div>
-    ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>,
+    render: (_, row) => {
+      if (row.status === 'pending') {
+        return (
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="primary" onClick={() => onApprove(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Approve</Button>
+            <Button variant="danger" onClick={() => onReject(row.id, row.userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>Reject</Button>
+          </div>
+        );
+      }
+      const colors = { approved: { bg: '#0d2e1a', border: '#16a34a', text: '#4ade80' }, rejected: { bg: '#2e0d0d', border: '#dc2626', text: '#f87171' } };
+      const c = colors[row.status] || { bg: 'var(--bg-darker)', border: 'var(--border)', text: 'var(--text-muted)' };
+      return (
+        <span style={{ padding: '0.25rem 0.65rem', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 700, background: c.bg, border: `1px solid ${c.border}`, color: c.text, textTransform: 'capitalize', letterSpacing: '0.03em' }}>
+          {row.status}
+        </span>
+      );
+    }
   },
 ];
 
