@@ -36,7 +36,7 @@ export default function LobbyPage() {
   const FREEPLAY_GAMES = ALL_GAMES.filter(g => g.freePlay && gameVisibility[g.id] !== false);
 
   const chosenGameId = searchParams.get('game') || 'word_duel';
-  const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0];
+  const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0] || { id: 'word_duel', name: 'Word Duel', description: 'Timed word challenge duels.' };
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
