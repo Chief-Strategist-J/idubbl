@@ -366,6 +366,7 @@ const useWalletStore = create((set, get) => ({
           amount: data.amount,
           address: data.address,
           network: data.network,
+          currency: data.currency,
         }),
       });
 

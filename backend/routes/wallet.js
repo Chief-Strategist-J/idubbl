@@ -376,7 +376,7 @@ router.post('/deposit', async (req, res) => {
 
 // 4. Submit Withdrawal Request
 router.post('/withdraw', async (req, res) => {
-  const { amount, address, network } = req.body;
+  const { amount, address, network, currency, note } = req.body;
 
   if (!amount || !address || !network) {
     return errorRegistry.send(res, 'MISSING_WITHDRAW_DETAILS', 'Amount, target address, and network are required.');
@@ -428,9 +428,10 @@ router.post('/withdraw', async (req, res) => {
     const newWithdrawal = {
       userId,
       amount: Number(amount),
+      currency: currency || 'USDT',
       address,
       network,
-      note: '',
+      note: note || '',
       status: 'pending',
       type: 'withdrawal',
       createdAt: new Date(),

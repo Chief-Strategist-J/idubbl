@@ -9,7 +9,7 @@ import QoreID from '@qore-id/web-sdk';
 const IDUBBU_RATE = 1;
 
 export default function WithdrawForm() {
-  const { depositBalance, winningsBalance, idubbuBalance, pendingWithdrawals, submitWithdrawal } = useWalletStore();
+  const { depositBalance, winningsBalance, idubbuBalance, pendingWithdrawals, submitWithdrawal, currencies, fetchCurrencies } = useWalletStore();
   const { user } = useAuthStore();
   
   // KYC State
@@ -18,10 +18,13 @@ export default function WithdrawForm() {
   const [kycActionLoading, setKycActionLoading] = useState(false);
   const [simulationModalOpen, setSimulationModalOpen] = useState(false);
   const [kycRequired, setKycRequired] = useState(true);
-
+ 
   const [method, setMethod] = useState('crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: 'TRC20 (TRON)', note: '' });
   const [flwForm, setFlwForm] = useState({ bankCode: '', accountNumber: '', accountName: '' });
+  const [withdrawCurrency, setWithdrawCurrency] = useState('NGN');
+  const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92, GBP: 0.79 });
+  const [loadingRates, setLoadingRates] = useState(true);
   
   const [selectedWallet, setSelectedWallet] = useState(null);
   const [personalWallets, setPersonalWallets] = useState(null);
@@ -60,6 +63,7 @@ export default function WithdrawForm() {
 
   useEffect(() => {
     fetchKycStatus();
+    fetchCurrencies();
 
     // Fetch public KYC requirement config
     fetch(`${apiBase}/api/kyc/config`)
@@ -70,7 +74,21 @@ export default function WithdrawForm() {
         }
       })
       .catch(err => console.error('Error fetching KYC config in Withdraw:', err));
-  }, [user?.id]);
+
+    setLoadingRates(true);
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setExchangeRates(prev => ({
+            ...prev,
+            ...data.rates
+          }));
+        }
+      })
+      .catch(err => console.warn(err))
+      .finally(() => setLoadingRates(false));
+  }, [user?.id, fetchCurrencies]);
 
   // Fetch personal wallets on mount
   useEffect(() => {
@@ -264,13 +282,15 @@ export default function WithdrawForm() {
     const bankDetails = JSON.stringify({
       bankCode: flwForm.bankCode.trim(),
       accountNumber: flwForm.accountNumber.trim(),
-      accountName: flwForm.accountName.trim()
+      accountName: flwForm.accountName.trim(),
+      currency: withdrawCurrency
     });
 
     const result = await submitWithdrawal({
       amount: Number(form.amount),
       address: bankDetails,
       network: 'FLUTTERWAVE',
+      currency: withdrawCurrency,
       note: form.note
     });
     
@@ -595,6 +615,43 @@ export default function WithdrawForm() {
             />
             {errors.amount && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', margin: '0.3rem 0 0' }}>{errors.amount}</p>}
           </div>
+
+          {/* Withdrawal Currency */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>Withdrawal Currency</label>
+            <select
+              value={withdrawCurrency}
+              onChange={e => setWithdrawCurrency(e.target.value)}
+              style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '1rem', fontFamily: 'var(--font-sans)' }}
+            >
+              {(currencies && currencies.length > 0 ? currencies : [
+                { value: 'NGN', label: 'NGN - Nigerian Naira' },
+                { value: 'GHS', label: 'GHS - Ghanaian Cedi' },
+                { value: 'KES', label: 'KES - Kenyan Shilling' },
+                { value: 'ZAR', label: 'ZAR - South African Rand' },
+                { value: 'USD', label: 'USD - US Dollar' }
+              ]).map(c => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Exchange Rate Card */}
+          {form.amount && (
+            <div style={{ padding: '0.85rem', background: 'var(--bg-darker)', border: '1px solid var(--border)', borderRadius: 10, marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>Exchange Calculation</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Rate:</span>
+                <span style={{ fontWeight: 600, color: 'var(--accent-green)' }}>1 USDT ≈ {loadingRates ? '...' : `${(exchangeRates[withdrawCurrency] || 1).toFixed(2)} ${withdrawCurrency}`}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', borderTop: '1px solid var(--border)', paddingTop: '0.4rem', marginTop: '0.2rem' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Estimated Payout:</span>
+                <span style={{ fontWeight: 800, color: 'var(--primary)' }}>
+                  {loadingRates ? '...' : `${(Number(form.amount) * (exchangeRates[withdrawCurrency] || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${withdrawCurrency}`}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Payout Type Selector */}
           <div style={{ marginBottom: '1rem' }}>
