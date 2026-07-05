@@ -448,5 +448,45 @@ router.post('/users/:userId/topup', adminAuth, async (req, res) => {
   }
 });
 
+// 16. GET /api/admin/support-tickets - List all support tickets
+router.get('/support-tickets', adminAuth, async (req, res) => {
+  try {
+    const db = await getDb();
+    const tickets = await db.collection('support_tickets')
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    const formattedTickets = tickets.map(t => ({
+      ...t,
+      id: t._id.toString()
+    }));
+
+    res.json({ success: true, data: formattedTickets });
+  } catch (error) {
+    console.error('Error fetching support tickets:', error);
+    res.status(500).json({ error: 'Database error fetching support tickets.' });
+  }
+});
+
+// 17. POST /api/admin/support-tickets/:id/resolve - Mark a ticket as resolved
+router.post('/support-tickets/:id/resolve', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = await getDb();
+    const result = await db.collection('support_tickets').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'resolved', resolvedAt: new Date(), resolvedBy: req.user.id || req.user._id.toString() } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, error: 'Support ticket not found.' });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error resolving support ticket:', error);
+    res.status(500).json({ error: 'Database error resolving support ticket.' });
+  }
+});
+
 export default router;
 

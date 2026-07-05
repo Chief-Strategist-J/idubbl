@@ -13,6 +13,7 @@ const ADMIN_NAV = [
   { label: 'Tiers', path: '/admin/tiers', icon: '🏆' },
   { label: 'Ledger', path: '/admin/ledger', icon: '📒' },
   { label: 'Platform Settings', path: '/admin/game-settings', icon: '⚙️' },
+  { label: 'Support Tickets', path: '/admin/support-tickets', icon: '💬' },
   { label: 'Audit Log', path: '/admin/audit', icon: '🔍' },
 ];
 

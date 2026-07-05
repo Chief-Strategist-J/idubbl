@@ -31,6 +31,7 @@ import AdminLedgerPage from './features/admin/features/ledger/AdminLedgerPage.js
 import AdminAuditPage from './features/admin/features/audit/AdminAuditPage.jsx';
 import AdminGameSettingsPage from './features/admin/features/game-settings/AdminGameSettingsPage.jsx';
 import AdminWalletsPage from './features/admin/features/wallets/AdminWalletsPage.jsx';
+import AdminSupportPage from './features/admin/features/support/AdminSupportPage.jsx';
 import HowToUsePage from './features/guide/HowToUsePage.jsx';
 import ChatPage from './features/chat/ChatPage.jsx';
 import GamesPage from './features/games/GamesPage.jsx';
@@ -146,6 +147,7 @@ export default function App() {
         <Route path="/admin/ledger"         element={<AdminRoute><AdminLedgerPage /></AdminRoute>} />
         <Route path="/admin/audit"          element={<AdminRoute><AdminAuditPage /></AdminRoute>} />
         <Route path="/admin/game-settings"  element={<AdminRoute><AdminGameSettingsPage /></AdminRoute>} />
+        <Route path="/admin/support-tickets" element={<AdminRoute><AdminSupportPage /></AdminRoute>} />
 
         {/* 404 — must be last */}
         <Route path="*" element={<NotFoundPage />} />

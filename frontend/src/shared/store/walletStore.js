@@ -519,6 +519,45 @@ const useWalletStore = create((set, get) => ({
       return { success: false, error: 'Network error performing manual top-up' };
     }
   },
+
+  supportTickets: [],
+
+  fetchAdminSupportTickets: async () => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    set({ loading: true });
+    try {
+      const res = await fetch(`${ADMIN_BASE_URL}/support-tickets`, {
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
+        credentials: 'include'
+      });
+      const json = await res.json();
+      set({ supportTickets: json.success ? (json.data || []) : get().supportTickets, loading: false });
+    } catch (error) {
+      console.error('Error fetching support tickets:', error);
+      set({ loading: false });
+    }
+  },
+
+  resolveSupportTicket: async (ticketId) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    try {
+      const response = await fetch(`${ADMIN_BASE_URL}/support-tickets/${ticketId}/resolve`, {
+        method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
+        credentials: 'include'
+      });
+      if (response.ok) {
+        await get().fetchAdminSupportTickets();
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.error || 'Failed to resolve ticket' };
+      }
+    } catch (error) {
+      console.error('Error resolving support ticket:', error);
+      return { success: false, error: 'Network error resolving ticket' };
+    }
+  },
 }));
 
 export default useWalletStore;

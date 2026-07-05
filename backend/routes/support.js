@@ -17,15 +17,32 @@ router.post('/contact', async (req, res) => {
     // Attempt to resolve user from session
     let userEmail = 'Anonymous/Unauthenticated';
     let userName = 'Anonymous';
+    let userId = null;
     
     const session = await authService.getSession(req);
     if (session && session.user) {
       userEmail = session.user.email;
       userName = session.user.name || 'User';
+      userId = session.user.id || session.user._id?.toString();
     }
 
+    const db = await getDb();
+    const ticket = {
+      userId,
+      userEmail,
+      userName,
+      subject,
+      description,
+      refId,
+      status: 'pending',
+      createdAt: new Date()
+    };
+    const insertRes = await db.collection('support_tickets').insertOne(ticket);
+    const ticketId = insertRes.insertedId.toString();
+
     const htmlContent = `
-      <h2>New Support Ticket Recieved</h2>
+      <h2>New Support Ticket Received</h2>
+      <p><strong>Ticket ID:</strong> <code>${ticketId}</code></p>
       <p><strong>From:</strong> ${userName} (${userEmail})</p>
       <p><strong>Subject:</strong> ${subject}</p>
       <p><strong>Description:</strong></p>
