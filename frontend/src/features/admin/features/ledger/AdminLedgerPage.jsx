@@ -16,7 +16,30 @@ const COLUMNS = [
   { key: 'refId', label: 'Ref ID', render: (v, row) => <code style={{ fontSize: '0.8rem' }}>{v || row.txHash?.substring(0, 10) || row.id || row._id}</code> },
   { key: 'description', label: 'Description', render: (v, row) => v || `${row.type?.toUpperCase()} - ${row.network || ''}` },
   { key: 'type', label: 'Type', render: (v) => <Badge status="pending" label={v ? v.replace('_', ' ') : 'transaction'} /> },
-  { key: 'amount', label: 'Amount', render: (v) => <span style={{ fontWeight: 700, color: v > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{v > 0 ? `+${v}` : v} USDT</span> },
+  { 
+    key: 'amount', 
+    label: 'Amount / Value', 
+    render: (v, row) => {
+      const isNegative = v < 0;
+      const cleanVal = Math.abs(v);
+      const currency = row.currency || 'USDT';
+      const usdAmount = row.usdAmount !== undefined ? Math.abs(row.usdAmount) : cleanVal;
+      
+      const hasDifferentCurrency = currency !== 'USDT' && currency !== 'USD';
+
+      return (
+        <span style={{ fontWeight: 700, color: isNegative ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+          {isNegative ? '-' : '+'}
+          {cleanVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
+          {hasDifferentCurrency && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, marginLeft: '0.4rem' }}>
+              ({isNegative ? '-' : '+'}{usdAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT)
+            </span>
+          )}
+        </span>
+      );
+    }
+  },
   { key: 'status', label: 'Status', render: (v) => <Badge status={v || 'completed'} /> },
   { key: 'createdAt', label: 'Date', render: (v) => new Date(v).toLocaleString() },
 ];
