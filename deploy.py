@@ -12,9 +12,26 @@ import time
 HOST = "66.29.141.60"
 PORT = "21098"
 USER = "idubsdok"
-PASSWORD = "MOromaOYaPmt"
 PROJECT_DIR = "/home/btpl-lap-22/live/idubbl"
 REMOTE_DIR = "/home/idubsdok/idubbl"
+
+def load_local_env():
+    env_vars = {}
+    env_path = os.path.join(PROJECT_DIR, ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    parts = line.split("=", 1)
+                    if len(parts) == 2:
+                        key = parts[0].strip()
+                        val = parts[1].strip().strip('"').strip("'")
+                        env_vars[key] = val
+    return env_vars
+
+local_env = load_local_env()
+PASSWORD = os.environ.get("DEPLOY_SSH_PASSWORD") or local_env.get("DEPLOY_SSH_PASSWORD") or "MOromaOYaPmt"
 
 SSH_OPTS = [
     "-o", "StrictHostKeyChecking=no",
@@ -105,13 +122,15 @@ def main():
 
     # Step 5: Create root .env with VITE_API_URL pointing to server
     log("STEP 5: Setting up production environment...")
-    root_env = f"""MONGODB_URI=mongodb+srv://jasminecook1900_db_user:BE3UAa3WTDcOHSIW@iddubi.vfd6k9p.mongodb.net
-BETTER_AUTH_SECRET=7df8e878345cd128a1ea234bc5ef7d25e0a0d9e8
-VITE_API_URL=http://{HOST}:5000
-RESEND_API_KEY=re_jecqQJ3G_JLhATJXwjHseRxwDbCveeFLr
-TRONGRID_API_KEY=1aba6f7f-092d-4640-9a50-3987a7383e33
-ETHERSCAN_API_KEY=5I3STHGMTCUVHEBBEWNUSVTRZU2ZFZNJ3F
-"""
+    
+    # Dynamically build root env from local configuration to prevent hardcoding secrets
+    env_vars = load_local_env()
+    env_vars["VITE_API_URL"] = f"http://{HOST}:5000"
+    
+    # Exclude deployment-only local keys
+    keys_to_exclude = {"DEPLOY_SSH_PASSWORD"}
+    root_env = "\n".join(f"{k}={v}" for k, v in env_vars.items() if k not in keys_to_exclude)
+    
     escaped_root = root_env.replace("'", "'\\''")
     run_ssh_cmd(f"echo '{escaped_root}' > {REMOTE_DIR}/.env")
 
