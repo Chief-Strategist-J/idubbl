@@ -217,24 +217,41 @@ export class BetterAuthDriver extends AuthDriver {
           autoSignIn: false,
           resetPasswordTokenExpiresIn: 3600, // 1 hour
           sendResetPassword: async ({ user, url, token }) => {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            const db = this.db;
+            await db.collection('otps').updateOne(
+              { email: user.email.toLowerCase() },
+              {
+                $set: {
+                  otp,
+                  token,
+                  expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+                }
+              },
+              { upsert: true }
+            );
+
             console.log('--------------------------------------------------');
-            console.log(`[PASSWORD RESET] For user: ${user.email}`);
-            console.log(`[PASSWORD RESET] Token: ${token}`);
-            console.log(`[PASSWORD RESET] Link: ${url}`);
+            console.log(`[PASSWORD RESET OTP] For user: ${user.email}`);
+            console.log(`[PASSWORD RESET OTP] OTP: ${otp}`);
+            console.log(`[PASSWORD RESET OTP] Token: ${token}`);
             console.log('--------------------------------------------------');
 
             await sendEmail({
               to: user.email,
               subject: 'Reset your iDubbl Password',
               html: `
-                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 5px;">
-                  <h2 style="color: #1a1a1a; font-family: sans-serif;">Reset your Password</h2>
-                  <p style="color: #666; line-height: 1.5; font-family: sans-serif;">We received a request to reset your password for your iDubbl account. Click the button below to reset it:</p>
-                  <div style="margin: 25px 0;">
-                    <a href="${url}" style="background-color: #00f5a0; color: #04130d; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-family: sans-serif;">Reset Password</a>
+                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
+                  <h2 style="color: #6366f1; text-align: center;">Reset your Password</h2>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Use the following One-Time Password (OTP) to complete the reset:</p>
+                  <div style="text-align: center; margin: 25px 0;">
+                    <span style="font-family: monospace; font-size: 2.5rem; font-weight: bold; letter-spacing: 0.25em; color: #6366f1; background-color: #eee; padding: 10px 20px; border-radius: 5px;">${otp}</span>
                   </div>
-                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">If you did not request a password reset, you can safely ignore this email.</p>
-                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; font-family: sans-serif;">This link expires in 1 hour.</p>
+                  <p style="color: #666; font-size: 0.9em; text-align: center;">This OTP is valid for 10 minutes.</p>
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; text-align: center;">If you did not request a password reset, you can safely ignore this email.</p>
                 </div>
               `
             });

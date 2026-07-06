@@ -60,6 +60,53 @@ router.get('/social-login', async (req, res) => {
   }
 });
 
+// POST /api/auth/reset-password-otp
+router.post('/reset-password-otp', async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password) {
+      return res.status(400).json({ error: 'Email, OTP, and password are required' });
+    }
+
+    const db = authService.db;
+    const otpRecord = await db.collection('otps').findOne({ email: email.toLowerCase() });
+    
+    if (!otpRecord) {
+      return res.status(400).json({ error: 'No OTP requested for this email' });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+
+    if (new Date() > new Date(otpRecord.expiresAt)) {
+      return res.status(400).json({ error: 'Verification code has expired' });
+    }
+
+    // Call better-auth programmatic API to reset the password with the associated token
+    const authResponse = await authService.auth.api.resetPassword({
+      body: {
+        newPassword: password,
+        token: otpRecord.token
+      },
+      asResponse: true
+    });
+
+    if (!authResponse.ok) {
+      const errorData = await authResponse.json().catch(() => ({}));
+      return res.status(authResponse.status).json({ error: errorData.message || 'Failed to reset password' });
+    }
+
+    // Delete the used OTP record
+    await db.collection('otps').deleteOne({ email: email.toLowerCase() });
+
+    res.json({ success: true, message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password with OTP:', error);
+    res.status(500).json({ error: 'Internal server error resetting password' });
+  }
+});
+
 // Forward all /api/auth requests to the active auth driver handler
 router.use(async (req, res, next) => {
   try {

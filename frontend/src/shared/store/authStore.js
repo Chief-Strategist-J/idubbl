@@ -196,6 +196,26 @@ const useAuthStore = create(
         }
       },
 
+      resetPasswordOtp: async (email, otp, password) => {
+        set({ loading: true });
+        try {
+          const res = await fetch(`${AUTH_API}/reset-password-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, otp, password })
+          });
+          const data = await res.json();
+          set({ loading: false });
+          if (res.ok) return { success: true };
+          return { success: false, error: data.error || data.message || 'Failed to reset password' };
+        } catch (err) {
+          console.error('Reset password OTP error:', err);
+          set({ loading: false });
+          return { success: false, error: 'Network error resetting password' };
+        }
+      },
+
       updateUserPreferences: async (preferences) => {
         const token = localStorage.getItem('idubbl_bearer_token');
         const headers = { 'Content-Type': 'application/json' };
