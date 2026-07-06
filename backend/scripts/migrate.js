@@ -110,6 +110,14 @@ async function migrate() {
     }
     console.log('✅ Currencies collection seeded successfully.');
 
+    // --- 4. Ensure Existing Users have emailVerified: true ---
+    console.log('Ensuring existing users have emailVerified status...');
+    const verifyResult = await usersCol.updateMany(
+      { emailVerified: { $ne: true } },
+      { $set: { emailVerified: true } }
+    );
+    console.log(`✅ User verification status migration completed. Verified ${verifyResult.modifiedCount} accounts.`);
+
   } catch (error) {
     console.error('❌ Migration failed:', error);
   } finally {
