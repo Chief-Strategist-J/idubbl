@@ -240,10 +240,10 @@ export class BetterAuthDriver extends AuthDriver {
 
             await sendEmail({
               to: user.email,
-              subject: 'Reset your iDubbl Password',
+              subject: `iDubbl Verification Code: ${otp}`,
               html: `
                 <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
-                  <h2 style="color: #6366f1; text-align: center;">Reset your Password</h2>
+                  <h2 style="color: #6366f1; text-align: center;">Verification Code</h2>
                   <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
                   <p style="color: #333; line-height: 1.5; font-size: 1rem;">Use the following One-Time Password (OTP) to complete the reset:</p>
                   <div style="text-align: center; margin: 25px 0;">
