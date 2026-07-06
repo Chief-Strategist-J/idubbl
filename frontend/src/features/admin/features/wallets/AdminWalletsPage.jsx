@@ -123,17 +123,17 @@ export default function AdminWalletsPage() {
             Check On-Chain Balance
           </Button>
           <Button
-            variant={row.hideCryptoWallet ? "primary" : "secondary"}
+            variant={row.hideCryptoWallet !== false ? "primary" : "secondary"}
             size="sm"
             onClick={() => handleToggleVisibility(row.id || row._id)}
             loading={togglingId === (row.id || row._id)}
             style={{
-              borderColor: row.hideCryptoWallet ? 'var(--primary)' : 'var(--border)',
-              background: row.hideCryptoWallet ? 'rgba(20, 241, 149, 0.1)' : 'transparent',
-              color: row.hideCryptoWallet ? 'var(--primary)' : 'var(--text-primary)'
+              borderColor: row.hideCryptoWallet !== false ? 'var(--primary)' : 'var(--border)',
+              background: row.hideCryptoWallet !== false ? 'rgba(20, 241, 149, 0.1)' : 'transparent',
+              color: row.hideCryptoWallet !== false ? 'var(--primary)' : 'var(--text-primary)'
             }}
           >
-            {row.hideCryptoWallet ? "Unhide Address" : "Hide Address"}
+            {row.hideCryptoWallet !== false ? "Unhide Address" : "Hide Address"}
           </Button>
         </div>
       )

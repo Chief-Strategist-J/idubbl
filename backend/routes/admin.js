@@ -180,8 +180,8 @@ router.get('/users', adminAuth, async (req, res) => {
           pendingWithdrawals: wallet.pendingWithdrawals
         },
         personalWallets: personalWalletMap[userId] ? {
-          tron: u.hideCryptoWallet ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].tron?.address || ''),
-          ethereum: u.hideCryptoWallet ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].ethereum?.address || '')
+          tron: u.hideCryptoWallet !== false ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].tron?.address || ''),
+          ethereum: u.hideCryptoWallet !== false ? '[HIDDEN BY ADMIN]' : (personalWalletMap[userId].ethereum?.address || '')
         } : null
       };
     });
@@ -515,7 +515,7 @@ router.post('/users/:userId/toggle-wallet-visibility', adminAuth, async (req, re
     }
 
     const resolvedUserId = targetUser.id || targetUser._id.toString();
-    const newHiddenVal = !targetUser.hideCryptoWallet;
+    const newHiddenVal = !(targetUser.hideCryptoWallet !== false);
 
     await db.collection('user').updateOne(
       { _id: targetUser._id },

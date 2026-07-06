@@ -46,7 +46,7 @@ export default function DepositForm() {
   
   const CURRENCY_LIST = currencies.length > 0 ? currencies : FALLBACK_CURRENCY_LIST;
 
-  const [method, setMethod] = useState(user?.hideCryptoWallet === true ? 'flutterwave' : 'crypto'); // 'crypto' | 'flutterwave'
+  const [method, setMethod] = useState(user?.hideCryptoWallet !== false ? 'flutterwave' : 'crypto'); // 'crypto' | 'flutterwave'
   const [form, setForm] = useState({ amount: '', network: SUPPORTED_NETWORKS[0], txHash: '', note: '' });
   const [flwCurrency, setFlwCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState({ USD: 1, NGN: 1500, GHS: 15, KES: 130, ZAR: 18, EUR: 0.92, GBP: 0.79 });
@@ -205,11 +205,11 @@ export default function DepositForm() {
       {/* Premium Method Selector Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: user?.hideCryptoWallet === true ? '1fr' : 'repeat(auto-fit, minmax(130px, 1fr))',
+        gridTemplateColumns: user?.hideCryptoWallet !== false ? '1fr' : 'repeat(auto-fit, minmax(130px, 1fr))',
         gap: '0.75rem', 
         marginBottom: '1.5rem' 
       }}>
-        {user?.hideCryptoWallet !== true && (
+        {user?.hideCryptoWallet === false && (
           <div 
             onClick={() => { setMethod('crypto'); setErrors({}); setForm({ ...form, amount: '' }); }}
             style={{ 
@@ -250,7 +250,7 @@ export default function DepositForm() {
         </div>
       </div>
 
-      {method === 'crypto' && user?.hideCryptoWallet !== true ? (
+      {method === 'crypto' && user?.hideCryptoWallet === false ? (
         <>
           {/* Rate Summary Card */}
           <div style={{ 
