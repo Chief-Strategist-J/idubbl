@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '../../shared/components/layout/AppLayout.jsx';
 import { PageHeader, Button, Input, Card } from '../../shared/components/ui/index.js';
+import useAuthStore from '../../shared/store/authStore.js';
 
 /* ── FAQ Data ──────────────────────────────────────────────────────────── */
 const FAQ_ITEMS = [
@@ -110,11 +111,22 @@ function AccordionItem({ item, open, onToggle }) {
 
 /* ── Main page ───────────────────────────────────────────────────────────── */
 export default function SupportPage() {
+  const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [openId, setOpenId] = useState(null);
-  const [form, setForm] = useState({ subject: '', description: '', refId: '' });
+  const [form, setForm] = useState({ name: '', email: '', subject: '', description: '', refId: '' });
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setForm((p) => ({
+        ...p,
+        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        email: user.email || '',
+      }));
+    }
+  }, [user]);
 
   const filtered = FAQ_ITEMS.filter(
     (f) =>
@@ -124,7 +136,7 @@ export default function SupportPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.subject || !form.description) return;
+    if (!form.name || !form.email || !form.subject || !form.description) return;
     setSubmitLoading(true);
     try {
       const apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
@@ -133,11 +145,23 @@ export default function SupportPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form)
+        body: JSON.stringify({
+          userName: form.name,
+          userEmail: form.email,
+          subject: form.subject,
+          description: form.description,
+          refId: form.refId,
+        })
       });
       if (res.ok) {
         setSubmitted(true);
-        setForm({ subject: '', description: '', refId: '' });
+        setForm({
+          name: user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || '',
+          email: user?.email || '',
+          subject: '',
+          description: '',
+          refId: '',
+        });
       } else {
         alert('Failed to send message. Please try again.');
       }
@@ -349,7 +373,7 @@ export default function SupportPage() {
               Message sent. We'll get back to you soon.
             </div>
           ) : (
-            <form
+             <form
               onSubmit={handleSubmit}
               style={{
                 marginTop: '1.25rem',
@@ -358,6 +382,23 @@ export default function SupportPage() {
                 gap: '1rem',
               }}
             >
+              <Input
+                label="Your Name"
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                placeholder="e.g. John Doe"
+                required
+              />
+
+              <Input
+                label="Email Address"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="e.g. john@example.com"
+                required
+              />
+
               <Input
                 label="Subject"
                 value={form.subject}
