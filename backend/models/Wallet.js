@@ -10,6 +10,7 @@ export class WalletModel {
     userId: ObjectId,             // Reference to User collection (_id)
     depositBalance: Number,       // Deposited USDT balance
     winningsBalance: Number,      // Win USDT balance
+    referralBalance: Number,      // Referral earned USDT balance
     lockedBalance: Number,        // Locked in active matches
     pendingWithdrawals: Number,   // Pending approval to withdraw
     createdAt: Date
@@ -23,6 +24,7 @@ export class WalletModel {
       userId: typeof data.userId === 'string' ? new ObjectId(data.userId) : data.userId,
       depositBalance: Number(data.depositBalance || 0),
       winningsBalance: Number(data.winningsBalance || 0),
+      referralBalance: Number(data.referralBalance || 0),
       lockedBalance: Number(data.lockedBalance || 0),
       pendingWithdrawals: Number(data.pendingWithdrawals || 0),
       createdAt: data.createdAt || new Date()

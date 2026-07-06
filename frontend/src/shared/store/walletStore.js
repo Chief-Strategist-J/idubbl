@@ -11,6 +11,7 @@ const ADMIN_BASE_URL = `${apiBase}/api/admin`;
 const useWalletStore = create((set, get) => ({
   depositBalance: 0,
   winningsBalance: 0,
+  referralBalance: 0,
   availableBalance: 0,
   idubbuBalance: 0,
   idubbuRate: 1,
@@ -71,6 +72,7 @@ const useWalletStore = create((set, get) => ({
       // Server is the single source of truth. Safeguard all values so they are never negative.
       const depositBalance = Math.max(0, balance.depositBalance !== undefined ? balance.depositBalance : (localData.depositBalance ?? 1000));
       const winningsBalance = Math.max(0, balance.winningsBalance !== undefined ? balance.winningsBalance : (localData.winningsBalance ?? 0));
+      const referralBalance = Math.max(0, balance.referralBalance !== undefined ? balance.referralBalance : (localData.referralBalance ?? 0));
       const lockedBalance = Math.max(0, balance.lockedBalance !== undefined ? balance.lockedBalance : (localData.lockedBalance ?? 0));
       const pendingWithdrawals = Math.max(0, balance.pendingWithdrawals !== undefined ? balance.pendingWithdrawals : (localData.pendingWithdrawals ?? 0));
       const idubbuBalance = Math.max(0, balance.idubbuBalance !== undefined ? balance.idubbuBalance : (localData.idubbuBalance ?? 1000000));
@@ -88,15 +90,16 @@ const useWalletStore = create((set, get) => ({
         })
       ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      const syncedState = { depositBalance, winningsBalance, lockedBalance, idubbuBalance, pendingWithdrawals, transactions: mergedTx };
+      const syncedState = { depositBalance, winningsBalance, referralBalance, lockedBalance, idubbuBalance, pendingWithdrawals, transactions: mergedTx };
       localStorage.setItem(localKey, JSON.stringify(syncedState));
 
       set({
         depositBalance,
         winningsBalance,
+        referralBalance,
         idubbuBalance,
         idubbuRate,
-        availableBalance: depositBalance + winningsBalance,
+        availableBalance: depositBalance + winningsBalance + referralBalance,
         lockedBalance,
         pendingWithdrawals,
         transactions: mergedTx,
@@ -110,15 +113,17 @@ const useWalletStore = create((set, get) => ({
       const localData = JSON.parse(localStorage.getItem(localKey) || '{}');
       const depositBalance = localData.depositBalance ?? 1000;
       const winningsBalance = localData.winningsBalance ?? 0;
+      const referralBalance = localData.referralBalance ?? 0;
       const txs = localData.transactions || [];
       set({
         depositBalance,
         winningsBalance,
+        referralBalance,
         lockedBalance: localData.lockedBalance ?? 0,
         pendingWithdrawals: localData.pendingWithdrawals ?? 0,
         idubbuBalance: localData.idubbuBalance ?? 1000000,
         idubbuRate: 1,
-        availableBalance: depositBalance + winningsBalance,
+        availableBalance: depositBalance + winningsBalance + referralBalance,
         transactions: txs,
         deposits: txs.filter(t => t.type === 'deposit'),
         withdrawals: txs.filter(t => t.type === 'withdrawal'),

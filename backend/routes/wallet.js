@@ -14,6 +14,7 @@ async function getOrCreateWallet(db, userId) {
       userId,
       depositBalance: 0,
       winningsBalance: 0,
+      referralBalance: 0,
       idubbuBalance: 0,
       lockedBalance: 0,
       pendingWithdrawals: 0,
@@ -31,8 +32,12 @@ async function getOrCreateWallet(db, userId) {
       updateQuery.$set.winningsBalance = 0;
       updated = true;
     }
+    if (wallet.referralBalance === undefined) {
+      updateQuery.$set.referralBalance = 0;
+      updated = true;
+    }
     if (wallet.idubbuBalance === undefined) {
-      updateQuery.$set.idubbuBalance = ((wallet.depositBalance || 0) + (wallet.winningsBalance || 0)) * IDUBBU_RATE;
+      updateQuery.$set.idubbuBalance = ((wallet.depositBalance || 0) + (wallet.winningsBalance || 0) + (wallet.referralBalance || 0)) * IDUBBU_RATE;
       updated = true;
     }
     if (updated) {
@@ -41,6 +46,69 @@ async function getOrCreateWallet(db, userId) {
     }
   }
   return wallet;
+}
+
+async function handleReferralBonus(db, depositedUserId) {
+  try {
+    const { ObjectId } = await import('mongodb');
+    
+    // Check total approved deposit transactions for this user.
+    // If it's exactly 1, we trigger the referral bonus.
+    const approvedCount = await db.collection('transactions').countDocuments({
+      userId: depositedUserId,
+      type: 'deposit',
+      status: 'approved'
+    });
+
+    if (approvedCount !== 1) {
+      return;
+    }
+
+    // Look up depositor user doc to find referredBy field
+    let userQuery = { id: depositedUserId };
+    try {
+      userQuery = { $or: [{ id: depositedUserId }, { _id: new ObjectId(depositedUserId) }, { _id: depositedUserId }] };
+    } catch (_) {
+      userQuery = { $or: [{ id: depositedUserId }, { _id: depositedUserId }] };
+    }
+
+    const depositor = await db.collection('user').findOne(userQuery);
+    if (!depositor || !depositor.referredBy) {
+      return;
+    }
+
+    // Find referrer
+    const referrer = await db.collection('user').findOne({ referralCode: depositor.referredBy });
+    if (!referrer) {
+      return;
+    }
+
+    const referrerUserId = referrer.id || referrer._id?.toString();
+
+    // Ensure referrer has a wallet initialized
+    await getOrCreateWallet(db, referrerUserId);
+
+    // Credit referrer's referral balance
+    const bonusAmount = 0.15;
+    await db.collection('wallets').updateOne(
+      { userId: referrerUserId },
+      { $inc: { referralBalance: bonusAmount, idubbuBalance: bonusAmount * IDUBBU_RATE } }
+    );
+
+    // Insert referral bonus transaction for referrer
+    await db.collection('transactions').insertOne({
+      userId: referrerUserId,
+      amount: bonusAmount,
+      type: 'referral_bonus',
+      description: `Referral bonus for ${depositor.name || depositor.email}`,
+      status: 'approved',
+      createdAt: new Date()
+    });
+
+    console.log(`Successfully credited referral bonus of $${bonusAmount} to referrer ${referrer.email} for first deposit of ${depositor.email}`);
+  } catch (err) {
+    console.error('Error in handleReferralBonus:', err);
+  }
 }
 
 // Helper middleware or extractor to retrieve userId from session or headers
@@ -101,8 +169,9 @@ router.get('/balance', async (req, res) => {
       data: {
         depositBalance: wallet.depositBalance,
         winningsBalance: wallet.winningsBalance,
+        referralBalance: wallet.referralBalance || 0,
         idubbuBalance: wallet.idubbuBalance || 0,
-        availableBalance: wallet.depositBalance + wallet.winningsBalance,
+        availableBalance: wallet.depositBalance + wallet.winningsBalance + (wallet.referralBalance || 0),
         lockedBalance: Math.max(0, wallet.lockedBalance || 0),
         pendingWithdrawals: wallet.pendingWithdrawals,
         idubbuRate: IDUBBU_RATE,
@@ -375,6 +444,9 @@ router.post('/deposit', async (req, res) => {
         { $inc: { depositBalance: newDeposit.amount, idubbuBalance: newDeposit.amount * IDUBBU_RATE } }
       );
 
+      // Apply referral bonus if eligible
+      await handleReferralBonus(db, userId);
+
       return res.json({ success: true, autoVerified: true, idubbuCredited: newDeposit.amount * IDUBBU_RATE, data: newDeposit });
     } else {
       // Verification failed or pending: save as pending for manual admin review
@@ -587,6 +659,9 @@ router.post('/admin/deposit/:id/approve', async (req, res) => {
       },
       { upsert: true }
     );
+
+    // Apply referral bonus if eligible
+    await handleReferralBonus(db, tx.userId);
 
     res.json({ success: true });
   } catch (error) {

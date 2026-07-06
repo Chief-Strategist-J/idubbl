@@ -1,0 +1,16 @@
+name: Backend keep-alive
+
+on:
+  schedule:
+    # Render's free web service plan spins down after ~15 min idle, then
+    # pays a multi-second cold start on the next request. Ping /health
+    # every 10 min (free via GitHub Actions) to keep it warm.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: curl -fsS https://idubbl-backend.onrender.com/health

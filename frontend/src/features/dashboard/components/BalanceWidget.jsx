@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, Plus, ArrowUpRight, Lock, RefreshCw, Coins, Landmark, Trophy } from 'lucide-react';
+import { Wallet, Plus, ArrowUpRight, Lock, RefreshCw, Coins, Landmark, Trophy, Gift } from 'lucide-react';
 import useWalletStore from '../../../shared/store/walletStore.js';
 
 export default function BalanceWidget() {
   const navigate = useNavigate();
-  const { availableBalance, depositBalance, winningsBalance, lockedBalance, pendingWithdrawals } = useWalletStore();
+  const { availableBalance, depositBalance, winningsBalance, referralBalance = 0, lockedBalance, pendingWithdrawals } = useWalletStore();
 
   return (
     <div className="balance-card-wrapper">
@@ -105,6 +105,34 @@ export default function BalanceWidget() {
             </div>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--accent-green)', background: 'rgba(16, 185, 129, 0.08)', padding: '0.4rem 0.6rem', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+            <span>✓ Fully Withdrawable</span>
+          </div>
+        </div>
+
+        {/* Referral Wallet Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.02), rgba(245, 158, 11, 0.04))',
+          border: '1px solid rgba(245, 158, 11, 0.15)',
+          borderRadius: 12,
+          padding: '1.25rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+            <div>
+              <p style={{ color: 'var(--accent-warning)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, fontWeight: 600 }}>Referral Wallet</p>
+              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '0.25rem 0 0 0', color: 'var(--accent-warning)' }}>
+                {referralBalance.toFixed(2)} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>USDT</span>
+              </h4>
+            </div>
+            <div style={{ padding: '0.5rem', background: 'rgba(245, 158, 11, 0.08)', borderRadius: 8 }}>
+              <Gift size={20} style={{ color: 'var(--accent-warning)' }} />
+            </div>
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--accent-warning)', background: 'rgba(245, 158, 11, 0.08)', padding: '0.4rem 0.6rem', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
             <span>✓ Fully Withdrawable</span>
           </div>
         </div>
