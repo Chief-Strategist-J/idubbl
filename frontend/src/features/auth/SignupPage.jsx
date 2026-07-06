@@ -33,7 +33,7 @@ export default function SignupPage() {
       const result = await signup(form);
       setLoading(false);
       if (result.success) {
-        navigate('/dashboard');
+        navigate(`/verify?contact=${encodeURIComponent(form.email)}`);
       } else {
         setErrors({ submit: result.error });
       }

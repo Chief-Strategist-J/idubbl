@@ -216,6 +216,26 @@ const useAuthStore = create(
         }
       },
 
+      verifyAccount: async (email, otp) => {
+        set({ loading: true });
+        try {
+          const res = await fetch(`${AUTH_API}/verify-email-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, otp })
+          });
+          const data = await res.json();
+          set({ loading: false });
+          if (res.ok) return { success: true };
+          return { success: false, error: data.error || data.message || 'Verification failed' };
+        } catch (err) {
+          console.error('Verification error:', err);
+          set({ loading: false });
+          return { success: false, error: 'Network error during verification' };
+        }
+      },
+
       updateUserPreferences: async (preferences) => {
         const token = localStorage.getItem('idubbl_bearer_token');
         const headers = { 'Content-Type': 'application/json' };

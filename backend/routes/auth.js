@@ -107,6 +107,52 @@ router.post('/reset-password-otp', async (req, res) => {
   }
 });
 
+// POST /api/auth/verify-email-otp
+router.post('/verify-email-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required' });
+    }
+
+    const db = authService.db;
+    const otpRecord = await db.collection('otps').findOne({ email: email.toLowerCase() });
+    
+    if (!otpRecord) {
+      return res.status(400).json({ error: 'No verification code requested for this email' });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+
+    if (new Date() > new Date(otpRecord.expiresAt)) {
+      return res.status(400).json({ error: 'Verification code has expired' });
+    }
+
+    // Call better-auth programmatic API to verify the email using the associated token
+    const authResponse = await authService.auth.api.verifyEmail({
+      query: {
+        token: otpRecord.token
+      },
+      asResponse: true
+    });
+
+    if (!authResponse.ok) {
+      const errorData = await authResponse.json().catch(() => ({}));
+      return res.status(authResponse.status).json({ error: errorData.message || 'Failed to verify email' });
+    }
+
+    // Delete the used OTP record
+    await db.collection('otps').deleteOne({ email: email.toLowerCase() });
+
+    res.json({ success: true, message: 'Email verified successfully!' });
+  } catch (error) {
+    console.error('Error verifying email with OTP:', error);
+    res.status(500).json({ error: 'Internal server error verifying email' });
+  }
+});
+
 // Forward all /api/auth requests to the active auth driver handler
 router.use(async (req, res, next) => {
   try {

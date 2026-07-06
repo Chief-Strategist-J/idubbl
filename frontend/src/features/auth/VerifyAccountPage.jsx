@@ -77,21 +77,20 @@ export default function VerifyAccountPage() {
     setLoading(true);
     try {
       if (typeof verifyAccount === 'function') {
-        const result = await verifyAccount(code);
+        const result = await verifyAccount(contact, code);
         setLoading(false);
         if (result?.success) {
           setSuccessToast(true);
           setTimeout(() => navigate('/dashboard'), 1500);
         } else {
-          setError('That code is incorrect or expired. Request a new one.');
+          setError(result?.error || 'That code is incorrect or expired. Request a new one.');
         }
       } else {
-        // verifyAccount not implemented yet — just navigate
         setLoading(false);
         setSuccessToast(true);
         setTimeout(() => navigate('/dashboard'), 1500);
       }
-    } catch {
+    } catch (err) {
       setLoading(false);
       setError('That code is incorrect or expired. Request a new one.');
     }

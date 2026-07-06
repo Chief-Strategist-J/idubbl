@@ -213,10 +213,8 @@ export class BetterAuthDriver extends AuthDriver {
         ],
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
-          requireEmailVerification: false,
-          autoSignIn: false,
-          resetPasswordTokenExpiresIn: 3600, // 1 hour
-          sendResetPassword: async ({ user, url, token }) => {
+          requireEmailVerification: true,
+          sendVerificationEmail: async ({ user, url, token }) => {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             
             const db = this.db;
@@ -226,16 +224,16 @@ export class BetterAuthDriver extends AuthDriver {
                 $set: {
                   otp,
                   token,
-                  expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+                  expiresAt: new Date(Date.now() + 15 * 60 * 1000)
                 }
               },
               { upsert: true }
             );
 
             console.log('--------------------------------------------------');
-            console.log(`[PASSWORD RESET OTP] For user: ${user.email}`);
-            console.log(`[PASSWORD RESET OTP] OTP: ${otp}`);
-            console.log(`[PASSWORD RESET OTP] Token: ${token}`);
+            console.log(`[SIGNUP VERIFICATION OTP] For user: ${user.email}`);
+            console.log(`[SIGNUP VERIFICATION OTP] OTP: ${otp}`);
+            console.log(`[SIGNUP VERIFICATION OTP] Token: ${token}`);
             console.log('--------------------------------------------------');
 
             await sendEmail({
@@ -243,15 +241,48 @@ export class BetterAuthDriver extends AuthDriver {
               subject: `iDubbl Verification Code: ${otp}`,
               html: `
                 <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
-                  <h2 style="color: #6366f1; text-align: center;">Verification Code</h2>
-                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
-                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Use the following One-Time Password (OTP) to complete the reset:</p>
+                  <h2 style="color: #6366f1; text-align: center;">Verify Your Account</h2>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Welcome to iDubbl! Use the following verification code to activate your account:</p>
                   <div style="text-align: center; margin: 25px 0;">
                     <span style="font-family: monospace; font-size: 2.5rem; font-weight: bold; letter-spacing: 0.25em; color: #6366f1; background-color: #eee; padding: 10px 20px; border-radius: 5px;">${otp}</span>
                   </div>
-                  <p style="color: #666; font-size: 0.9em; text-align: center;">This OTP is valid for 10 minutes.</p>
+                  <p style="color: #666; font-size: 0.9em; text-align: center;">This code is valid for 15 minutes.</p>
                   <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; text-align: center;">If you did not request a password reset, you can safely ignore this email.</p>
+                  <p style="color: #999; font-size: 0.8em; line-height: 1.5; text-align: center;">If you did not sign up for an iDubbl account, you can safely ignore this email.</p>
+                </div>
+              `
+            });
+          },
+          autoSignIn: false,
+          resetPasswordTokenExpiresIn: 3600, // 1 hour
+          sendResetPassword: async ({ user, url, token }) => {
+            const tempPassword = Math.random().toString(36).substring(2, 10).toUpperCase() + Math.floor(1000 + Math.random() * 9000);
+            
+            // Programmatically update the user's password to this temporary one
+            await this.auth.api.resetPassword({
+              body: {
+                newPassword: tempPassword,
+                token: token
+              }
+            });
+
+            console.log('--------------------------------------------------');
+            console.log(`[PASSWORD RESET TEMP PASS] For user: ${user.email}`);
+            console.log(`[PASSWORD RESET TEMP PASS] Temporary Password: ${tempPassword}`);
+            console.log('--------------------------------------------------');
+
+            await sendEmail({
+              to: user.email,
+              subject: 'Your iDubbl Temporary Password',
+              html: `
+                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
+                  <h2 style="color: #6366f1; text-align: center;">Temporary Password</h2>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Your temporary password is:</p>
+                  <div style="text-align: center; margin: 25px 0;">
+                    <span style="font-family: monospace; font-size: 1.8rem; font-weight: bold; letter-spacing: 0.1em; color: #6366f1; background-color: #eee; padding: 10px 20px; border-radius: 5px;">${tempPassword}</span>
+                  </div>
+                  <p style="color: #666; font-size: 0.9em; text-align: center;">Please use this temporary password to log in. We recommend changing it in your Profile settings after you log in.</p>
                 </div>
               `
             });
