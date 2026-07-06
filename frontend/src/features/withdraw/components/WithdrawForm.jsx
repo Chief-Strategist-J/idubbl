@@ -460,7 +460,7 @@ export default function WithdrawForm() {
       </div>
       
       {/* Payment Method Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <div 
           onClick={() => { setMethod('crypto'); setErrors({}); }}
           style={{ 
@@ -509,7 +509,7 @@ export default function WithdrawForm() {
       </div>
 
       {/* Balance Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <div style={{ padding: '0.75rem', background: 'linear-gradient(135deg, rgba(20,241,149,0.1), rgba(99,102,241,0.1))', borderRadius: 10, border: '1px solid rgba(20,241,149,0.2)' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>Idubbu Balance</p>
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--secondary)', margin: '0.25rem 0 0 0' }}>

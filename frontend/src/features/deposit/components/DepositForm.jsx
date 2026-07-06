@@ -205,7 +205,7 @@ export default function DepositForm() {
       {/* Premium Method Selector Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: user?.hideCryptoWallet === true ? '1fr' : '1fr 1fr',
+        gridTemplateColumns: user?.hideCryptoWallet === true ? '1fr' : 'repeat(auto-fit, minmax(130px, 1fr))',
         gap: '0.75rem', 
         marginBottom: '1.5rem' 
       }}>

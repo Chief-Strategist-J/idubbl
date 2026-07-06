@@ -232,7 +232,7 @@ export default function LobbyPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem'
         }}>
           <div className="glass-card" style={{
-            maxWidth: 480, width: '100%', padding: '2.5rem',
+            maxWidth: 480, width: '100%', padding: '1.5rem',
             borderRadius: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem',
             border: '1px solid var(--border)'
           }}>

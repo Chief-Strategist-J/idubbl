@@ -2763,3 +2763,17 @@ body {
   scrollbar-width: none;
 }
 
+/* Responsive Duel Options Grid */
+.duel-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .duel-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+

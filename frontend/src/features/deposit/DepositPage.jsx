@@ -28,7 +28,7 @@ export default function DepositPage() {
           </Button>
         }
       />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <div>
           <DepositForm />
           <PersonalWalletsWidget />

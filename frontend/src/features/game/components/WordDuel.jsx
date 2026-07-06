@@ -36,7 +36,7 @@ export default function WordDuel({ question, onAnswer, answered, correctIndex })
         </h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+      <div className="duel-options-grid">
         {(question?.options ?? []).map((opt, i) => (
           <button
             key={i}
