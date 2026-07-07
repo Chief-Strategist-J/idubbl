@@ -88,7 +88,7 @@ const useAuthStore = create(
           const data = await res.json();
           set({ loading: false });
           if (res.ok && data.user) {
-            const token = res.headers.get('set-auth-token');
+            const token = res.headers.get('set-auth-token') || data.token;
             if (token) {
               localStorage.setItem('idubbl_bearer_token', token);
             }
