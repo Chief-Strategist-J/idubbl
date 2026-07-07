@@ -11,8 +11,8 @@ export default function ReactionRace({ onAnswer, answered }) {
   const handleCellClick = (index) => {
     if (answered || selected !== null) return;
     setSelected(index);
-    const isCorrect = index === activeIndex;
-    onAnswer(isCorrect, index);
+    // Pass only selectedIndex — GamePage/backend determines correctness
+    onAnswer(index);
   };
 
   const getCellClass = (index) => {

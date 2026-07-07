@@ -17,7 +17,9 @@ export default function TierCard({ tier, gameType = null }) {
 
   const handleJoin = () => {
     if (!canAfford || alreadyInQueue) return;
-    const userId = user?.id || user?.email || 'u1';
+    // Try id first (better-auth), then _id (MongoDB ObjectId field), then avoid email as it breaks wallet lookup
+    const userId = user?.id || user?._id || user?.email || '';
+    if (!userId) return;
     joinQueue(tier.id, userId, gameType);
     navigate(`/queue/${tier.id}`);
   };

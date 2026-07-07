@@ -4,7 +4,7 @@ import config from './configLoader.js';
 const url = process.env.MONGODB_URI || config.auth?.providers?.['better-auth']?.database?.url || 'mongodb://mongodb:27017/idubbl';
 
 export const client = new MongoClient(url);
-export const db = client.db();
+export const db = client.db('idubbl');
 
 let connected = false;
 

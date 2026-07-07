@@ -24,7 +24,7 @@ export default function ResultPage() {
         tier: matchResult.tierName || 'Rookie'
       });
     }
-  }, []);
+  }, [matchResult]);
 
   if (!matchResult) {
     return (

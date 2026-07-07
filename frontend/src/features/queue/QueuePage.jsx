@@ -29,7 +29,7 @@ export default function QueuePage() {
   }, [queueStatus, currentMatch, navigate]);
 
   const handleCancel = () => {
-    const userId = user?.id || user?.email || 'u1';
+    const userId = user?.id || user?._id || user?.email || '';
     leaveQueue(userId);
     navigate('/lobby');
   };

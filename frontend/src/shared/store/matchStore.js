@@ -56,7 +56,16 @@ const useMatchStore = create((set, get) => ({
 
     const playerName = useAuthStore.getState().user?.name || userId;
     const socket = connectSocket(userId);
-    socket.emit('find_match', { userId, tier: tier.name, name: playerName, gameType: tier.gameType });
+    // Guard find_match emit behind socket connection to avoid race condition
+    // on cold-start backends (Render.com free tier can take 2-5s to connect)
+    const emitFindMatch = () => {
+      socket.emit('find_match', { userId, tier: tier.name, name: playerName, gameType: tier.gameType });
+    };
+    if (socket.connected) {
+      emitFindMatch();
+    } else {
+      socket.once('connect', emitFindMatch);
+    }
 
     // Handle incoming authoritative round scores from WebSockets E2E flow
     const listeners = {
@@ -79,15 +88,17 @@ const useMatchStore = create((set, get) => ({
       round_completed: ({ roundNo, winnerId, winnerName, submissions, correctIndex }) => {
         const { rounds, currentMatch } = get();
         const user = useAuthStore.getState().user;
-        const myId = user?.id || 'u1';
+        const myId = (user?.id || user?._id || '').toLowerCase();
         const myName = user?.name || 'You';
 
-        const mySub = (submissions ?? []).find(s => s.userId === myId);
-        const oppSub = (submissions ?? []).find(s => s.userId !== myId);
+        // Backend normalizes userIds to lowercase — use case-insensitive comparison
+        const mySub = (submissions ?? []).find(s => s.userId?.toLowerCase() === myId);
+        const oppSub = (submissions ?? []).find(s => s.userId?.toLowerCase() !== myId && s.userId !== 'system');
 
+        const isTiedRound = winnerId === 'tie' || winnerId === 'draw';
         const newRound = {
           roundNo,
-          winner: winnerId === myId ? myName : winnerName,
+          winner: isTiedRound ? 'tie' : (winnerId?.toLowerCase() === myId ? myName : winnerName),
           score: `${mySub?.score ?? 0}-${oppSub?.score ?? 0}`,
           playerScore: mySub?.score ?? 0,
           opponentScore: oppSub?.score ?? 0,
@@ -95,8 +106,9 @@ const useMatchStore = create((set, get) => ({
         };
 
         const updatedRounds = [...(rounds ?? []), newRound];
+        // Correctly count only actual wins, not ties
         const playerWins = updatedRounds.filter(r => r.winner === myName).length;
-        const opponentWins = updatedRounds.filter(r => r.winner !== myName).length;
+        const opponentWins = updatedRounds.filter(r => r.winner !== myName && r.winner !== 'tie').length;
 
         if (playerWins === 2 || opponentWins === 2 || updatedRounds.length === 3) {
           const isWinner = playerWins > opponentWins;
@@ -136,7 +148,7 @@ const useMatchStore = create((set, get) => ({
       if (get().queueStatus === 'searching') {
         const currentTier = get().currentTier;
         if (currentTier) {
-          socket.emit('find_match', { userId, tier: currentTier.name, name: playerName });
+          socket.emit('find_match', { userId, tier: currentTier.name, name: playerName, gameType: currentTier.gameType });
         }
       }
     });
@@ -190,7 +202,7 @@ const useMatchStore = create((set, get) => ({
       socket.emit('submit_score', {
         matchId: currentMatch?.matchId || currentMatch?.id,
         roundNo: currentRound,
-        userId: user?.id || 'u1',
+        userId: user?.id || user?._id || '',
         selectedIndex,
         timeLeft,
         name: user?.name || 'You'

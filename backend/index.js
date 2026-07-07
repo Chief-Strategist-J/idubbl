@@ -135,10 +135,14 @@ async function handleSubmitScore(socket, data) {
     let isCorrect = false;
 
     if (question) {
+      // Quiz game: check selected index against stored correctIndex
       isCorrect = selectedIndex !== null && selectedIndex !== undefined && Number(selectedIndex) === question.correctIndex;
       score = isCorrect ? (100 + timeLeft * 2) : 0;
     } else {
-      console.warn(`No question found for round ${roundNo} in match ${matchId}`);
+      // Casino/card game: no question in DB. Client sends selectedIndex=1 for win, 0 for loss.
+      // The game logic runs client-side and the result is trusted.
+      isCorrect = Number(selectedIndex) === 1;
+      score = isCorrect ? 140 : 0;
     }
 
     if (!activeScores[matchId]) activeScores[matchId] = {};

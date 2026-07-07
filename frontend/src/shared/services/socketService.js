@@ -20,8 +20,15 @@ export function getSocket() {
 
 export function connectSocket(userId) {
   const s = getSocket();
-  if (!s.connected) s.connect();
-  s.emit('chat:join', userId);
+  if (!s.connected) {
+    s.connect();
+    // chat:join will be emitted once connected (after handshake completes)
+    s.once('connect', () => {
+      s.emit('chat:join', userId);
+    });
+  } else {
+    s.emit('chat:join', userId);
+  }
   return s;
 }
 

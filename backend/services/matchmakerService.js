@@ -8,12 +8,15 @@ function normalizeKey(key) {
 }
 
 async function deductWallet(db, walletsCollection, transactionsCollection, uId, entryFee, tierName, matchId) {
-  const uWallet = await db.collection(walletsCollection).findOne({ userId: uId });
+  // Case-insensitive lookup: wallets may be stored with different case than the normalized queue userId
+  const uWallet = await db.collection(walletsCollection).findOne({
+    userId: { $regex: new RegExp(`^${uId}$`, 'i') }
+  });
   const fromDep = Math.min(uWallet?.depositBalance || 0, entryFee);
   const fromWin = entryFee - fromDep;
 
   await db.collection(walletsCollection).updateOne(
-    { userId: uId },
+    { userId: { $regex: new RegExp(`^${uId}$`, 'i') } },
     {
       $inc: {
         depositBalance: -fromDep,
@@ -76,9 +79,13 @@ class MatchmakerService {
     const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normTierName] || 5;
 
-    const wallet = await db.collection(this.walletsCollection).findOne({ userId: normUserId });
+    // Case-insensitive wallet lookup: the queue normalizes userIds to lowercase,
+    // but wallets may have been stored with the original mixed-case userId.
+    const wallet = await db.collection(this.walletsCollection).findOne({
+      userId: { $regex: new RegExp(`^${normUserId}$`, 'i') }
+    });
     if (!wallet) {
-      throw new Error('Wallet not found for user.');
+      throw new Error('Wallet not found for user. Please ensure your account is fully set up.');
     }
 
     const availableBalance = (wallet.depositBalance || 0) + (wallet.winningsBalance || 0);

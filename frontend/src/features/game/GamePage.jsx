@@ -45,6 +45,14 @@ const GAME_REGISTRY = {
   video_poker:   VideoPoker,
 };
 
+// Casino/card games manage their own win/loss logic internally.
+// They call onAnswer(didWin, choiceIndex) — the first arg is a boolean.
+// These games should NOT use question banks or a countdown timer.
+const CASINO_GAMES = new Set([
+  'lucky_wheel', 'lucky_balls', 'blackjack', 'holdem_poker',
+  'baccarat', 'casino_war', 'red_dog', 'pai_gow', 'three_card', 'video_poker',
+]);
+
 export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -69,23 +77,36 @@ export default function GamePage() {
   const [showTransition, setShowTransition] = useState(false);
   const [lastRound, setLastRound] = useState(null);
 
-  const gameType = currentTier?.gameType ?? 'word_duel';
+  const gameType = currentTier?.gameType ?? currentMatch?.gameType ?? 'word_duel';
+  const isCasinoGame = CASINO_GAMES.has(gameType);
   const questions = currentMatch?.questions || [];
   const question = questions[(currentRound || 1) - 1] || null;
 
-  const handleAnswer = useCallback((selectedIndex) => {
+  const handleAnswer = useCallback((selectedIndexOrDidWin) => {
     if (answered) return;
-    
-    // Estimate score locally for fast feedback, but server is authoritative
-    const estScore = selectedIndex !== -1 ? 100 + timeLeft * 2 : 0;
-    setPlayerRoundScore(estScore);
-    
-    setAnswered(true);
-    submitRoundResult(selectedIndex, timeLeft);
-  }, [answered, timeLeft, submitRoundResult]);
+
+    if (isCasinoGame) {
+      // Casino games pass a boolean (didWin) as first argument.
+      // Convert it to a numeric score and submit directly — no question bank used.
+      const didWin = selectedIndexOrDidWin === true;
+      const casinoScore = didWin ? 140 : 0; // Fixed score: win=140, loss=0
+      setPlayerRoundScore(casinoScore);
+      setAnswered(true);
+      // Submit with a sentinel index that the backend treats as a casino result
+      submitRoundResult(didWin ? 1 : 0, timeLeft);
+    } else {
+      // Quiz games: selectedIndex is a number
+      const selectedIndex = selectedIndexOrDidWin;
+      // Estimate score locally for fast feedback, but server is authoritative
+      const estScore = selectedIndex !== -1 ? 100 + timeLeft * 2 : 0;
+      setPlayerRoundScore(estScore);
+      setAnswered(true);
+      submitRoundResult(selectedIndex, timeLeft);
+    }
+  }, [answered, timeLeft, submitRoundResult, isCasinoGame]);
 
   useEffect(() => {
-    if (answered) return;
+    if (isCasinoGame || answered) return;
     if (timeLeft <= 0) { handleAnswer(-1); return; }
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);

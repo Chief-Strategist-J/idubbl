@@ -48,7 +48,7 @@ const useWalletStore = create((set, get) => ({
   },
 
   fetchWalletData: async (userId) => {
-    const currentUserId = userId || useAuthStore.getState().user?.id;
+    const currentUserId = userId || useAuthStore.getState().user?.id || useAuthStore.getState().user?._id;
     if (!currentUserId) return;
     set({ loading: true });
     try {
