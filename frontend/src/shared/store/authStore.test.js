@@ -68,9 +68,8 @@ describe('Auth Store tests', () => {
     expect(result.success).toBe(true);
 
     const state = useAuthStore.getState();
-    expect(state.isAuthenticated).toBe(true);
-    expect(state.user.firstName).toBe('John');
-    expect(state.user.role).toBe('player');
+    expect(state.isAuthenticated).toBe(false);
+    expect(state.user).toBeNull();
   });
 
   it('should logout correctly', async () => {

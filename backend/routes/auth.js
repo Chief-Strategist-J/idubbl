@@ -146,7 +146,51 @@ router.post('/verify-email-otp', async (req, res) => {
     // Delete the used OTP record
     await db.collection('otps').deleteOne({ email: email.toLowerCase() });
 
-    res.json({ success: true, message: 'Email verified successfully!' });
+    // Fetch the user to programmatically create a session
+    const user = await db.collection('user').findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.json({ success: true, message: 'Email verified successfully! Please log in.' });
+    }
+
+    try {
+      const sessionResponse = await authService.auth.api.createSession({
+        headers: new Headers(req.headers),
+        body: {
+          userId: user.id || user._id.toString()
+        },
+        asResponse: true
+      });
+
+      // Copy cookies and headers to Express response
+      sessionResponse.headers.forEach((value, key) => {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey !== 'content-encoding' && lowerKey !== 'set-cookie') {
+          res.setHeader(key, value);
+        }
+      });
+
+      const setCookies = sessionResponse.headers.getSetCookie();
+      if (setCookies && setCookies.length > 0) {
+        res.setHeader('Set-Cookie', setCookies);
+      }
+
+      const setAuthToken = sessionResponse.headers.get('set-auth-token');
+      if (setAuthToken) {
+        res.setHeader('set-auth-token', setAuthToken);
+      }
+
+      const sessionData = await sessionResponse.json();
+      return res.json({
+        success: true,
+        message: 'Email verified successfully!',
+        user: sessionData.user,
+        session: sessionData.session,
+        token: sessionData.token
+      });
+    } catch (sessionError) {
+      console.error('Error creating session after email verification:', sessionError);
+      return res.json({ success: true, message: 'Email verified successfully! Please log in.' });
+    }
   } catch (error) {
     console.error('Error verifying email with OTP:', error);
     res.status(500).json({ error: 'Internal server error verifying email' });

@@ -141,11 +141,6 @@ const useAuthStore = create(
           const resData = await res.json();
           set({ loading: false });
           if (res.ok && resData.user) {
-            const token = res.headers.get('set-auth-token');
-            if (token) {
-              localStorage.setItem('idubbl_bearer_token', token);
-            }
-            set({ user: resData.user, isAuthenticated: true, sessionChecked: true });
             return { success: true };
           }
           return { success: false, error: resData.message || 'Failed to sign up' };
@@ -227,6 +222,16 @@ const useAuthStore = create(
           });
           const data = await res.json();
           set({ loading: false });
+          if (res.ok && data.user) {
+            const token = res.headers.get('set-auth-token') || data.token;
+            if (token) {
+              localStorage.setItem('idubbl_bearer_token', token);
+            }
+            localStorage.setItem('idubbl_login_portal', 'player');
+            localStorage.setItem('idubbl_role', 'player');
+            set({ user: { ...data.user, role: 'player' }, isAuthenticated: true, sessionChecked: true });
+            return { success: true };
+          }
           if (res.ok) return { success: true };
           return { success: false, error: data.error || data.message || 'Verification failed' };
         } catch (err) {
