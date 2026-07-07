@@ -21,7 +21,7 @@ async function migrate() {
   
   try {
     await client.connect();
-    const db = client.db();
+    const db = client.db('idubbl');
     
     // --- 1. Migrate Wallet Schema to split Deposit vs Winnings ---
     console.log('Migrating wallets schema...');

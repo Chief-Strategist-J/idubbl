@@ -24,16 +24,16 @@ async function seedAdmin() {
     // 2. Promote to admin directly in database
     const client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
-    const db = client.db();
+    const db = client.db('idubbl');
     
     const usersCol = db.collection('user');
     const result = await usersCol.updateOne(
       { email: 'dev.jaydeep919@gmail.com' },
-      { $set: { role: 'admin' } }
+      { $set: { role: 'admin', emailVerified: true } }
     );
     
     if (result.matchedCount > 0) {
-      console.log('✅ User promoted to admin successfully!');
+      console.log('✅ User promoted to admin and verified successfully!');
     } else {
       console.warn('⚠️ User matching email not found in DB during promotion update.');
     }
