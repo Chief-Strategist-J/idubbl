@@ -36,6 +36,9 @@ const usePlatformStore = create(
       // Chat feature toggle
       chatEnabled: true,
 
+      // Game Mode toggle: 'pvp' (Person to Person) or 'pvs' (Person to System)
+      gameMode: 'pvp',
+
       // --- Actions ---
       setGameVisible: (gameId, visible) =>
         set(state => ({
@@ -53,10 +56,13 @@ const usePlatformStore = create(
       setChatEnabled: (enabled) => set({ chatEnabled: enabled }),
       toggleChat: () => set(state => ({ chatEnabled: !state.chatEnabled })),
 
+      setGameMode: (mode) => set({ gameMode: mode }),
+
       // Reset all to defaults
       resetToDefaults: () => set({
         gameVisibility: defaultVisibility,
         chatEnabled: true,
+        gameMode: 'pvp',
       }),
 
       // Helpers
@@ -75,6 +81,7 @@ const usePlatformStore = create(
             if (json.success && json.data) {
               set({
                 chatEnabled: json.data.chatEnabled !== false,
+                gameMode: json.data.gameMode || 'pvp',
                 gameVisibility: {
                   ...defaultVisibility,
                   ...(json.data.gameVisibility || {})
@@ -88,7 +95,7 @@ const usePlatformStore = create(
       },
 
       savePlatformSettings: async (userId) => {
-        const { chatEnabled, gameVisibility } = get();
+        const { chatEnabled, gameVisibility, gameMode } = get();
         try {
           const res = await fetch(`${ADMIN_BASE_URL}/settings/platform`, {
             method: 'POST',
@@ -96,7 +103,7 @@ const usePlatformStore = create(
               'Content-Type': 'application/json',
               'x-user-id': userId
             },
-            body: JSON.stringify({ chatEnabled, gameVisibility }),
+            body: JSON.stringify({ chatEnabled, gameVisibility, gameMode }),
             credentials: 'include'
           });
           return res.ok;

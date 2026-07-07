@@ -95,12 +95,32 @@ class MatchmakerService {
       joinedAt: new Date()
     };
 
-    // atomic check-and-match — exclude self to prevent self-matching in edge cases, match same tier and game type
-    const opponent = await db.collection(this.queueCollection).findOneAndDelete({ 
-      tier: normTierName, 
-      gameType: normGameType, 
-      userId: { $ne: normUserId } 
-    });
+    // Load platform settings to check the gameMode
+    const settings = await db.collection('settings').findOne({ key: 'platform_settings' });
+    const gameMode = settings?.value?.gameMode || 'pvp';
+
+    let opponent = null;
+    if (gameMode === 'pvs') {
+      // Generate a realistic random human name for the virtual opponent
+      const firstNames = ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Alex', 'Jessica', 'Daniel', 'Sophia', 'James', 'Olivia', 'Robert', 'Isabella', 'William', 'Charlotte', 'Lucas', 'Mia'];
+      const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson'];
+      const randomFirst = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const randomLast = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const mockName = `${randomFirst} ${randomLast}`;
+
+      opponent = {
+        userId: 'system',
+        name: mockName,
+        socketId: null
+      };
+    } else {
+      // atomic check-and-match — exclude self to prevent self-matching in edge cases, match same tier and game type
+      opponent = await db.collection(this.queueCollection).findOneAndDelete({ 
+        tier: normTierName, 
+        gameType: normGameType, 
+        userId: { $ne: normUserId } 
+      });
+    }
 
     if (!opponent) {
       await db.collection(this.queueCollection).insertOne(queueEntry);
@@ -134,8 +154,10 @@ class MatchmakerService {
       questions
     };
 
+    // Only deduct wallet for real users, skip 'system'
+    const deductUserIds = opponent.userId === 'system' ? [normUserId] : [opponent.userId, normUserId];
     await Promise.all(
-      [opponent.userId, normUserId].map(uId =>
+      deductUserIds.map(uId =>
         deductWallet(db, this.walletsCollection, this.transactionsCollection, uId, entryFee, tierName, matchId)
       )
     );
@@ -198,6 +220,7 @@ class MatchmakerService {
 
     if (normWinnerId === 'tie' || normWinnerId === 'draw') {
       for (const pId of match.players) {
+        if (pId === 'system') continue;
         await db.collection(this.walletsCollection).updateOne(
           { userId: pId },
           {
@@ -225,29 +248,31 @@ class MatchmakerService {
     const loserId = match.players.find(p => p !== normWinnerId);
 
     // Settle winner: deduct locked, add win balance
-    await db.collection(this.walletsCollection).updateOne(
-      { userId: normWinnerId },
-      {
-        $inc: {
-          winningsBalance: Number(prize),
-          lockedBalance: -Number(entryFee),
-          idubbuBalance: Number(prize) * IDUBBU_RATE
+    if (normWinnerId !== 'system') {
+      await db.collection(this.walletsCollection).updateOne(
+        { userId: normWinnerId },
+        {
+          $inc: {
+            winningsBalance: Number(prize),
+            lockedBalance: -Number(entryFee),
+            idubbuBalance: Number(prize) * IDUBBU_RATE
+          }
         }
-      }
-    );
+      );
 
-    await db.collection(this.transactionsCollection).insertOne({
-      userId: normWinnerId,
-      type: 'win',
-      amount: Number(prize),
-      matchId: normMatchId,
-      tier: match.tier,
-      status: 'approved',
-      createdAt: new Date()
-    });
+      await db.collection(this.transactionsCollection).insertOne({
+        userId: normWinnerId,
+        type: 'win',
+        amount: Number(prize),
+        matchId: normMatchId,
+        tier: match.tier,
+        status: 'approved',
+        createdAt: new Date()
+      });
+    }
 
     // Settle loser: deduct locked balance
-    if (loserId) {
+    if (loserId && loserId !== 'system') {
       await db.collection(this.walletsCollection).updateOne(
         { userId: loserId },
         { $inc: { lockedBalance: -Number(entryFee) } }

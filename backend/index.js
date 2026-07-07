@@ -152,6 +152,27 @@ async function handleSubmitScore(socket, data) {
       ];
     }
 
+    // If one of the players is 'system', simulate a system score submission automatically
+    if (match.players && match.players.includes('system')) {
+      const updatedSubmissions = activeScores[matchId][roundNo];
+      if (!updatedSubmissions.some(e => e.userId === 'system')) {
+        const botIsCorrect = Math.random() > 0.4; // 60% chance to be correct
+        const botSelectedIndex = botIsCorrect && question ? question.correctIndex : (question ? (question.correctIndex + 1) % 4 : 0);
+        const botTimeLeft = Math.floor(Math.random() * 8) + 1; // 1 to 8 seconds left
+        const botScore = botIsCorrect ? (100 + botTimeLeft * 2) : 0;
+        const systemName = match.playerNames && match.playerNames['system'] ? match.playerNames['system'] : 'Opponent';
+
+        activeScores[matchId][roundNo].push({
+          userId: 'system',
+          score: botScore,
+          name: systemName,
+          selectedIndex: botSelectedIndex,
+          isCorrect: botIsCorrect,
+          socketId: null
+        });
+      }
+    }
+
     const settled = activeScores[matchId][roundNo];
     if (settled.length >= 2) {
       const [p1, p2] = settled;

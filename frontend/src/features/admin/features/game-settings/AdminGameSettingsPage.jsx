@@ -33,8 +33,8 @@ const CATEGORIES = ['All', 'Skill Duels', 'Card Games', 'Chance', 'Board Games']
 
 export default function AdminGameSettingsPage() {
   const {
-    gameVisibility, chatEnabled,
-    setGameVisible, setChatEnabled,
+    gameVisibility, chatEnabled, gameMode,
+    setGameVisible, setChatEnabled, setGameMode,
     resetToDefaults,
     fetchPlatformSettings, savePlatformSettings,
   } = usePlatformStore();
@@ -289,6 +289,60 @@ export default function AdminGameSettingsPage() {
               ⚠️ KYC is currently <strong>disabled</strong>. Users can perform withdrawals without identity verification.
             </div>
           )}
+        </Card>
+
+        {/* ── Game Matchmaking Mode (PvP vs PvS) ─────────────────── */}
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, margin: 0 }}>
+                🤖 Matchmaking Mode
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.25rem' }}>
+                Toggle matchmaking to be Person-to-Person (PvP) or Person-to-System (PvS / Bot Play).
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setGameMode('pvp')}
+                style={{
+                  padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: gameMode === 'pvp' ? 'rgba(0,227,122,0.15)' : 'var(--bg-card)',
+                  color: gameMode === 'pvp' ? 'var(--primary)' : 'var(--text-secondary)',
+                  border: gameMode === 'pvp' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                }}
+              >
+                👥 Person-to-Person
+              </button>
+              <button
+                onClick={() => setGameMode('pvs')}
+                style={{
+                  padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: gameMode === 'pvs' ? 'rgba(0,227,122,0.15)' : 'var(--bg-card)',
+                  color: gameMode === 'pvs' ? 'var(--primary)' : 'var(--text-secondary)',
+                  border: gameMode === 'pvs' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                }}
+              >
+                🤖 Person-to-System
+              </button>
+            </div>
+          </div>
+          <div style={{
+            padding: '0.6rem 0.9rem', 
+            background: gameMode === 'pvp' ? 'rgba(0,227,122,0.06)' : 'rgba(99,102,241,0.08)',
+            border: `1px solid ${gameMode === 'pvp' ? 'rgba(0,227,122,0.2)' : 'rgba(99,102,241,0.2)'}`, 
+            borderRadius: '8px',
+            fontSize: '0.78rem', 
+            color: gameMode === 'pvp' ? 'var(--primary)' : '#818cf8'
+          }}>
+            {gameMode === 'pvp' ? (
+              <span>👥 Matchmaking is set to <strong>Person-to-Person</strong>. Players must wait for another real user to match with.</span>
+            ) : (
+              <span>🤖 Matchmaking is set to <strong>Person-to-System</strong>. Players will instantly start dueling with the system bot.</span>
+            )}
+          </div>
         </Card>
 
         {/* ── Flutterwave Keys ─────────────────────────────────── */}

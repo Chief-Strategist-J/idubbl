@@ -337,7 +337,7 @@ router.get('/settings/platform', async (req, res) => {
     const settings = await db.collection('settings').findOne({ key: 'platform_settings' });
     res.json({
       success: true,
-      data: settings?.value || { chatEnabled: true, gameVisibility: {} }
+      data: settings?.value || { chatEnabled: true, gameVisibility: {}, gameMode: 'pvp' }
     });
   } catch (error) {
     console.error('Error fetching platform settings:', error);
@@ -347,12 +347,12 @@ router.get('/settings/platform', async (req, res) => {
 
 // 14. POST /api/admin/settings/platform - Update platform settings in DB (admin only)
 router.post('/settings/platform', adminAuth, async (req, res) => {
-  const { chatEnabled, gameVisibility } = req.body;
+  const { chatEnabled, gameVisibility, gameMode } = req.body;
   try {
     const db = await getDb();
     await db.collection('settings').updateOne(
       { key: 'platform_settings' },
-      { $set: { value: { chatEnabled, gameVisibility }, updatedAt: new Date() } },
+      { $set: { value: { chatEnabled, gameVisibility, gameMode: gameMode || 'pvp' }, updatedAt: new Date() } },
       { upsert: true }
     );
     res.json({ success: true, message: 'Platform settings updated successfully.' });
