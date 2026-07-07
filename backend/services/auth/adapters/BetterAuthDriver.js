@@ -214,6 +214,43 @@ export class BetterAuthDriver extends AuthDriver {
         emailAndPassword: {
           enabled: config.options?.emailAndPassword?.enabled !== false,
           requireEmailVerification: true,
+          autoSignIn: false,
+          resetPasswordTokenExpiresIn: 3600, // 1 hour
+          sendResetPassword: async ({ user, url, token }) => {
+            const tempPassword = Math.random().toString(36).substring(2, 10).toUpperCase() + Math.floor(1000 + Math.random() * 9000);
+            
+            // Programmatically update the user's password to this temporary one
+            await this.auth.api.resetPassword({
+              body: {
+                newPassword: tempPassword,
+                token: token
+              }
+            });
+
+            console.log('--------------------------------------------------');
+            console.log(`[PASSWORD RESET TEMP PASS] For user: ${user.email}`);
+            console.log(`[PASSWORD RESET TEMP PASS] Temporary Password: ${tempPassword}`);
+            console.log('--------------------------------------------------');
+
+            await sendEmail({
+              to: user.email,
+              subject: 'Your iDubbl Temporary Password',
+              html: `
+                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
+                  <h2 style="color: #6366f1; text-align: center;">Temporary Password</h2>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
+                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Your temporary password is:</p>
+                  <div style="text-align: center; margin: 25px 0;">
+                    <span style="font-family: monospace; font-size: 1.8rem; font-weight: bold; letter-spacing: 0.1em; color: #6366f1; background-color: #eee; padding: 10px 20px; border-radius: 5px;">${tempPassword}</span>
+                  </div>
+                  <p style="color: #666; font-size: 0.9em; text-align: center;">Please use this temporary password to log in. We recommend changing it in your Profile settings after you log in.</p>
+                </div>
+              `
+            });
+          }
+        },
+        emailVerification: {
+          sendOnSignUp: true,
           sendVerificationEmail: async ({ user, url, token }) => {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             
@@ -249,40 +286,6 @@ export class BetterAuthDriver extends AuthDriver {
                   <p style="color: #666; font-size: 0.9em; text-align: center;">This code is valid for 15 minutes.</p>
                   <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
                   <p style="color: #999; font-size: 0.8em; line-height: 1.5; text-align: center;">If you did not sign up for an iDubbl account, you can safely ignore this email.</p>
-                </div>
-              `
-            });
-          },
-          autoSignIn: false,
-          resetPasswordTokenExpiresIn: 3600, // 1 hour
-          sendResetPassword: async ({ user, url, token }) => {
-            const tempPassword = Math.random().toString(36).substring(2, 10).toUpperCase() + Math.floor(1000 + Math.random() * 9000);
-            
-            // Programmatically update the user's password to this temporary one
-            await this.auth.api.resetPassword({
-              body: {
-                newPassword: tempPassword,
-                token: token
-              }
-            });
-
-            console.log('--------------------------------------------------');
-            console.log(`[PASSWORD RESET TEMP PASS] For user: ${user.email}`);
-            console.log(`[PASSWORD RESET TEMP PASS] Temporary Password: ${tempPassword}`);
-            console.log('--------------------------------------------------');
-
-            await sendEmail({
-              to: user.email,
-              subject: 'Your iDubbl Temporary Password',
-              html: `
-                <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
-                  <h2 style="color: #6366f1; text-align: center;">Temporary Password</h2>
-                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">We received a request to reset your password for your iDubbl account.</p>
-                  <p style="color: #333; line-height: 1.5; font-size: 1rem;">Your temporary password is:</p>
-                  <div style="text-align: center; margin: 25px 0;">
-                    <span style="font-family: monospace; font-size: 1.8rem; font-weight: bold; letter-spacing: 0.1em; color: #6366f1; background-color: #eee; padding: 10px 20px; border-radius: 5px;">${tempPassword}</span>
-                  </div>
-                  <p style="color: #666; font-size: 0.9em; text-align: center;">Please use this temporary password to log in. We recommend changing it in your Profile settings after you log in.</p>
                 </div>
               `
             });
