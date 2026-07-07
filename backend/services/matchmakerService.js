@@ -271,7 +271,7 @@ class MatchmakerService {
       for (const pId of match.players) {
         if (pId === 'system') continue;
         await db.collection(this.walletsCollection).updateOne(
-          { userId: pId },
+          { userId: { $regex: new RegExp(`^${pId}$`, 'i') } },
           {
             $inc: {
               depositBalance: Number(entryFee),
@@ -299,7 +299,7 @@ class MatchmakerService {
     // Settle winner: deduct locked, add win balance
     if (normWinnerId !== 'system') {
       await db.collection(this.walletsCollection).updateOne(
-        { userId: normWinnerId },
+        { userId: { $regex: new RegExp(`^${normWinnerId}$`, 'i') } },
         {
           $inc: {
             winningsBalance: Number(prize),
@@ -323,7 +323,7 @@ class MatchmakerService {
     // Settle loser: deduct locked balance
     if (loserId && loserId !== 'system') {
       await db.collection(this.walletsCollection).updateOne(
-        { userId: loserId },
+        { userId: { $regex: new RegExp(`^${loserId}$`, 'i') } },
         { $inc: { lockedBalance: -Number(entryFee) } }
       );
 
