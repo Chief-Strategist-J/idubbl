@@ -102,8 +102,50 @@ class MatchmakerService {
     let opponent = null;
     if (gameMode === 'pvs') {
       // Generate a realistic random human name for the virtual opponent
-      const firstNames = ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Alex', 'Jessica', 'Daniel', 'Sophia', 'James', 'Olivia', 'Robert', 'Isabella', 'William', 'Charlotte', 'Lucas', 'Mia'];
-      const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Taylor', 'Thomas', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson'];
+      const firstNames = [
+        'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
+        'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen',
+        'Christopher', 'Lisa', 'Daniel', 'Nancy', 'Matthew', 'Betty', 'Anthony', 'Sandra', 'Mark', 'Margaret',
+        'Donald', 'Ashley', 'Steven', 'Kimberly', 'Paul', 'Emily', 'Andrew', 'Donna', 'Joshua', 'Michelle',
+        'Kenneth', 'Carol', 'Kevin', 'Amanda', 'Brian', 'Melissa', 'George', 'Deborah', 'Timothy', 'Stephanie',
+        'Ronald', 'Rebecca', 'Edward', 'Sharon', 'Jason', 'Laura', 'Jeffrey', 'Cynthia', 'Gregory', 'Kathleen',
+        'Ryan', 'Amy', 'Jacob', 'Angela', 'Gary', 'Shirley', 'Nicholas', 'Brenda', 'Eric', 'Emma',
+        'Jonathan', 'Anna', 'Stephen', 'Pamela', 'Larry', 'Nicole', 'Justin', 'Samantha', 'Scott', 'Katherine',
+        'Brandon', 'Christine', 'Benjamin', 'Helen', 'Samuel', 'Debora', 'Rachel', 'Alexander', 'Carolyn', 'Patrick',
+        'Janet', 'Jack', 'Maria', 'Zachary', 'Heather', 'Tyler', 'Diane', 'Aaron', 'Virginia', 'Henry',
+        'Julie', 'Jose', 'Joyce', 'Douglas', 'Victoria', 'Peter', 'Olivia', 'Adam', 'Kelly', 'Nathan',
+        'Christina', 'Walter', 'Lauren', 'Kyle', 'Joan', 'Harold', 'Evelyn', 'Carl', 'Judith', 'Jeremy',
+        'Megan', 'Keith', 'Cheryl', 'Roger', 'Andrea', 'Gerald', 'Hannah', 'Ethan', 'Jacqueline', 'Arthur',
+        'Martha', 'Terry', 'Gloria', 'Christian', 'Teresa', 'Sean', 'Ann', 'Lawrence', 'Sara', 'Austin',
+        'Madison', 'Joe', 'Frances', 'Noah', 'Kathryn', 'Jesse', 'Janice', 'Albert', 'Jean', 'Bryan',
+        'Abigail', 'Billy', 'Alice', 'Bruce', 'Julia', 'Willie', 'Judy', 'Jordan', 'Sophia', 'Dylan',
+        'Grace', 'Alan', 'Amber', 'Ralph', 'Denise', 'Gabriel', 'Danielle', 'Roy', 'Beverly', 'Louis',
+        'Sherry', 'Russell', 'Kaylee', 'Vincent', 'Alexis', 'Philip', 'Tiffany', 'Bobby', 'Johnny', 'Hailey',
+        'Bradley', 'Chloe', 'Mason', 'Liam', 'Harper', 'Lucas', 'Ella', 'Jackson', 'Avery', 'Mateo',
+        'Layla', 'Luka', 'Luna', 'Oliver', 'Isabella', 'Leo', 'Mia', 'Enzo', 'Aria', 'Zoe'
+      ];
+      const lastNames = [
+        'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+        'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+        'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
+        'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
+        'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts',
+        'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes',
+        'Stewart', 'Morris', 'Morales', 'Murphy', 'Cook', 'Rogers', 'Gutierrez', 'Ortiz', 'Morgan', 'Cooper',
+        'Peterson', 'Bailey', 'Reed', 'Kelly', 'Howard', 'Ramos', 'Kim', 'Cox', 'Ward', 'Richardson',
+        'Watson', 'Brooks', 'Chavez', 'Wood', 'James', 'Bennett', 'Gray', 'Mendoza', 'Ruiz', 'Hughes',
+        'Price', 'Alvarez', 'Castillo', 'Sanders', 'Patel', 'Myers', 'Long', 'Ross', 'Foster', 'Jimenez',
+        'Porter', 'Hunter', 'Salazar', 'Shaw', 'Gordon', 'Wilcox', 'Webb', 'Harrison', 'Coleman', 'West',
+        'Jordan', 'Owens', 'Reynolds', 'Fisher', 'Ellis', 'Gibson', 'Mcdonald', 'Marshall', 'Murray', 'Freeman',
+        'Wells', 'Simpson', 'Stevens', 'Tucker', 'Hicks', 'Crawford', 'Henry', 'Boyd', 'Mason', 'Kennedy',
+        'Warren', 'Dixon', 'Burns', 'Holmes', 'Rice', 'Robertson', 'Hunt', 'Black', 'Daniels', 'Palmer',
+        'Nichols', 'Grant', 'Knight', 'Ferguson', 'Rose', 'Stone', 'Hawkins', 'Dunn', 'Perkins', 'Hudson',
+        'Spencer', 'Gardner', 'Stephens', 'Payne', 'Pierce', 'Berry', 'Matthews', 'Arnold', 'Wagner', 'Willis',
+        'Ray', 'Watkins', 'Olson', 'Carroll', 'Duncan', 'Snyder', 'Hart', 'Cunningham', 'Bradley', 'Lane',
+        'Andrews', 'Harper', 'Fox', 'Riley', 'Armstrong', 'Carpenter', 'Weaver', 'Greene', 'Lawrence', 'Elliott',
+        'Franklin', 'Lawson', 'Beebe', 'George', 'Pearson', 'Gilbert', 'Montgomery', 'Harvey', 'Knight', 'Burke',
+        'Oliver', 'Soto', 'Silva', 'Rosales', 'Frazier', 'Burton', 'Valenzuela', 'Bowman', 'Herrera', 'Aguilar'
+      ];
       const randomFirst = firstNames[Math.floor(Math.random() * firstNames.length)];
       const randomLast = lastNames[Math.floor(Math.random() * lastNames.length)];
       const mockName = `${randomFirst} ${randomLast}`;
