@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 
 let apiBase = import.meta.env.VITE_API_URL || 'https://idubbl-backend.onrender.com';
+if (apiBase) {
+  apiBase = apiBase.replace(/^['"]|['"]$/g, '');
+}
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
   apiBase = `https://${apiBase}`;
 }
