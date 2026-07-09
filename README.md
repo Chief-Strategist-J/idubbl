@@ -162,3 +162,22 @@ The system integrates with the following external services and API endpoints:
 | **Alchemy RPC** | Ethereum RPC Gateway | `https://eth-mainnet.g.alchemy.com/v2/<api-key>` | [Alchemy](https://www.alchemy.com/) |
 | **Juspay** | Core Card Payment Gateway | `https://api.juspay.in` | [Juspay](https://juspay.in/) |
 | **Flutterwave** | Regional Payments | `https://api.flutterwave.com` | [Flutterwave](https://flutterwave.com/) |
+
+---
+
+## 🌟 New Multiplayer & Admin Panel Features
+
+The platform supports the following advanced real-time gaming and administrative features:
+
+### 🎮 Real-Time Choice Broadcasts
+* **Multiplayer Duels (Word Duel, Math Duel, Reaction Race):** As soon as an opponent selects an answer, the choice is immediately broadcast to the other player's screen (e.g. "Opponent selected").
+* **Reaction Race:** The server determines target coordinates (`correctIndex`) dynamically, ensuring both players duel on the exact same glowing target. Player selections are displayed as live red-dashed target boxes on the grid in real-time.
+* **Non-Blocking Flow:** Tapping choices disables the input for that user but doesn't block the screen with opaque modals. Players can observe the matching target choice before the round ends.
+* **Round Transitions:** Transition screens display the correct answers side-by-side with player choices, correct/incorrect badges, and score updates.
+
+### 💼 Admin Oversight Tools
+* **Manual User KYC Verification:** Admins can manually verify a user's account KYC Status directly from the `Users` table inside the Admin Dashboard.
+* **User Account Deletion:** Admins can permanently delete a player's profile, including their wallet details, transactions logs, and matches records.
+* **Minimum Withdrawal Limit:** Enforced a strict minimum withdrawal constraint of **1 USDT** across both the backend APIs and frontend fields.
+* **Corrected Settlement Lock Release:** Releases locked matching fees back into deposit wallets for tie matches/cancellations, and credits winning balances properly.
+
