@@ -267,7 +267,7 @@ class MatchmakerService {
     const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normalizeKey(match.tier)] || 5;
 
-    if (normWinnerId === 'tie' || normWinnerId === 'draw') {
+    if (normWinnerId === 'tie' || normWinnerId === 'draw' || normWinnerId === 'cancelled' || normWinnerId === 'refund') {
       for (const pId of match.players) {
         if (pId === 'system') continue;
         await db.collection(this.walletsCollection).updateOne(

@@ -578,6 +578,7 @@ router.post('/users/:userId/verify', adminAuth, async (req, res) => {
       { 
         $set: { 
           kycStatus: 'verified',
+          emailVerified: true,
           kycDetails: {
             manual: true,
             verifiedBy: req.user.id || req.user._id.toString(),

@@ -47,6 +47,7 @@ export default function AdminDashboardHome() {
   matches.filter((m) => m.status === 'completed').reduce((acc, m) => acc + m.rake, 0);
 
   const totalPersonalWallets = adminUsers.filter(u => u.personalWallets && (u.personalWallets.tron || u.personalWallets.ethereum)).length;
+  const verifiedUsersCount = adminUsers.filter(u => u.kycStatus === 'verified').length;
 
   const realActivity = [...deposits, ...withdrawals]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -114,7 +115,8 @@ export default function AdminDashboardHome() {
         <Stat label="Pending Deposits" value={pendingDeposits} highlight />
         <Stat label="Pending Withdrawals" value={pendingWithdrawals} highlight />
         <Stat label="Active Matches" value={activeMatches} />
-        <Stat label="Standard Wallets" value={adminUsers.length} />
+        <Stat label="Total Users" value={adminUsers.length} />
+        <Stat label="Verified KYC Users" value={verifiedUsersCount} highlight />
         <Stat label="Crypto Wallets" value={totalPersonalWallets} highlight />
       </div>
 
