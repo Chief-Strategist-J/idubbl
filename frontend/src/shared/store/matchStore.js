@@ -139,7 +139,12 @@ const useMatchStore = create((set, get) => ({
             rounds: updatedRounds,
             prize: isWinner ? (currentMatch?.prize ?? 0) : 0,
             rake: currentMatch?.rake,
-            entryFee: get().tiers.find((t) => t.name === currentMatch?.tier)?.entryFee || 0,
+            entryFee: get().tiers.find((t) => t.name.toLowerCase() === currentMatch?.tier?.toLowerCase())?.entryFee || (
+              currentMatch?.tier?.toLowerCase() === 'micro' ? 1 :
+              currentMatch?.tier?.toLowerCase() === 'rookie' ? 5 :
+              currentMatch?.tier?.toLowerCase() === 'pro' ? 20 :
+              currentMatch?.tier?.toLowerCase() === 'elite' ? 50 : 0
+            ),
             tierName: currentMatch?.tier,
             refId: currentMatch?.refId || currentMatch?.matchId,
             settledAt: new Date().toISOString()
