@@ -284,6 +284,7 @@ const useWalletStore = create((set, get) => ({
     if (isWinner) {
       nextWinnings = winningsBalance + prize;
       nextIdubbu = (idubbuBalance || 0) + prize * (idubbuRate || 1);
+      nextAvailable = availableBalance + prize;
       set({
         winningsBalance: nextWinnings,
         availableBalance: nextAvailable,
@@ -301,7 +302,6 @@ const useWalletStore = create((set, get) => ({
         idubbuBalance: nextIdubbu,
       });
     } else {
-      nextAvailable = Math.max(0, availableBalance - entryFee);
       set({
         lockedBalance: nextLocked,
         availableBalance: nextAvailable,
@@ -611,6 +611,46 @@ const useWalletStore = create((set, get) => ({
     } catch (error) {
       console.error('Error resolving support ticket:', error);
       return { success: false, error: 'Network error resolving ticket' };
+    }
+  },
+
+  deleteUser: async (userId) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    try {
+      const response = await fetch(`${ADMIN_BASE_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
+        credentials: 'include'
+      });
+      const json = await response.json();
+      if (json.success) {
+        await get().fetchAdminUsers();
+        return { success: true, message: json.message };
+      }
+      return { success: false, error: json.error || 'Failed to delete user' };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return { success: false, error: 'Network error deleting user' };
+    }
+  },
+
+  verifyUser: async (userId) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    try {
+      const response = await fetch(`${ADMIN_BASE_URL}/users/${userId}/verify`, {
+        method: 'POST',
+        headers: currentUserId ? { 'x-user-id': currentUserId } : {},
+        credentials: 'include'
+      });
+      const json = await response.json();
+      if (json.success) {
+        await get().fetchAdminUsers();
+        return { success: true, message: json.message };
+      }
+      return { success: false, error: json.error || 'Failed to verify user' };
+    } catch (error) {
+      console.error('Error verifying user:', error);
+      return { success: false, error: 'Network error verifying user' };
     }
   },
 

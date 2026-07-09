@@ -22,6 +22,7 @@ const useMatchStore = create((set, get) => ({
   questions: WORD_DUEL_QUESTIONS,
   loading: false,
   roundWaiting: false,
+  roundSelections: {}, // maps userId -> selectedIndex for the current round
 
   fetchAdminMatches: async () => {
     set({ loading: true });
@@ -52,7 +53,7 @@ const useMatchStore = create((set, get) => ({
       tier.gameLabel = gameType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
     
-    set({ queueStatus: 'searching', currentTier: tier, currentMatch: null, rounds: [], matchResult: null, matchmakingError: null });
+    set({ queueStatus: 'searching', currentTier: tier, currentMatch: null, rounds: [], matchResult: null, matchmakingError: null, roundSelections: {} });
 
     const playerName = useAuthStore.getState().user?.name || userId;
     const socket = connectSocket(userId);
@@ -85,6 +86,18 @@ const useMatchStore = create((set, get) => ({
         set({ queueStatus: 'error', matchmakingError: data?.error || 'Matchmaking failed. Please try again.' });
       },
 
+      player_selected: ({ userId: selectedUserId, selectedIndex, roundNo }) => {
+        const { currentRound, roundSelections } = get();
+        if (roundNo === currentRound) {
+          set({
+            roundSelections: {
+              ...roundSelections,
+              [selectedUserId.toLowerCase()]: selectedIndex
+            }
+          });
+        }
+      },
+
       round_completed: ({ roundNo, winnerId, winnerName, submissions, correctIndex }) => {
         const { rounds, currentMatch } = get();
         const user = useAuthStore.getState().user;
@@ -93,7 +106,8 @@ const useMatchStore = create((set, get) => ({
 
         // Backend normalizes userIds to lowercase — use case-insensitive comparison
         const mySub = (submissions ?? []).find(s => s.userId?.toLowerCase() === myId);
-        const oppSub = (submissions ?? []).find(s => s.userId?.toLowerCase() !== myId && s.userId !== 'system');
+        // Note: system bot can be opponent
+        const oppSub = (submissions ?? []).find(s => s.userId?.toLowerCase() !== myId);
 
         const isTiedRound = winnerId === 'tie' || winnerId === 'draw';
         const newRound = {
@@ -102,7 +116,11 @@ const useMatchStore = create((set, get) => ({
           score: `${mySub?.score ?? 0}-${oppSub?.score ?? 0}`,
           playerScore: mySub?.score ?? 0,
           opponentScore: oppSub?.score ?? 0,
-          correctIndex
+          correctIndex,
+          playerSelection: mySub?.selectedIndex,
+          opponentSelection: oppSub?.selectedIndex,
+          playerCorrect: mySub?.isCorrect,
+          opponentCorrect: oppSub?.isCorrect,
         };
 
         const updatedRounds = [...(rounds ?? []), newRound];
@@ -129,10 +147,11 @@ const useMatchStore = create((set, get) => ({
           set({
             rounds: updatedRounds,
             matchResult: result,
-            currentMatch: { ...currentMatch, status: 'completed', winner: matchWinner }
+            currentMatch: { ...currentMatch, status: 'completed', winner: matchWinner },
+            roundSelections: {}
           });
         } else {
-          set({ rounds: updatedRounds, currentRound: roundNo + 1, roundWaiting: false });
+          set({ rounds: updatedRounds, currentRound: roundNo + 1, roundWaiting: false, roundSelections: {} });
         }
       }
     };
@@ -159,12 +178,12 @@ const useMatchStore = create((set, get) => ({
     if (socket?.connected) {
       socket.emit('cancel_matchmaking', { userId });
     }
-    set({ queueStatus: null, currentTier: null, matchmakingError: null });
+    set({ queueStatus: null, currentTier: null, matchmakingError: null, roundSelections: {} });
   },
 
   simulateMatch: (matchId) => {
     const match = get().matches.find((m) => m.id === matchId);
-    set({ currentMatch: match, currentRound: 1, queueStatus: 'starting', rounds: [] });
+    set({ currentMatch: match, currentRound: 1, queueStatus: 'starting', rounds: [], roundSelections: {} });
   },
 
   startNewMatch: (tier) => {
@@ -186,7 +205,7 @@ const useMatchStore = create((set, get) => ({
       endedAt: null,
       refId: `M-${Date.now()}`,
     };
-    set({ currentMatch: newMatch, currentRound: 1, queueStatus: null, rounds: [], matchResult: null });
+    set({ currentMatch: newMatch, currentRound: 1, queueStatus: null, rounds: [], matchResult: null, roundSelections: {} });
     return newMatch;
   },
 
@@ -211,7 +230,7 @@ const useMatchStore = create((set, get) => ({
   },
 
   clearMatch: () => {
-    set({ currentMatch: null, currentRound: 0, rounds: [], matchResult: null, queueStatus: null, currentTier: null, matchmakingError: null, roundWaiting: false });
+    set({ currentMatch: null, currentRound: 0, rounds: [], matchResult: null, queueStatus: null, currentTier: null, matchmakingError: null, roundWaiting: false, roundSelections: {} });
   },
 
   getRandomQuestion: (index) => {

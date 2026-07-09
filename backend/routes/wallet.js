@@ -513,6 +513,10 @@ router.post('/withdraw', async (req, res) => {
 
     const wallet = await getOrCreateWallet(db, userId);
 
+    if (Number(amount) < 1) {
+      return errorRegistry.send(res, 'INVALID_AMOUNT', 'Minimum withdrawal amount is 1 USDT.');
+    }
+
     const totalAvailable = wallet.winningsBalance || 0;
     if (totalAvailable < Number(amount)) {
       return errorRegistry.send(res, 'INSUFFICIENT_BALANCE', 'Insufficient winnings balance to complete the withdrawal.');

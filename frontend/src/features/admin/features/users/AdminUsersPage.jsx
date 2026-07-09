@@ -4,7 +4,7 @@ import { PageHeader, Card, Table, Badge, Button, SearchBar } from '../../../../s
 import useWalletStore from '../../../../shared/store/walletStore.js';
 
 export default function AdminUsersPage() {
-  const { adminUsers, fetchAdminUsers, loading, manualTopup, currencies, fetchCurrencies } = useWalletStore();
+  const { adminUsers, fetchAdminUsers, loading, manualTopup, currencies, fetchCurrencies, deleteUser, verifyUser } = useWalletStore();
   const [search, setSearch] = useState('');
   const [localUsers, setLocalUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -50,6 +50,28 @@ export default function AdminUsersPage() {
         return u;
       })
     );
+  };
+
+  const handleVerifyUser = async (userId) => {
+    if (window.confirm('Are you sure you want to manually verify this user?')) {
+      const res = await verifyUser(userId);
+      if (res.success) {
+        alert(res.message || 'User successfully verified!');
+      } else {
+        alert(res.error || 'Failed to verify user.');
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId, email) => {
+    if (window.confirm(`Are you absolutely sure you want to DELETE user ${email}? This action is permanent and cannot be undone.`)) {
+      const res = await deleteUser(userId);
+      if (res.success) {
+        alert(res.message || 'User successfully deleted!');
+      } else {
+        alert(res.error || 'Failed to delete user.');
+      }
+    }
   };
 
   const handleTopupSubmit = async (e) => {
@@ -165,18 +187,38 @@ export default function AdminUsersPage() {
     },
     { key: 'role', label: 'Role', render: (v) => <Badge status={v === 'admin' ? 'approved' : 'pending'} label={v} /> },
     { key: 'status', label: 'Status', render: (v) => <Badge status={v || 'active'} /> },
+    {
+      key: 'kycStatus',
+      label: 'KYC Status',
+      render: (v) => (
+        <Badge
+          status={v === 'verified' ? 'approved' : (v === 'pending' ? 'pending' : 'rejected')}
+          label={v === 'verified' ? 'Verified' : (v === 'pending' ? 'Pending' : (v || 'Unverified'))}
+        />
+      )
+    },
     { key: 'createdAt', label: 'Joined', render: (v) => new Date(v).toLocaleDateString() },
     {
       key: 'actions', label: 'Actions',
       render: (_, row) => {
         const status = row.status || 'active';
+        const isVerified = row.kycStatus === 'verified';
+        const userId = row.id || row._id;
         return (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Button variant="primary" onClick={() => setSelectedUser(row)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
               Top Up
             </Button>
-            <Button variant={status === 'active' ? 'danger' : 'secondary'} onClick={() => toggleSuspend(row.id || row._id)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
+            <Button variant={status === 'active' ? 'danger' : 'secondary'} onClick={() => toggleSuspend(userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
               {status === 'active' ? 'Suspend' : 'Reactivate'}
+            </Button>
+            {!isVerified && (
+              <Button variant="secondary" onClick={() => handleVerifyUser(userId)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.3)', color: 'var(--accent-green)' }}>
+                Verify
+              </Button>
+            )}
+            <Button variant="danger" onClick={() => handleDeleteUser(userId, row.email)} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
+              Delete
             </Button>
           </div>
         );

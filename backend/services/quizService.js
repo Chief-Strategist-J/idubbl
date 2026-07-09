@@ -20,6 +20,8 @@ export class QuizService {
   async fetchQuestions(amount = 5, gameType = 'word_duel') {
     if (gameType === 'math_duel') {
       return this.getMathQuestions(amount);
+    } else if (gameType === 'reaction_race') {
+      return this.getReactionQuestions(amount);
     } else if (gameType !== 'word_duel') {
       return this.getDummyQuestions(amount, gameType);
     }
@@ -118,6 +120,19 @@ export class QuizService {
     ];
     const shuffled = [...mathQuestions].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, amount);
+  }
+
+  getReactionQuestions(amount) {
+    return Array.from({ length: amount }, (_, i) => {
+      const activeIdx = Math.floor(Math.random() * 9);
+      return {
+        category: 'REACTION RACE',
+        question: 'TAP THE GLOWING TARGET AS FAST AS YOU CAN!',
+        options: Array.from({ length: 9 }, (_, j) => `Cell ${j + 1}`),
+        correctIndex: activeIdx,
+        correct: activeIdx
+      };
+    });
   }
 
   getDummyQuestions(amount, gameType) {

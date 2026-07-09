@@ -56,7 +56,7 @@ const CASINO_GAMES = new Set([
 export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting } = useMatchStore();
+  const { currentMatch, currentRound, rounds, matchResult, currentTier, submitRoundResult, getRandomQuestion, roundWaiting, roundSelections } = useMatchStore();
 
   const { chatEnabled } = usePlatformStore();
   const { fetchWalletData } = useWalletStore();
@@ -81,6 +81,9 @@ export default function GamePage() {
   const isCasinoGame = CASINO_GAMES.has(gameType);
   const questions = currentMatch?.questions || [];
   const question = questions[(currentRound || 1) - 1] || null;
+
+  const opponentSelection = opponentId ? roundSelections[opponentId.toLowerCase()] : null;
+  const mySelection = user?.id ? roundSelections[user.id.toLowerCase()] : null;
 
   const handleAnswer = useCallback((selectedIndexOrDidWin) => {
     if (answered) return;
@@ -158,22 +161,23 @@ export default function GamePage() {
     answered,
     question,
     correctIndex: safeRounds[currentRound - 1]?.correctIndex,
+    opponentSelection,
+    opponentName,
+    mySelection
   };
+
+  const opponentHasPlayed = opponentSelection !== null && opponentSelection !== undefined;
 
   return (
     <AppLayout>
-      {showTransition && <RoundTransition round={lastRound} playerWins={playerWins} opponentWins={opponentWins} />}
-
-      {roundWaiting && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(10,13,18,0.9)', backdropFilter: 'blur(10px)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem'
-        }}>
-          <div className="spinner" style={{ width: '50px', height: '50px', border: '4px solid var(--border)', borderTop: '4px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>Waiting for Opponent...</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Your score was submitted. The round completes when both players finish.</p>
-        </div>
+      {showTransition && (
+        <RoundTransition
+          round={lastRound}
+          playerWins={playerWins}
+          opponentWins={opponentWins}
+          question={questions[lastRound.roundNo - 1]}
+          opponentName={opponentName}
+        />
       )}
 
       {chatEnabled && (
@@ -204,6 +208,44 @@ export default function GamePage() {
             playerScore={safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].playerScore : playerRoundScore}
             opponentScore={safeRounds[currentRound - 1] ? safeRounds[currentRound - 1].opponentScore : 0}
           />
+
+          {opponentHasPlayed && !answered && (
+            <div style={{
+              margin: '0.75rem 1.25rem 0 1.25rem',
+              padding: '0.6rem 1rem',
+              borderRadius: '8px',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: '#f87171',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 500
+            }}>
+              <span>🔔</span>
+              <span>{opponentName} has selected an answer! Make your choice.</span>
+            </div>
+          )}
+
+          {roundWaiting && (
+            <div style={{
+              margin: '0.75rem 1.25rem 0 1.25rem',
+              padding: '0.6rem 1rem',
+              borderRadius: '8px',
+              background: 'rgba(6, 182, 212, 0.08)',
+              border: '1px solid rgba(6, 182, 212, 0.2)',
+              color: 'var(--accent-cyan)',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 500
+            }}>
+              <span className="spinner" style={{ width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent-cyan)', borderRadius: '50%', animation: 'spin 1s linear infinite', display: 'inline-block' }} />
+              <span>Waiting for {opponentName} to answer...</span>
+            </div>
+          )}
 
           <div style={{ padding: '0.5rem 0' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1.5rem' }}>

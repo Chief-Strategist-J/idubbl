@@ -529,5 +529,70 @@ router.post('/users/:userId/toggle-wallet-visibility', adminAuth, async (req, re
   }
 });
 
+// 19. DELETE /api/admin/users/:userId - Delete a user account and their associated records
+router.delete('/users/:userId', adminAuth, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const db = await getDb();
+    const userQuery = userId.length === 24 
+      ? { $or: [{ _id: new ObjectId(userId) }, { id: userId }] }
+      : { id: userId };
+      
+    const targetUser = await db.collection('user').findOne(userQuery);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const resolvedUserId = targetUser.id || targetUser._id.toString();
+
+    // Delete user from db
+    await db.collection('user').deleteOne({ _id: targetUser._id });
+    
+    // Delete their balances/wallet records
+    await db.collection('wallets').deleteOne({ userId: resolvedUserId });
+    await db.collection('user_wallets').deleteOne({ userId: resolvedUserId });
+
+    res.json({ success: true, message: `User ${resolvedUserId} successfully deleted.` });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Database error deleting user account' });
+  }
+});
+
+// 20. POST /api/admin/users/:userId/verify - Manually verify a user (KYC)
+router.post('/users/:userId/verify', adminAuth, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const db = await getDb();
+    const userQuery = userId.length === 24 
+      ? { $or: [{ _id: new ObjectId(userId) }, { id: userId }] }
+      : { id: userId };
+      
+    const targetUser = await db.collection('user').findOne(userQuery);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await db.collection('user').updateOne(
+      { _id: targetUser._id },
+      { 
+        $set: { 
+          kycStatus: 'verified',
+          kycDetails: {
+            manual: true,
+            verifiedBy: req.user.id || req.user._id.toString(),
+            updatedAt: new Date()
+          }
+        } 
+      }
+    );
+
+    res.json({ success: true, message: `User ${targetUser.email} manually verified.` });
+  } catch (error) {
+    console.error('Error verifying user:', error);
+    res.status(500).json({ error: 'Database error verifying user' });
+  }
+});
+
 export default router;
 

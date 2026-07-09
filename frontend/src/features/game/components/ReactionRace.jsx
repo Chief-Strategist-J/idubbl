@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
-export default function ReactionRace({ onAnswer, answered }) {
-  const [activeIndex, setActiveIndex] = useState(4);
+export default function ReactionRace({ question, onAnswer, answered, opponentSelection, opponentName, mySelection }) {
   const [selected, setSelected] = useState(null);
 
-  useEffect(() => {
-    setActiveIndex(Math.floor(Math.random() * 9));
-  }, []);
+  const activeIndex = question?.correctIndex !== undefined ? question.correctIndex : 4;
 
   const handleCellClick = (index) => {
     if (answered || selected !== null) return;
     setSelected(index);
-    // Pass only selectedIndex — GamePage/backend determines correctness
+    // Pass selectedIndex — GamePage/backend determines correctness
     onAnswer(index);
   };
 
   const getCellClass = (index) => {
     const classes = ['reaction-cell'];
-    if (selected !== null) {
+    const activeIsSelected = selected !== null || mySelection !== null;
+    const isMe = index === (selected !== null ? selected : mySelection);
+
+    if (activeIsSelected) {
       if (index === activeIndex) classes.push('cell-correct');
-      else if (index === selected && index !== activeIndex) classes.push('cell-wrong');
+      else if (isMe && index !== activeIndex) classes.push('cell-wrong');
     } else if (index === activeIndex) {
       classes.push('cell-active');
     }
@@ -33,20 +33,49 @@ export default function ReactionRace({ onAnswer, answered }) {
       </p>
 
       <div className="reaction-grid">
-        {Array.from({ length: 9 }, (_, i) => (
-          <button
-            key={i}
-            className={getCellClass(i)}
-            onClick={() => handleCellClick(i)}
-            disabled={answered}
-            aria-label={`Target ${i + 1}`}
-          />
-        ))}
+        {Array.from({ length: 9 }, (_, i) => {
+          const isMe = i === (selected !== null ? selected : mySelection);
+          const isOpp = opponentSelection === i;
+          return (
+            <button
+              key={i}
+              className={getCellClass(i)}
+              onClick={() => handleCellClick(i)}
+              disabled={answered}
+              aria-label={`Target ${i + 1}`}
+              style={{
+                position: 'relative',
+                border: isOpp ? '2px dashed #ef4444' : undefined,
+                boxShadow: isOpp ? '0 0 12px rgba(239, 68, 68, 0.4)' : undefined,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {isOpp && (
+                <span style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: '0.65rem',
+                  background: 'rgba(239, 68, 68, 0.85)',
+                  color: 'white',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  pointerEvents: 'none',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap'
+                }}>
+                  {opponentName?.substring(0, 8)}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {selected !== null && (
-        <p style={{ textAlign: 'center', marginTop: '0.5rem', color: selected === activeIndex ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
-          {selected === activeIndex ? '✓ Correct target!' : '✗ Wrong target'}
+      {(selected !== null || mySelection !== null) && (
+        <p style={{ textAlign: 'center', marginTop: '0.5rem', color: (selected === activeIndex || mySelection === activeIndex) ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600 }}>
+          {(selected === activeIndex || mySelection === activeIndex) ? '✓ Correct target!' : '✗ Wrong target'}
         </p>
       )}
     </div>

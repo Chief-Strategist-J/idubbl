@@ -156,6 +156,15 @@ async function handleSubmitScore(socket, data) {
       ];
     }
 
+    // Broadcast that this player selected an option
+    io.to(matchId).emit('player_selected', {
+      matchId,
+      roundNo,
+      userId,
+      name,
+      selectedIndex
+    });
+
     // If one of the players is 'system', simulate a system score submission automatically
     if (match.players && match.players.includes('system')) {
       const updatedSubmissions = activeScores[matchId][roundNo];
@@ -173,6 +182,15 @@ async function handleSubmitScore(socket, data) {
           selectedIndex: botSelectedIndex,
           isCorrect: botIsCorrect,
           socketId: null
+        });
+
+        // Broadcast bot's selection
+        io.to(matchId).emit('player_selected', {
+          matchId,
+          roundNo,
+          userId: 'system',
+          name: systemName,
+          selectedIndex: botSelectedIndex
         });
       }
     }
