@@ -11,7 +11,7 @@ import { GAME_META } from '../../shared/data/gameMeta.js';
 
 // Game list is driven by platformStore so admin hide/show is respected
 
-
+const CHANCE_GAME_IDS = new Set(['lucky_wheel', 'lucky_balls']);
 
 export default function LobbyPage() {
   const navigate = useNavigate();
@@ -27,8 +27,6 @@ export default function LobbyPage() {
       fetchWalletData(uid);
     }
   }, [user, fetchWalletData]);
-  const activeTiers = tiers.filter((t) => t.active);
-
   // Only lobby-compatible (non-freePlay) visible games
   const GAMES = ALL_GAMES.filter(g => !g.freePlay && gameVisibility[g.id] !== false);
 
@@ -36,6 +34,10 @@ export default function LobbyPage() {
   const FREEPLAY_GAMES = ALL_GAMES.filter(g => g.freePlay && gameVisibility[g.id] !== false);
 
   const chosenGameId = searchParams.get('game') || 'word_duel';
+  const isChanceSelected = CHANCE_GAME_IDS.has(chosenGameId);
+  // Chance Games (fixed jackpot, no rake) and Skill Games (pool-split prize) use separate
+  // tier tables — only show the one matching the currently selected game.
+  const activeTiers = tiers.filter((t) => t.active && !!t.isChance === isChanceSelected);
   const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0] || { id: 'word_duel', name: 'Word Duel', description: 'Timed word challenge duels.' };
 
   const [showInviteModal, setShowInviteModal] = useState(false);

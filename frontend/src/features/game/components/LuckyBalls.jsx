@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import useMatchStore from '../../../shared/store/matchStore.js';
 
 const BALL_COLORS = [
   '#ef4444', '#3b82f6', '#10b981',
@@ -8,13 +9,36 @@ const BALL_COLORS = [
 
 const TOTAL = 9;
 
+// Picks any ball index other than `excludeIndex` — kept outside the component so the
+// impure Math.random() call never runs as part of a render/event-handler body.
+function pickOtherBall(excludeIndex) {
+  return (excludeIndex + 1 + Math.floor(Math.random() * (TOTAL - 1))) % TOTAL;
+}
+
 export default function LuckyBalls({ onAnswer, answered }) {
-  const [targetBall] = useState(() => Math.floor(Math.random() * TOTAL));
+  const { currentMatch, currentRound, requestRoundOutcome } = useMatchStore();
+  const matchId = currentMatch?.matchId ?? currentMatch?.id;
+
   const [revealing, setRevealing] = useState(true);
   const [flashIndex, setFlashIndex] = useState(0);
   const [selected, setSelected] = useState(null);
+  const [targetBall, setTargetBall] = useState(null);
+  const [outcomeReady, setOutcomeReady] = useState(false);
+  const userWinsRef = useRef(false);
 
-  // Animate a "shuffling" effect for 1.5s before revealing the target ball
+  // Ask the server which outcome this round should have — decided server-side,
+  // never Math.random() in the browser, since real money is at stake.
+  useEffect(() => {
+    let cancelled = false;
+    requestRoundOutcome(matchId, currentRound).then((userWins) => {
+      if (cancelled) return;
+      userWinsRef.current = userWins;
+      setOutcomeReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [matchId, currentRound]); // eslint-disable-line
+
+  // Animate a "shuffling" effect for 1.5s before allowing a pick
   useEffect(() => {
     let interval;
     let stop;
@@ -25,7 +49,6 @@ export default function LuckyBalls({ onAnswer, answered }) {
 
     stop = setTimeout(() => {
       clearInterval(interval);
-      setFlashIndex(targetBall);
       setRevealing(false);
     }, 1500);
 
@@ -33,12 +56,18 @@ export default function LuckyBalls({ onAnswer, answered }) {
       clearInterval(interval);
       clearTimeout(stop);
     };
-  }, [targetBall]);
+  }, []);
 
   const handleSelect = (index) => {
-    if (answered || selected !== null || revealing) return;
+    if (answered || selected !== null || revealing || !outcomeReady) return;
+    const userWins = userWinsRef.current;
+    // If the house draw favors the player, the drawn ball matches their pick;
+    // otherwise it's forced to any of the other 8 balls.
+    const finalTarget = userWins ? index : pickOtherBall(index);
+
     setSelected(index);
-    onAnswer(index === targetBall, index);
+    setTargetBall(finalTarget);
+    onAnswer(userWins, index);
   };
 
   const getBallStyle = (i) => {
@@ -51,7 +80,7 @@ export default function LuckyBalls({ onAnswer, answered }) {
       fontFamily: 'var(--font-display)',
       fontWeight: 800,
       fontSize: '1.2rem',
-      cursor: (answered || revealing) ? 'default' : 'pointer',
+      cursor: (answered || revealing || !outcomeReady) ? 'default' : 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -93,25 +122,35 @@ export default function LuckyBalls({ onAnswer, answered }) {
 
   return (
     <div style={{ textAlign: 'center' }}>
-      {/* Drawn ball display */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      {/* Shuffle animation, pre-pick prompt, or drawn-ball reveal */}
+      <div style={{ marginBottom: '1.5rem', minHeight: 108 }}>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', letterSpacing: 2, marginBottom: '0.75rem' }}>
-          {revealing ? 'DRAWING BALL…' : 'FIND THIS BALL!'}
+          {revealing
+            ? 'SHUFFLING BALLS…'
+            : selected !== null
+              ? 'HOUSE DRAW'
+              : outcomeReady
+                ? 'PICK A BALL!'
+                : 'PREPARING DRAW…'}
         </p>
         <div style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: 72, height: 72, borderRadius: '50%',
           background: revealing
             ? `radial-gradient(circle at 35% 30%, ${BALL_COLORS[flashIndex]}ee, ${BALL_COLORS[flashIndex]}88)`
-            : `radial-gradient(circle at 35% 30%, ${BALL_COLORS[targetBall]}ee, ${BALL_COLORS[targetBall]}88)`,
-          border: `3px solid ${revealing ? BALL_COLORS[flashIndex] : BALL_COLORS[targetBall]}`,
-          boxShadow: `0 0 30px ${revealing ? BALL_COLORS[flashIndex] : BALL_COLORS[targetBall]}80`,
+            : targetBall !== null
+              ? `radial-gradient(circle at 35% 30%, ${BALL_COLORS[targetBall]}ee, ${BALL_COLORS[targetBall]}88)`
+              : 'var(--glass-bg)',
+          border: `3px solid ${revealing ? BALL_COLORS[flashIndex] : targetBall !== null ? BALL_COLORS[targetBall] : 'var(--border)'}`,
+          boxShadow: revealing
+            ? `0 0 30px ${BALL_COLORS[flashIndex]}80`
+            : targetBall !== null ? `0 0 30px ${BALL_COLORS[targetBall]}80` : 'none',
           fontSize: '1.75rem', fontWeight: 800, fontFamily: 'var(--font-display)',
           color: 'white',
           transition: 'all 0.1s ease',
           textShadow: '0 2px 4px rgba(0,0,0,0.5)',
         }}>
-          {revealing ? flashIndex + 1 : targetBall + 1}
+          {revealing ? flashIndex + 1 : targetBall !== null ? targetBall + 1 : '?'}
         </div>
       </div>
 
@@ -127,7 +166,7 @@ export default function LuckyBalls({ onAnswer, answered }) {
           <button
             key={i}
             onClick={() => handleSelect(i)}
-            disabled={answered || revealing}
+            disabled={answered || revealing || !outcomeReady}
             style={getBallStyle(i)}
           >
             {i + 1}
@@ -135,9 +174,9 @@ export default function LuckyBalls({ onAnswer, answered }) {
         ))}
       </div>
 
-      {!revealing && selected === null && (
+      {!revealing && outcomeReady && selected === null && (
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', letterSpacing: 1 }}>
-          TAP THE MATCHING BALL
+          TAP A BALL TO MAKE YOUR PICK
         </p>
       )}
 
@@ -146,7 +185,7 @@ export default function LuckyBalls({ onAnswer, answered }) {
           color: selected === targetBall ? 'var(--accent-green)' : 'var(--accent-red)',
           fontWeight: 600, fontSize: '0.9rem',
         }}>
-          {selected === targetBall ? '✓ Correct ball!' : `✗ Wrong — it was ball ${targetBall + 1}`}
+          {selected === targetBall ? '✓ Your pick matched the draw!' : `✗ Wrong — the house drew ball ${targetBall + 1}`}
         </p>
       )}
     </div>

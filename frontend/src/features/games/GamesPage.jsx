@@ -6,7 +6,7 @@ import usePlatformStore, { ALL_GAMES } from '../../shared/store/platformStore.js
 import ThemeToggle from '../../shared/components/ui/ThemeToggle.jsx';
 import { GAME_META } from '../../shared/data/gameMeta.js';
 
-const CATEGORIES = ['All', 'Board Games', 'Skill Duels', 'Card Games', 'Chance'];
+const CATEGORIES = ['All', 'Board Games', 'Skill Duels', 'Card Games'];
 
 // ─── Game Explainer Modal ─────────────────────────────────────────────────────
 function GameExplainerModal({ game, meta, onClose, onPlay }) {
@@ -150,6 +150,75 @@ function GameExplainerModal({ game, meta, onClose, onPlay }) {
   );
 }
 
+// ─── Reusable Game Card ───────────────────────────────────────────────────────
+function GameCard({ game, onClick }) {
+  const meta = GAME_META[game.id] || {};
+  const color = meta.color || '#00E37A';
+  return (
+    <div
+      id={`game-card-${game.id}`}
+      onClick={onClick}
+      style={{
+        background: 'var(--bg-card)', borderRadius: '12px',
+        border: '1px solid var(--border)', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', cursor: 'pointer',
+        boxShadow: 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))',
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative'
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = color; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+    >
+      {/* Thumbnail */}
+      <div style={{
+        height: '115px', backgroundImage: `url(${meta.imageUrl})`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        position: 'relative', borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)' }} />
+        <span style={{
+          position: 'absolute', top: '8px', right: '8px',
+          fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.5px',
+          padding: '0.15rem 0.4rem', borderRadius: '4px',
+          background: 'rgba(10,13,18,0.85)', backdropFilter: 'blur(4px)',
+          color: color, border: `1px solid ${color}40`, textTransform: 'uppercase'
+        }}>
+          {meta.difficulty || 'Easy'}
+        </span>
+        <span style={{
+          position: 'absolute', bottom: '8px', right: '8px',
+          fontSize: '0.6rem', fontWeight: 700,
+          padding: '0.1rem 0.35rem', borderRadius: '4px',
+          background: 'rgba(10,13,18,0.8)', backdropFilter: 'blur(4px)',
+          color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)'
+        }}>
+          ℹ Rules
+        </span>
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', gap: '0.5rem' }}>
+        <div>
+          <p style={{ fontSize: '0.825rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>
+            {game.icon} {game.name}
+          </p>
+          <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '0.15rem', margin: 0 }}>
+            {meta.subtitle || game.category}
+          </p>
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          paddingTop: '0.5rem', borderTop: '1.5px solid var(--border)',
+          fontSize: '0.65rem', color: color, fontWeight: 800,
+          textTransform: 'uppercase', letterSpacing: '0.5px'
+        }}>
+          <span>{game.freePlay ? '🎮 Play Free' : 'Play Duel'}</span>
+          <span style={{ fontSize: '0.75rem' }}>➔</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GamesPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
@@ -164,6 +233,9 @@ export default function GamesPage() {
 
   // Only show games the admin has marked visible (default: all shown)
   const visibleGames = ALL_GAMES.filter(g => (gameVisibility?.[g.id] ?? true) !== false);
+  // Skill Games (1v1 duels, pool-split prize) vs Chance Games (fixed jackpot, luck-based)
+  const skillGames = visibleGames.filter(g => g.category !== 'Chance');
+  const chanceGames = visibleGames.filter(g => g.category === 'Chance');
 
   const handleCardClick = (game) => {
     setSelectedGame(game);
@@ -182,7 +254,7 @@ export default function GamesPage() {
     }
   };
 
-  const filteredGames = visibleGames.filter((game) => {
+  const filteredSkillGames = skillGames.filter((game) => {
     const meta = GAME_META[game.id] || {};
     const matchesTab = activeTab === 'All' || game.category === activeTab;
     const matchesSearch =
@@ -199,7 +271,19 @@ export default function GamesPage() {
           🎮 iDubbl Casino Lobby
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-          USDT skill duels &amp; tables. Tap a game to see the full rules, then pick a tier.
+          USDT games &amp; tables. Tap a game to see the full rules, then pick a tier.
+        </p>
+      </div>
+
+      {/* ═══════════════════ SKILL GAMES SECTION ═══════════════════ */}
+      <div style={{ padding: '0.5rem 0.25rem 0.75rem', textAlign: 'left' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+          ⚔️ Skill Games
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.35rem', lineHeight: 1.55 }}>
+          Head-to-head 1v1 duels — you compete directly against another real player (matched by tier and game type).
+          Win 2 of 3 rounds to take the match. Every match pools both entry fees; the platform keeps a 20% rake and
+          the winner takes the rest as their prize.
         </p>
       </div>
 
@@ -241,8 +325,8 @@ export default function GamesPage() {
         </div>
       </div>
 
-      {/* Game Grid */}
-      {filteredGames.length === 0 ? (
+      {/* Skill Games Grid */}
+      {filteredSkillGames.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           No games found{searchQuery ? ` for "${searchQuery}"` : ''}.
         </div>
@@ -252,74 +336,41 @@ export default function GamesPage() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))',
           gap: '0.75rem', padding: '0 0.25rem'
         }}>
-          {filteredGames.map((game) => {
-            const meta = GAME_META[game.id] || {};
-            const color = meta.color || '#00E37A';
-            return (
-              <div
-                key={game.id}
-                id={`game-card-${game.id}`}
-                onClick={() => handleCardClick(game)}
-                style={{
-                  background: 'var(--bg-card)', borderRadius: '12px',
-                  border: '1px solid var(--border)', overflow: 'hidden',
-                  display: 'flex', flexDirection: 'column', cursor: 'pointer',
-                  boxShadow: 'var(--shadow-card, 0 4px 12px rgba(0,0,0,0.03))',
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = color; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-              >
-                {/* Thumbnail */}
-                <div style={{
-                  height: '115px', backgroundImage: `url(${meta.imageUrl})`,
-                  backgroundSize: 'cover', backgroundPosition: 'center',
-                  position: 'relative', borderBottom: '1px solid var(--border)',
-                }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%)' }} />
-                  <span style={{
-                    position: 'absolute', top: '8px', right: '8px',
-                    fontSize: '0.55rem', fontWeight: 800, letterSpacing: '0.5px',
-                    padding: '0.15rem 0.4rem', borderRadius: '4px',
-                    background: 'rgba(10,13,18,0.85)', backdropFilter: 'blur(4px)',
-                    color: color, border: `1px solid ${color}40`, textTransform: 'uppercase'
-                  }}>
-                    {meta.difficulty || 'Easy'}
-                  </span>
-                  <span style={{
-                    position: 'absolute', bottom: '8px', right: '8px',
-                    fontSize: '0.6rem', fontWeight: 700,
-                    padding: '0.1rem 0.35rem', borderRadius: '4px',
-                    background: 'rgba(10,13,18,0.8)', backdropFilter: 'blur(4px)',
-                    color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)'
-                  }}>
-                    ℹ Rules
-                  </span>
-                </div>
+          {filteredSkillGames.map((game) => (
+            <GameCard key={game.id} game={game} onClick={() => handleCardClick(game)} />
+          ))}
+        </div>
+      )}
 
-                {/* Info */}
-                <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', gap: '0.5rem' }}>
-                  <div>
-                    <p style={{ fontSize: '0.825rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>
-                      {game.icon} {game.name}
-                    </p>
-                    <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '0.15rem', margin: 0 }}>
-                      {meta.subtitle || game.category}
-                    </p>
-                  </div>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    paddingTop: '0.5rem', borderTop: '1.5px solid var(--border)',
-                    fontSize: '0.65rem', color: color, fontWeight: 800,
-                    textTransform: 'uppercase', letterSpacing: '0.5px'
-                  }}>
-                    <span>{game.freePlay ? '🎮 Play Free' : 'Play Duel'}</span>
-                    <span style={{ fontSize: '0.75rem' }}>➔</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      {/* ═══════════════════ CHANCE GAMES SECTION ═══════════════════ */}
+      {chanceGames.length > 0 && (
+        <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+          <div style={{ padding: '0 0.25rem 0.75rem', textAlign: 'left' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              🎰 Chance Games
+            </h2>
+            <div style={{
+              marginTop: '0.6rem', padding: '0.75rem 0.9rem', borderRadius: 10,
+              background: 'rgba(251, 191, 36, 0.08)', border: '1px solid rgba(251, 191, 36, 0.25)'
+            }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.6, margin: 0 }}>
+                ⚠️ These are <strong>difficult, luck-based games</strong> — winning is <strong>not guaranteed</strong>,
+                no matter how skilled you are. You play head-to-head against the house across a best-of-3 match.
+                Every entry fee is grown <strong>100x</strong> to form a fixed prize for your tier, and there is{' '}
+                <strong>no platform rake</strong> on this section.
+              </p>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))',
+            gap: '0.75rem', padding: '0 0.25rem'
+          }}>
+            {chanceGames.map((game) => (
+              <GameCard key={game.id} game={game} onClick={() => handleCardClick(game)} />
+            ))}
+          </div>
         </div>
       )}
 

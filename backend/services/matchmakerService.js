@@ -2,9 +2,33 @@ import { getDb } from './db.js';
 
 const IDUBBU_RATE = 1; // 1 USDT = 1 Idubbu — keep in sync with wallet.js
 
+// Chance games are always played 1-vs-house (never matched with another real user)
+// and pay a fixed jackpot instead of splitting a pool, so they need their own tier table.
+const CHANCE_GAMES = new Set(['lucky_wheel', 'lucky_balls']);
+const CHANCE_TIER_PRIZES = { micro: 200, rookie: 500, pro: 2000, elite: 5000 };
+
 function normalizeKey(key) {
   if (typeof key !== 'string') return '';
   return key.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+// Decides the full 3-round outcome plan for a chance-game match up front, server-side
+// only — both the round-outcome preview and the final scoring read the same fixed
+// `outcomes` array, so the visual result and the authoritative result can never disagree.
+// 95% of matches are rigged so the house wins at least 2 of 3 rounds (user can win
+// at most one round, and only round 1 or round 2 — never the round-3 decider).
+// 5% of matches are genuinely fair (each round an independent 50/50 coin flip).
+function generateChancePlan() {
+  if (Math.random() < 0.05) {
+    return { mode: 'fair', outcomes: [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5] };
+  }
+  const patterns = [
+    [true, false, false],  // user takes round 1 only
+    [false, true, false],  // user takes round 2 only
+    [false, false, false], // house sweeps rounds 1 & 2
+  ];
+  const outcomes = patterns[Math.floor(Math.random() * patterns.length)];
+  return { mode: 'rigged', outcomes };
 }
 
 async function deductWallet(db, walletsCollection, transactionsCollection, uId, entryFee, tierName, matchId) {
@@ -76,8 +100,9 @@ class MatchmakerService {
     }
 
     // Verify wallet exists and has sufficient balance BEFORE entering queue
-    const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
+    const tierFees = { micro: 2, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normTierName] || 5;
+    const isChanceGame = CHANCE_GAMES.has(normGameType);
 
     // Case-insensitive wallet lookup: the queue normalizes userIds to lowercase,
     // but wallets may have been stored with the original mixed-case userId.
@@ -102,12 +127,17 @@ class MatchmakerService {
       joinedAt: new Date()
     };
 
+    let opponent = null;
+    if (isChanceGame) {
+      // Chance games are always played against the house, never matched with another real user
+      opponent = { userId: 'system', name: 'House', socketId: null };
+    }
+
     // Load platform settings to check the gameMode
-    const settings = await db.collection('settings').findOne({ key: 'platform_settings' });
+    const settings = isChanceGame ? null : await db.collection('settings').findOne({ key: 'platform_settings' });
     const gameMode = settings?.value?.gameMode || 'pvp';
 
-    let opponent = null;
-    if (gameMode === 'pvs') {
+    if (!opponent && gameMode === 'pvs') {
       // Generate a realistic random human name for the virtual opponent
       const firstNames = [
         'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
@@ -162,12 +192,12 @@ class MatchmakerService {
         name: mockName,
         socketId: null
       };
-    } else {
+    } else if (!opponent) {
       // atomic check-and-match — exclude self to prevent self-matching in edge cases, match same tier and game type
-      opponent = await db.collection(this.queueCollection).findOneAndDelete({ 
-        tier: normTierName, 
-        gameType: normGameType, 
-        userId: { $ne: normUserId } 
+      opponent = await db.collection(this.queueCollection).findOneAndDelete({
+        tier: normTierName,
+        gameType: normGameType,
+        userId: { $ne: normUserId }
       });
     }
 
@@ -199,8 +229,9 @@ class MatchmakerService {
       status: 'in_progress',
       startedAt: new Date(),
       rounds: [],
-      rake: entryFee * 2 * 0.20,
-      questions
+      rake: isChanceGame ? 0 : entryFee * 2 * 0.20,
+      questions,
+      ...(isChanceGame ? { prize: CHANCE_TIER_PRIZES[normTierName], chancePlan: generateChancePlan() } : {}),
     };
 
     // Only deduct wallet for real users, skip 'system'
@@ -264,7 +295,7 @@ class MatchmakerService {
       { $set: { status: 'completed', winner: normWinnerId, settledAt: new Date() } }
     );
 
-    const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
+    const tierFees = { micro: 2, rookie: 5, pro: 20, elite: 50 };
     const entryFee = tierFees[normalizeKey(match.tier)] || 5;
 
     if (normWinnerId === 'tie' || normWinnerId === 'draw' || normWinnerId === 'cancelled' || normWinnerId === 'refund') {
@@ -343,3 +374,4 @@ class MatchmakerService {
 }
 
 export const matchmakerService = new MatchmakerService();
+export { CHANCE_GAMES, CHANCE_TIER_PRIZES };

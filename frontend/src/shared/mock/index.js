@@ -7,10 +7,19 @@ export const MOCK_USERS = [
 
 // design.md §4.3 — MVP: exactly 3 tiers (Rookie / Pro / Elite)
 export const MOCK_TIERS = [
-  { id: 't0', name: 'Micro',   entryFee: 1,  rakePercent: 20, prize: 1.6,minWaitSeconds: 15, active: true, waitingCount: 0, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
+  { id: 't0', name: 'Micro',   entryFee: 2,  rakePercent: 20, prize: 3.2,minWaitSeconds: 15, active: true, waitingCount: 0, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
   { id: 't1', name: 'Rookie', entryFee: 5,  rakePercent: 20, prize: 8,  minWaitSeconds: 30, active: true, waitingCount: 3, color: 'rookie', gameType: 'word_duel', gameLabel: 'Word Duel' },
   { id: 't2', name: 'Pro',    entryFee: 20, rakePercent: 20, prize: 32, minWaitSeconds: 45, active: true, waitingCount: 1, color: 'pro',    gameType: 'word_duel', gameLabel: 'Word Duel' },
   { id: 't3', name: 'Elite',  entryFee: 50, rakePercent: 20, prize: 80, minWaitSeconds: 60, active: true, waitingCount: 0, color: 'elite',  gameType: 'word_duel', gameLabel: 'Word Duel' },
+];
+
+// Chance Games (Lucky Wheel / Lucky Balls): fixed jackpot per tier, no rake —
+// entry fee is "grown 100x" into the prize rather than split from a real opponent's pool.
+export const MOCK_CHANCE_TIERS = [
+  { id: 'c0', name: 'Micro',  entryFee: 2,  rakePercent: 0, prize: 200,  minWaitSeconds: 0, active: true, waitingCount: 0, color: 'rookie', gameType: 'lucky_wheel', gameLabel: 'Lucky Wheel', isChance: true },
+  { id: 'c1', name: 'Rookie', entryFee: 5,  rakePercent: 0, prize: 500,  minWaitSeconds: 0, active: true, waitingCount: 0, color: 'rookie', gameType: 'lucky_wheel', gameLabel: 'Lucky Wheel', isChance: true },
+  { id: 'c2', name: 'Pro',    entryFee: 20, rakePercent: 0, prize: 2000, minWaitSeconds: 0, active: true, waitingCount: 0, color: 'pro',    gameType: 'lucky_wheel', gameLabel: 'Lucky Wheel', isChance: true },
+  { id: 'c3', name: 'Elite',  entryFee: 50, rakePercent: 0, prize: 5000, minWaitSeconds: 0, active: true, waitingCount: 0, color: 'elite',  gameType: 'lucky_wheel', gameLabel: 'Lucky Wheel', isChance: true },
 ];
 
 export const MOCK_MATCHES = [

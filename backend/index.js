@@ -11,7 +11,7 @@ import matchRouter from './routes/match.js';
 import chatRouter from './routes/chat.js';
 import kycRouter from './routes/kyc.js';
 import supportRouter from './routes/support.js';
-import { matchmakerService } from './services/matchmakerService.js';
+import { matchmakerService, CHANCE_GAMES } from './services/matchmakerService.js';
 import { initChatSocket } from './services/chat/SocketHandler.js';
 import { initIndexes as initChatIndexes } from './services/chat/ChatService.js';
 import { initCoreIndexes } from './services/dbIndexes.js';
@@ -75,8 +75,10 @@ async function handleFindMatch(socket, data) {
         if (q.expression) safe.expression = q.expression;
         return safe;
       });
+      // eslint-disable-next-line no-unused-vars
+      const { chancePlan, ...matchWithoutPlan } = result.match;
       const clientSafeMatch = {
-        ...result.match,
+        ...matchWithoutPlan,
         questions: clientSafeQuestions
       };
       
@@ -109,6 +111,32 @@ function handleJoinMatchRoom(socket, data) {
   socket.join(matchId);
 }
 
+// Reads the pre-committed outcome for a given round from the match's chancePlan.
+// Both the round preview (below) and final scoring (handleSubmitScore) read this
+// same value, so the animation shown to the player can never disagree with the result.
+function resolveChanceOutcome(match, roundNo) {
+  const outcomes = match?.chancePlan?.outcomes;
+  if (!outcomes) return false;
+  return !!outcomes[roundNo - 1];
+}
+
+// Lucky Wheel / Lucky Balls request this before animating a round so the wheel/ball
+// visually lands on a result the server already committed to — the animation is cosmetic.
+async function handleRequestRoundOutcome(socket, data) {
+  const matchId = String(data?.matchId || '').trim();
+  const roundNo = Number(data?.roundNo);
+  if (!matchId || isNaN(roundNo)) return;
+  try {
+    const db = await getDb();
+    const match = await db.collection('matches').findOne({ matchId });
+    if (!match || !CHANCE_GAMES.has(match.gameType)) return;
+    const userWins = resolveChanceOutcome(match, roundNo);
+    socket.emit('round_outcome', { matchId, roundNo, userWins });
+  } catch (err) {
+    console.error('Error resolving round outcome:', err);
+  }
+}
+
 async function handleSubmitScore(socket, data) {
   const matchId = String(data?.matchId || '').trim();
   const roundNo = Number(data?.roundNo);
@@ -130,11 +158,17 @@ async function handleSubmitScore(socket, data) {
     const questionIndex = roundNo - 1;
     const questions = match.questions || [];
     const question = questions[questionIndex];
+    const isChanceGame = CHANCE_GAMES.has(match.gameType);
 
     let score = 0;
     let isCorrect = false;
 
-    if (question) {
+    if (isChanceGame) {
+      // Chance games (Lucky Wheel / Lucky Balls): outcome is decided server-side by the
+      // match's chancePlan, never trusted from the client — real money is at stake.
+      isCorrect = resolveChanceOutcome(match, roundNo);
+      score = isCorrect ? 140 : 0;
+    } else if (question) {
       // Quiz game: check selected index against stored correctIndex
       isCorrect = selectedIndex !== null && selectedIndex !== undefined && Number(selectedIndex) === question.correctIndex;
       score = isCorrect ? (100 + timeLeft * 2) : 0;
@@ -169,10 +203,21 @@ async function handleSubmitScore(socket, data) {
     if (match.players && match.players.includes('system')) {
       const updatedSubmissions = activeScores[matchId][roundNo];
       if (!updatedSubmissions.some(e => e.userId === 'system')) {
-        const botIsCorrect = Math.random() > 0.4; // 60% chance to be correct
-        const botSelectedIndex = botIsCorrect && question ? question.correctIndex : (question ? (question.correctIndex + 1) % 4 : 0);
-        const botTimeLeft = Math.floor(Math.random() * 8) + 1; // 1 to 8 seconds left
-        const botScore = botIsCorrect ? (100 + botTimeLeft * 2) : 0;
+        let botIsCorrect, botSelectedIndex, botTimeLeft, botScore;
+
+        if (isChanceGame) {
+          // Zero-sum vs the house: bot's result is the exact complement of the user's
+          // server-decided outcome — one side always wins each round, never both/neither.
+          botIsCorrect = !isCorrect;
+          botSelectedIndex = botIsCorrect ? 1 : 0;
+          botTimeLeft = Math.floor(Math.random() * 8) + 1;
+          botScore = botIsCorrect ? 140 : 0;
+        } else {
+          botIsCorrect = Math.random() > 0.4; // 60% chance to be correct
+          botSelectedIndex = botIsCorrect && question ? question.correctIndex : (question ? (question.correctIndex + 1) % 4 : 0);
+          botTimeLeft = Math.floor(Math.random() * 8) + 1; // 1 to 8 seconds left
+          botScore = botIsCorrect ? (100 + botTimeLeft * 2) : 0;
+        }
         const systemName = match.playerNames && match.playerNames['system'] ? match.playerNames['system'] : 'Opponent';
 
         activeScores[matchId][roundNo].push({
@@ -269,8 +314,8 @@ async function handleSubmitScore(socket, data) {
         }
 
         const normTier = (updatedMatch.tier || '').toLowerCase().trim();
-        const entryFee = normTier === 'micro' ? 1 : normTier === 'rookie' ? 5 : normTier === 'pro' ? 20 : normTier === 'elite' ? 50 : 5;
-        const prize = entryFee * 2 * 0.80;
+        const entryFee = normTier === 'micro' ? 2 : normTier === 'rookie' ? 5 : normTier === 'pro' ? 20 : normTier === 'elite' ? 50 : 5;
+        const prize = isChanceGame ? (updatedMatch.prize || 0) : entryFee * 2 * 0.80;
 
         await matchmakerService.endMatch(matchId, finalWinnerId, prize);
       }
@@ -288,6 +333,7 @@ const matchmakingHandlers = {
   find_match: (socket, data) => handleFindMatch(socket, data),
   cancel_matchmaking: (socket, data) => handleCancelMatchmaking(socket, data),
   join_match_room: (socket, data) => handleJoinMatchRoom(socket, data),
+  request_round_outcome: (socket, data) => handleRequestRoundOutcome(socket, data),
   submit_score: (socket, data) => handleSubmitScore(socket, data),
   disconnect: (socket) => handleDisconnect(socket),
 };

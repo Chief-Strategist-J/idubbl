@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MOCK_MATCHES, MOCK_TIERS, WORD_DUEL_QUESTIONS } from '../mock/index.js';
+import { MOCK_MATCHES, MOCK_TIERS, MOCK_CHANCE_TIERS, WORD_DUEL_QUESTIONS } from '../mock/index.js';
 import { getSocket, connectSocket } from '../services/socketService.js';
 import useAuthStore from './authStore.js';
 
@@ -11,7 +11,7 @@ const ADMIN_BASE_URL = `${apiBase}/api/admin`;
 
 const useMatchStore = create((set, get) => ({
   matches: MOCK_MATCHES,
-  tiers: MOCK_TIERS,
+  tiers: [...MOCK_TIERS, ...MOCK_CHANCE_TIERS],
   queueStatus: null, // null | 'searching' | 'matched' | 'starting' | 'error'
   matchmakingError: null,
   currentTier: null,
@@ -140,7 +140,7 @@ const useMatchStore = create((set, get) => ({
             prize: isWinner ? (currentMatch?.prize ?? 0) : 0,
             rake: currentMatch?.rake,
             entryFee: get().tiers.find((t) => t.name.toLowerCase() === currentMatch?.tier?.toLowerCase())?.entryFee || (
-              currentMatch?.tier?.toLowerCase() === 'micro' ? 1 :
+              currentMatch?.tier?.toLowerCase() === 'micro' ? 2 :
               currentMatch?.tier?.toLowerCase() === 'rookie' ? 5 :
               currentMatch?.tier?.toLowerCase() === 'pro' ? 20 :
               currentMatch?.tier?.toLowerCase() === 'elite' ? 50 : 0
@@ -232,6 +232,28 @@ const useMatchStore = create((set, get) => ({
         name: user?.name || 'You'
       });
     }
+  },
+
+  // Chance games (Lucky Wheel / Lucky Balls) ask the server for the pre-decided
+  // outcome of a round before animating, so the visual result matches what will
+  // actually be scored — the server is authoritative, not the browser's Math.random().
+  requestRoundOutcome: (matchId, roundNo) => {
+    return new Promise((resolve) => {
+      const socket = getSocket();
+      const handler = (payload) => {
+        if (payload?.matchId === matchId && payload?.roundNo === roundNo) {
+          socket.off('round_outcome', handler);
+          resolve(!!payload.userWins);
+        }
+      };
+      socket.on('round_outcome', handler);
+      const emitRequest = () => socket.emit('request_round_outcome', { matchId, roundNo });
+      if (socket.connected) {
+        emitRequest();
+      } else {
+        socket.once('connect', emitRequest);
+      }
+    });
   },
 
   clearMatch: () => {

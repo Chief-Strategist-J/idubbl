@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useMatchStore from '../../../shared/store/matchStore.js';
 
 const SEGMENTS = [
   { label: 'RED',    color: '#ef4444' },
@@ -12,6 +13,9 @@ const SEGMENTS = [
 const SEG_DEG = 360 / SEGMENTS.length; // 60 degrees each
 
 export default function LuckyWheel({ onAnswer, answered }) {
+  const { currentMatch, currentRound, requestRoundOutcome } = useMatchStore();
+  const matchId = currentMatch?.matchId ?? currentMatch?.id;
+
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
@@ -20,12 +24,12 @@ export default function LuckyWheel({ onAnswer, answered }) {
 
   const target = SEGMENTS[targetIndex];
 
-  const handleSpin = () => {
+  const handleSpin = async () => {
     if (spinning || answered || result) return;
     setSpinning(true);
 
-    // 60% chance player wins (exciting gameplay)
-    const willWin = Math.random() < 0.6;
+    // Outcome is decided server-side (never Math.random() in the browser) — the spin is cosmetic.
+    const willWin = await requestRoundOutcome(matchId, currentRound);
     const finalIndex = willWin
       ? targetIndex
       : (targetIndex + 1 + Math.floor(Math.random() * (SEGMENTS.length - 1))) % SEGMENTS.length;

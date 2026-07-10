@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb } from '../services/db.js';
 import { errorRegistry } from '../services/errorRegistry.js';
 import { authService, blockchainService } from '../services/index.js';
+import { CHANCE_GAMES } from '../services/matchmakerService.js';
 
 const router = express.Router();
 
@@ -341,10 +342,15 @@ router.post('/match/settle', async (req, res) => {
           actualIsTie = true;
         }
         if (isWinner && !actualIsTie) {
-          const tierFees = { micro: 1, rookie: 5, pro: 20, elite: 50 };
-          const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
-          const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
-          derivedPrize = fee * 2 * 0.80; // 20% platform rake
+          if (CHANCE_GAMES.has(matchRecord.gameType)) {
+            // Chance games pay a fixed jackpot (stored on the match at creation), not a pool split
+            derivedPrize = Number(matchRecord.prize) || 0;
+          } else {
+            const tierFees = { micro: 2, rookie: 5, pro: 20, elite: 50 };
+            const normTier = (matchRecord.tier || tier || '').toLowerCase().trim();
+            const fee = tierFees[normTier] || (entryFee ? Number(entryFee) : 5);
+            derivedPrize = fee * 2 * 0.80; // 20% platform rake
+          }
         }
       } else if (isWinner && entryFee) {
         // Fallback: match record not found — use client entryFee (still safer than client prize)
