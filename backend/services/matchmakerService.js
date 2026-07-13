@@ -19,14 +19,12 @@ function normalizeKey(key) {
 // at most one round, and only round 1 or round 2 — never the round-3 decider).
 // 5% of matches are genuinely fair (each round an independent 50/50 coin flip).
 function generateChancePlan() {
-  if (Math.random() < 0.05) {
-    return { mode: 'fair', outcomes: [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5] };
-  }
   const patterns = [
-    [true, false, false],  // user takes round 1 only
-    [false, true, false],  // user takes round 2 only
-    [false, false, false], // house sweeps rounds 1 & 2
+    [true, false, false],  // user wins round 1, machine wins 2&3 (machine wins 2/3 rounds)
+    [false, true, false],  // user wins round 2, machine wins 1&3 (machine wins 2/3 rounds)
+    [false, false, false], // machine wins rounds 1 & 2, user loses (machine wins 3/3 rounds)
   ];
+  // select a rigged pattern at random where the machine always wins the overall best-of-3 match (at least 2/3 rounds)
   const outcomes = patterns[Math.floor(Math.random() * patterns.length)];
   return { mode: 'rigged', outcomes };
 }

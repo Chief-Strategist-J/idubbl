@@ -35,10 +35,11 @@ export default function LobbyPage() {
 
   const chosenGameId = searchParams.get('game') || 'word_duel';
   const isChanceSelected = CHANCE_GAME_IDS.has(chosenGameId);
-  // Chance Games (fixed jackpot, no rake) and Skill Games (pool-split prize) use separate
-  // tier tables — only show the one matching the currently selected game.
   const activeTiers = tiers.filter((t) => t.active && !!t.isChance === isChanceSelected);
   const selectedGame = GAMES.find(g => g.id === chosenGameId) || GAMES[0] || { id: 'word_duel', name: 'Word Duel', description: 'Timed word challenge duels.' };
+
+  const skillGames = GAMES.filter(g => !CHANCE_GAME_IDS.has(g.id));
+  const chanceGames = GAMES.filter(g => CHANCE_GAME_IDS.has(g.id));
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
@@ -82,14 +83,69 @@ export default function LobbyPage() {
         subtitle="Choose a game mode and entry fee tier to join the matchmaking pool."
       />
 
+      {/* Category Selection Tabs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+        {/* Skill Games Tab Card */}
+        <div
+          onClick={() => {
+            setSearchParams({ game: skillGames[0]?.id || 'word_duel' });
+            setShowRules(false);
+          }}
+          style={{
+            padding: '1.25rem',
+            borderRadius: '14px',
+            cursor: 'pointer',
+            background: !isChanceSelected ? 'rgba(0, 227, 122, 0.08)' : 'var(--glass-bg)',
+            border: !isChanceSelected ? '1.5px solid var(--primary)' : '1px solid var(--border)',
+            transition: 'all 0.2s ease',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>⚔️</span>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: !isChanceSelected ? 'var(--primary)' : 'var(--text-primary)' }}>Skill Games</h3>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Compete 1v1 against other real users. Prizes are derived from the entry fee pool split minus a platform rake.
+          </p>
+        </div>
+
+        {/* Chance Games (Specials) Tab Card */}
+        <div
+          onClick={() => {
+            setSearchParams({ game: chanceGames[0]?.id || 'lucky_wheel' });
+            setShowRules(false);
+          }}
+          style={{
+            padding: '1.25rem',
+            borderRadius: '14px',
+            cursor: 'pointer',
+            background: isChanceSelected ? 'rgba(139, 92, 246, 0.08)' : 'var(--glass-bg)',
+            border: isChanceSelected ? '1.5px solid #8b5cf6' : '1px solid var(--border)',
+            transition: 'all 0.2s ease',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>🎡</span>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: isChanceSelected ? '#8b5cf6' : 'var(--text-primary)' }}>Chance Games (Specials)</h3>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Difficult games based on luck against the machine. Every entry fee is grown by 100x to form the pool. No platform rake.
+          </p>
+        </div>
+      </div>
+
       {/* Game Selector Pills */}
       <div style={{ marginBottom: '2rem' }}>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
           Select Game Mode
         </p>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {GAMES.map((g) => {
+          {(!isChanceSelected ? skillGames : chanceGames).map((g) => {
             const isSelected = g.id === chosenGameId;
+            const activeColor = isChanceSelected ? '#8b5cf6' : 'var(--primary)';
+            const activeBg = isChanceSelected ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 227, 122, 0.15)';
             return (
               <button
                 key={g.id}
@@ -100,9 +156,9 @@ export default function LobbyPage() {
                   gap: '0.5rem',
                   padding: '0.5rem 1rem',
                   borderRadius: '20px',
-                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
-                  background: isSelected ? 'rgba(0, 227, 122, 0.15)' : 'var(--glass-bg)',
-                  color: isSelected ? 'var(--primary)' : 'var(--text-secondary)',
+                  border: isSelected ? `1px solid ${activeColor}` : '1px solid var(--border)',
+                  background: isSelected ? activeBg : 'var(--glass-bg)',
+                  color: isSelected ? activeColor : 'var(--text-secondary)',
                   cursor: 'pointer',
                   fontSize: '0.85rem',
                   fontWeight: 600,
@@ -120,7 +176,7 @@ export default function LobbyPage() {
       {/* Game Explainer Panel */}
       {selectedGame && (() => {
         const gmeta = GAME_META[selectedGame.id] || {};
-        const color = gmeta.color || '#00E37A';
+        const color = isChanceSelected ? '#8b5cf6' : (gmeta.color || '#00E37A');
         return (
           <div style={{
             marginBottom: '1.5rem', borderRadius: 14, overflow: 'hidden',

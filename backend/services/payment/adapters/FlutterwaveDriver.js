@@ -156,11 +156,18 @@ export class FlutterwaveDriver extends PaymentDriver {
           rawResponse: resData
         };
       } else {
+        const errMsg = resData.message || '';
+        if (errMsg.toLowerCase().includes('whitelist') || errMsg.toLowerCase().includes('ip') || response.status === 403) {
+          throw new Error('Flutterwave payout failed: IP address is not whitelisted. Please whitelist this server\'s IP address in your Flutterwave dashboard under Settings > API Keys & Webhooks.');
+        }
         throw new Error(resData.message || 'Flutterwave transfer initiation failed');
       }
     } catch (error) {
       console.error('Flutterwave initiateTransfer error:', error);
-      throw error;
+      if (error.message.includes('whitelist') || error.message.includes('IP')) {
+        throw error;
+      }
+      throw new Error(`Flutterwave payout failed: ${error.message}. If this persists, please ensure your IP address is whitelisted via Flutterwave settings.`);
     }
   }
 }

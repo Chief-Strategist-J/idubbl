@@ -20,7 +20,7 @@ export default function LuckyWheel({ onAnswer, answered }) {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [resultIndex, setResultIndex] = useState(null);
-  const [targetIndex] = useState(() => Math.floor(Math.random() * SEGMENTS.length));
+  const [targetIndex] = useState(2); // Always target GREEN (index 2) for the user to win vs machine
 
   const target = SEGMENTS[targetIndex];
 
@@ -30,9 +30,8 @@ export default function LuckyWheel({ onAnswer, answered }) {
 
     // Outcome is decided server-side (never Math.random() in the browser) — the spin is cosmetic.
     const willWin = await requestRoundOutcome(matchId, currentRound);
-    const finalIndex = willWin
-      ? targetIndex
-      : (targetIndex + 1 + Math.floor(Math.random() * (SEGMENTS.length - 1))) % SEGMENTS.length;
+    // If user wins, land on target index (GREEN), otherwise land on RED (index 0)
+    const finalIndex = willWin ? targetIndex : 0;
 
     // Rotate so finalIndex lands under top pointer
     // Pointer at top = 0deg. Segment center of finalIndex = finalIndex * SEG_DEG + SEG_DEG/2
